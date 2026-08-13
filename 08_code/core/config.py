@@ -12,7 +12,7 @@ import numpy as np
 import yaml
 
 
-VALID_SCENARIOS = {"IF", "IG", "II_1host", "II_multihost"}
+VALID_SCENARIOS = {"IF", "IG", "IG_1host", "IG_multisite", "II_1host", "II_multihost"}
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

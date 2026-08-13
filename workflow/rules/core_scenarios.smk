@@ -22,6 +22,31 @@ if CORE_ARCHITECTURE not in SCENARIOS:
 VERSION_OUTPUT_ROOT = config["paths"]["results_root"] + "/" + MODEL_VERSION
 MODEL_OUTPUT_ROOT = VERSION_OUTPUT_ROOT + "/model"
 RESULT_OUTPUT_ROOT = VERSION_OUTPUT_ROOT + "/result"
+GROUP_CORE_REGISTRY = "config/scenarios/group_multisite_core_v1.yaml"
+GROUP_CORE_ROOT = RESULT_OUTPUT_ROOT + "/group_architecture_core"
+GROUP_CORE_SUMMARIES = expand(GROUP_CORE_ROOT + "/{industry}/summary.csv", industry=INDUSTRIES)
+GROUP_CORE_HOURLY = expand(GROUP_CORE_ROOT + "/{industry}/hourly.csv", industry=INDUSTRIES)
+GROUP_CORE_LINEAGES = expand(GROUP_CORE_ROOT + "/{industry}/curve_lineage.csv", industry=INDUSTRIES)
+GROUP_CORE_ALIGNMENTS = expand(GROUP_CORE_ROOT + "/{industry}/load_alignment_value.csv", industry=INDUSTRIES)
+GROUP_CORE_METADATA = expand(GROUP_CORE_ROOT + "/{industry}/metadata.json", industry=INDUSTRIES)
+GROUP_CORE_NATIONAL_ROOT = GROUP_CORE_ROOT + "/national"
+GROUP_CORE_NATIONAL_SUMMARY = GROUP_CORE_NATIONAL_ROOT + "/core_scenarios.csv"
+GROUP_CORE_NATIONAL_ALIGNMENT = GROUP_CORE_NATIONAL_ROOT + "/ig_1host_load_alignment.csv"
+GROUP_CORE_NATIONAL_LINEAGE = GROUP_CORE_NATIONAL_ROOT + "/curve_lineage.csv"
+GROUP_CORE_NATIONAL_DONE = GROUP_CORE_NATIONAL_ROOT + "/validated.done.json"
+NATIONAL_CLOUD_CONFIG = "config/sensitivity/national_cloud_center_v1.yaml"
+NATIONAL_CLOUD_ROOT = "05_results/sensitivity/v0.8.0/national_cloud_center_v1"
+NATIONAL_CLOUD_SUMMARY = NATIONAL_CLOUD_ROOT + "/summary.csv"
+GROUP_CORE_TARGETS = (
+    [
+        GROUP_CORE_NATIONAL_SUMMARY,
+        GROUP_CORE_NATIONAL_ALIGNMENT,
+        GROUP_CORE_NATIONAL_LINEAGE,
+        GROUP_CORE_NATIONAL_DONE,
+    ]
+    if len(INDUSTRIES) == 31
+    else []
+)
 
 CORE_SOURCES = [
     "08_code/core/capacity.py",
@@ -277,73 +302,7 @@ LAND_MATERIAL_FINDINGS = LAND_MATERIAL_ROOT + "/findings.md"
 LAND_MATERIAL_DONE = LAND_MATERIAL_ROOT + "/validated.done.json"
 ADDITIONAL_ANALYSIS_TARGETS = (
     [
-        CLOUD_SUBSCRIPTION_COMPARISON,
-        CLOUD_SUBSCRIPTION_BREAK_EVEN,
-        CLOUD_SUBSCRIPTION_FINDINGS,
-        CLOUD_SUBSCRIPTION_DONE,
-        API_TOKEN_COST_COMPARISON,
-        API_TOKEN_MAINSTREAM_COMPARISON,
-        API_TOKEN_COST_TASK_DETAIL,
-        API_TOKEN_COST_FINDINGS,
-        API_TOKEN_COST_DONE,
-        US_OWNED_COST,
-        US_OWNED_FINDINGS,
-        US_OWNED_DONE,
-        US_FULL_CLOUD_COMPARISON,
-        US_FULL_CLOUD_AUDIT,
-        US_LOCAL_CLOUD_TOTAL_COMPARISON,
-        COUNTRY_PRICE_ENVIRONMENT_SUMMARY,
-        US_FULL_CLOUD_FINDINGS,
-        US_FULL_CLOUD_DONE,
-        SINGLE_INDUSTRY_HETEROGENEOUS_COMPARISON,
-        SINGLE_INDUSTRY_HETEROGENEOUS_ROUTING,
-        SINGLE_INDUSTRY_HETEROGENEOUS_FINDINGS,
-        SINGLE_INDUSTRY_HETEROGENEOUS_DONE,
-        SINGLE_INDUSTRY_HETEROGENEOUS_US_COMPARISON,
-        SINGLE_INDUSTRY_HETEROGENEOUS_US_CPU_SENSITIVITY,
-        SINGLE_INDUSTRY_HETEROGENEOUS_US_FINDINGS,
-        SINGLE_INDUSTRY_HETEROGENEOUS_US_DONE,
-        CHINA_HETEROGENEOUS_COMPARISONS,
-        CHINA_HETEROGENEOUS_DONE,
-        CHINA_HETEROGENEOUS_NATIONAL,
-        CHINA_HETEROGENEOUS_NATIONAL_FINDINGS,
-        CHINA_HETEROGENEOUS_NATIONAL_DONE,
-        US_HETEROGENEOUS_DETAIL,
-        US_HETEROGENEOUS_NATIONAL,
-        US_HETEROGENEOUS_FINDINGS,
-        US_HETEROGENEOUS_DONE,
-        HETEROGENEOUS_COUNTRY_SUMMARY,
-        HETEROGENEOUS_FINDINGS,
-        HETEROGENEOUS_DONE,
-        US_DEMAND_SERVICE,
-        US_DEMAND_LINEAGE,
-        US_DEMAND_TASK_SUMMARY,
-        US_DEMAND_NAICS_SUMMARY,
-        US_DEMAND_VALIDATION,
-        US_DEMAND_MACRO_ALIGNMENT,
-        US_DEMAND_PARAMETER_AUDIT,
-        US_DEMAND_COST_SENSITIVITY,
-        US_DEMAND_LOCAL_COST,
-        US_DEMAND_CLOUD_COST,
-        US_DEMAND_COMPARISON,
-        US_DEMAND_FINDINGS,
-        US_DEMAND_DONE,
-        LOAD_ALIGNMENT_DETAIL,
-        LOAD_ALIGNMENT_SUMMARY,
-        LOAD_ALIGNMENT_FINDINGS,
-        LOAD_ALIGNMENT_DONE,
-        TYPICAL_LOAD_STACKING_PROFILES,
-        TYPICAL_LOAD_STACKING_SUMMARY,
-        TYPICAL_LOAD_STACKING_FIGURE,
-        TYPICAL_AI_LOAD_FIGURE,
-        TYPICAL_LOAD_STACKING_FINDINGS,
-        TYPICAL_LOAD_STACKING_DONE,
-        LAND_SPACE_RESULTS,
-        LAND_MATERIAL_RESULTS,
-        LAND_MATERIAL_CROSSCHECK,
-        LAND_MATERIAL_LINEAGE,
-        LAND_MATERIAL_FINDINGS,
-        LAND_MATERIAL_DONE,
+        NATIONAL_CLOUD_SUMMARY,
         FIGURE1_DATA,
         FIGURE1_METHOD_PNG,
         FIGURE1_METHOD_SVG,
@@ -404,10 +363,7 @@ rule all:
         MODEL_LIFECYCLE_FINDINGS if len(INDUSTRIES) == 31 else [],
         MODEL_LIFECYCLE_DONE if len(INDUSTRIES) == 31 else [],
         RESULT_OUTPUT_ROOT + "/tests/unit_tests.done",
-        VALIDATED,
-        FINDINGS,
-        COMBINED,
-        NATIONAL_TARGETS,
+        GROUP_CORE_TARGETS,
 
 
 rule extended_analysis:
@@ -417,8 +373,58 @@ rule extended_analysis:
 
 rule core:
     input:
-        VALIDATED,
-        NATIONAL_TARGETS,
+        GROUP_CORE_TARGETS,
+
+
+rule core_group_architectures:
+    input:
+        GROUP_CORE_TARGETS,
+
+
+rule run_group_architecture_core_industry:
+    input:
+        registry=GROUP_CORE_REGISTRY,
+        defaults="config/defaults.yaml",
+        run_config=RUN_CONFIG,
+        common=COMMON_INPUTS,
+        archive=config["paths"]["eweld_archive"],
+        script="08_code/run_group_multisite_continuous_test.py",
+    output:
+        summary=GROUP_CORE_ROOT + "/{industry}/summary.csv",
+        hourly=GROUP_CORE_ROOT + "/{industry}/hourly.csv",
+        lineage=GROUP_CORE_ROOT + "/{industry}/curve_lineage.csv",
+        alignment=GROUP_CORE_ROOT + "/{industry}/load_alignment_value.csv",
+        metadata=GROUP_CORE_ROOT + "/{industry}/metadata.json",
+    wildcard_constraints:
+        industry="|".join(INDUSTRIES),
+    conda:
+        "../envs/core_model.yaml"
+    threads: 5
+    shell:
+        "python {input.script} --defaults {input.defaults} --config {input.run_config} "
+        "--experiment {input.registry} --industry {wildcards.industry} "
+        "--output-dir " + GROUP_CORE_ROOT + "/{wildcards.industry}"
+
+
+rule summarize_group_architecture_core:
+    input:
+        summaries=GROUP_CORE_SUMMARIES,
+        lineages=GROUP_CORE_LINEAGES,
+        alignments=GROUP_CORE_ALIGNMENTS,
+        metadata=GROUP_CORE_METADATA,
+        script="08_code/summarize_group_multisite_core.py",
+    output:
+        summary=GROUP_CORE_NATIONAL_SUMMARY,
+        alignment=GROUP_CORE_NATIONAL_ALIGNMENT,
+        lineage=GROUP_CORE_NATIONAL_LINEAGE,
+        done=GROUP_CORE_NATIONAL_DONE,
+    conda:
+        "../envs/core_model.yaml"
+    shell:
+        "python {input.script} --root " + GROUP_CORE_ROOT + " "
+        "--industries " + " ".join(INDUSTRIES) + " "
+        "--summary-output {output.summary} --alignment-output {output.alignment} "
+        "--lineage-output {output.lineage} --done-output {output.done}"
 
 
 rule single_industry_heterogeneous_cost:
@@ -818,11 +824,9 @@ rule build_figure1_method:
 rule build_figure1_demand_architecture:
     input:
         service=MODEL_READY_SERVICE,
-        national=NATIONAL_SUMMARY,
-        heterogeneous=CHINA_HETEROGENEOUS_NATIONAL,
+        national=GROUP_CORE_NATIONAL_SUMMARY,
         routing_config=CPU_GPU_ROUTING_CONFIG,
-        validation=NATIONAL_VALIDATION,
-        deployment_config=DEPLOYMENT_CONFIG,
+        validation=GROUP_CORE_NATIONAL_DONE,
         script="08_code/build_figure1_demand_architecture.py",
     output:
         data=FIGURE1_DATA,
@@ -834,27 +838,16 @@ rule build_figure1_demand_architecture:
         "../envs/core_model.yaml"
     shell:
         "python {input.script} --service-input {input.service} --national-input {input.national} "
-        "--heterogeneous-input {input.heterogeneous} --routing-config {input.routing_config} "
+        "--routing-config {input.routing_config} "
         "--model-version {MODEL_VERSION} --data-output {output.data} --png-output {output.png} "
         "--pdf-output {output.pdf} --svg-output {output.svg} --validation-output {output.done}"
 
 
 rule build_figure2_enterprise_cost:
     input:
-        national=NATIONAL_SUMMARY,
-        china_mainstream=API_TOKEN_MAINSTREAM_COMPARISON,
-        china_cloud_detail=API_TOKEN_COST_COMPARISON,
-        us_demand_local=US_DEMAND_LOCAL_COST,
-        us_demand_cloud=US_DEMAND_CLOUD_COST,
-        heterogeneous_country=HETEROGENEOUS_COUNTRY_SUMMARY,
-        china_heterogeneous=CHINA_HETEROGENEOUS_NATIONAL,
-        us_heterogeneous=US_HETEROGENEOUS_NATIONAL,
-        us_parameters=US_COST_PARAMETERS,
-        routing_config=CPU_GPU_ROUTING_CONFIG,
-        us_cost_config=US_HETEROGENEOUS_COST_CONFIG,
-        break_even=CLOUD_SUBSCRIPTION_BREAK_EVEN,
-        api_prices=API_TOKEN_PRICES,
-        deployment_config=DEPLOYMENT_CONFIG,
+        national=GROUP_CORE_NATIONAL_SUMMARY,
+        alignment=GROUP_CORE_NATIONAL_ALIGNMENT,
+        validation=GROUP_CORE_NATIONAL_DONE,
         script="08_code/build_figure2_enterprise_cost.py",
     output:
         data=FIGURE2_DATA,
@@ -865,28 +858,15 @@ rule build_figure2_enterprise_cost:
     conda:
         "../envs/core_model.yaml"
     shell:
-        "python {input.script} --national-input {input.national} --china-mainstream-input {input.china_mainstream} "
-        "--china-cloud-detail-input {input.china_cloud_detail} --us-demand-local-input {input.us_demand_local} "
-        "--us-demand-cloud-input {input.us_demand_cloud} --break-even-input {input.break_even} --api-prices-input {input.api_prices} "
-        "--heterogeneous-country-input {input.heterogeneous_country} --us-heterogeneous-input {input.us_heterogeneous} "
-        "--china-heterogeneous-input {input.china_heterogeneous} "
-        "--us-parameters-input {input.us_parameters} --routing-config {input.routing_config} --us-cost-config {input.us_cost_config} "
+        "python {input.script} --national-input {input.national} --alignment-input {input.alignment} "
         "--model-version {MODEL_VERSION} --data-output {output.data} --png-output {output.png} "
         "--pdf-output {output.pdf} --svg-output {output.svg} --validation-output {output.done}"
 
 
 rule build_figure3_grid_capacity:
     input:
-        curves=expand(
-            MODEL_OUTPUT_ROOT + "/{industry}/{scenario}/hourly.csv",
-            industry=["C38", "C30", "C39"],
-            scenario=["IF", "IG"],
-        ),
-        summaries=expand(
-            MODEL_OUTPUT_ROOT + "/{industry}/{scenario}/summary.csv",
-            industry=["C38", "C30", "C39"],
-            scenario=["IF", "IG"],
-        ),
+        summaries=GROUP_CORE_SUMMARIES,
+        hourly=GROUP_CORE_HOURLY,
         script="08_code/build_figure3_grid_capacity.py",
     output:
         data=FIGURE3_DATA,
@@ -896,8 +876,8 @@ rule build_figure3_grid_capacity:
     conda:
         "../envs/core_model.yaml"
     shell:
-        "python {input.script} --model-root {MODEL_OUTPUT_ROOT} "
-        "--model-version {MODEL_VERSION} "
+        "python {input.script} --core-root " + GROUP_CORE_ROOT + " "
+        "--industries " + " ".join(INDUSTRIES) + " --model-version {MODEL_VERSION} "
         "--data-output {output.data} --svg-output {output.svg} "
         "--png-output {output.png} --validation-output {output.done}"
 
@@ -906,13 +886,8 @@ rule build_figure4_resource_footprint:
     input:
         scenario_registry=SCENARIO_REGISTRY_PATH,
         water=WATER_PARAMETERS,
-        space=LAND_SPACE_RESULTS,
-        materials=LAND_MATERIAL_RESULTS,
-        china_heterogeneous=CHINA_HETEROGENEOUS_NATIONAL,
-        us_heterogeneous=US_HETEROGENEOUS_NATIONAL,
-        national=NATIONAL_SUMMARY,
-        land_done=LAND_MATERIAL_DONE,
-        deployment_config=DEPLOYMENT_CONFIG,
+        core=GROUP_CORE_NATIONAL_SUMMARY,
+        cloud=NATIONAL_CLOUD_SUMMARY,
         script="08_code/build_figure4_resource_footprint.py",
     output:
         data=FIGURE4_DATA,
@@ -922,10 +897,8 @@ rule build_figure4_resource_footprint:
     conda:
         "../envs/core_model.yaml"
     shell:
-        "python {input.script} --scenario-registry {input.scenario_registry} "
-        "--water-input {input.water} --space-input {input.space} "
-        "--materials-input {input.materials} --china-heterogeneous-input {input.china_heterogeneous} "
-        "--us-heterogeneous-input {input.us_heterogeneous} --national-input {input.national} "
+        "python {input.script} --scenario-registry {input.scenario_registry} --water-input {input.water} "
+        "--core-input {input.core} --cloud-input {input.cloud} "
         "--model-version {MODEL_VERSION} --data-output {output.data} "
         "--svg-output {output.svg} --png-output {output.png} --validation-output {output.done}"
 
@@ -935,7 +908,7 @@ rule build_figure5_spatial_concentration:
         scenario_registry=SCENARIO_REGISTRY_PATH,
         routing_config=CPU_GPU_ROUTING_CONFIG,
         allocation=RESOURCE_CASE["spatial_water"]["province_allocation_file"],
-        heterogeneous=CHINA_HETEROGENEOUS_COMPARISONS,
+        core=GROUP_CORE_NATIONAL_SUMMARY,
         scarcity=RESOURCE_CASE["spatial_water"]["scarcity_file"],
         cloud_share=RESOURCE_CASE["spatial_water"]["cloud_allocation_file"],
         map=RESOURCE_CASE["spatial_water"]["china_map_file"],
@@ -951,7 +924,7 @@ rule build_figure5_spatial_concentration:
     shell:
         "python {input.script} --scenario-registry {input.scenario_registry} "
         "--routing-config {input.routing_config} --allocation {input.allocation} "
-        "--heterogeneous-root {CHINA_HETEROGENEOUS_ROOT}/{CORE_ARCHITECTURE} "
+        "--core-input {input.core} "
         "--scarcity {input.scarcity} --cloud-share {input.cloud_share} --map {input.map} --data-output {output.data} "
         "--cloud-data-output {output.cloud_data} --svg-output {output.svg} --png-output {output.png}"
 
@@ -1418,10 +1391,6 @@ rule build_bolun_progress_briefing:
         figure3=FIGURE3_SVG,
         figure4=FIGURE4_SVG,
         figure5=FIGURE5_SVG,
-        sensitivity_factors=BOLUN_SENSITIVITY_FACTOR_RESULTS,
-        core_grid_comparison=BOLUN_CORE_GRID_COMPARISON,
-        no_shift_grid_comparison=BOLUN_NO_SHIFT_GRID_COMPARISON,
-        deployment_config=DEPLOYMENT_CONFIG,
         script="08_code/build_bolun_progress_briefing.py",
     output:
         BOLUN_PROGRESS_BRIEFING,
@@ -1433,12 +1402,9 @@ rule build_bolun_progress_briefing:
         "--figure3-svg {input.figure3} "
         "--figure4-svg {input.figure4} "
         "--figure5-svg {input.figure5} "
-        "--sensitivity-factor-results {input.sensitivity_factors} "
-        "--core-grid-comparison {input.core_grid_comparison} "
-        "--no-shift-grid-comparison {input.no_shift_grid_comparison} "
         "--output {output}"
 
 
 wildcard_constraints:
     industry="C(?:1[3-9]|[234][0-9])",
-    scenario="IF|IG|II_1host|II_multihost",
+    scenario="IF|IG|IG_1host|IG_multisite|II_1host|II_multihost",

@@ -1,0 +1,38 @@
+experiment_id: group_multisite_31industry_core_v1
+solver: highs
+industry: null
+factory_count: representative_group_case
+architectures: [IF, IG_1host, IG_multisite]
+base_load_cases_by_architecture:
+  IF: [actual_load]
+  IG_1host: [actual_load, zero_load]
+  IG_multisite: [actual_load]
+integer_boundary:
+  IF_installed_server_groups_integer: true
+  IG_1host_installed_server_groups_integer: false
+  IG_multisite_installed_server_groups_integer: false
+  online_server_groups_integer: false
+  planning_reserve_fraction: 0.10
+  n_plus_spare_server_groups: 0
+  model_state_minimum_groups_enabled: false
+task_boundary:
+  same_group_total_service: true
+  all_six_core_tasks_group_routable: true
+  flexible_jobs_keep_original_deadlines: true
+  cross_factory_routing: IG_multisite_only
+energy_boundary:
+  pv_capacity_mode: none
+  battery_investment_enabled: false
+  same_provincial_hourly_price_at_all_factories: true
+load_curve_selection:
+  source: EWELD
+  source_isic: auto_from_core_lineage
+  rule: distinct_users_first_then_distinct_complete_weeks_until_representative_group_factory_count
+  proxy_rule: reuse_the_active_core_profile_source_isic_for_industries_without_direct_EWELD_samples
+  scaling: equal_factory_mean_preserve_total_group_activity_share
+  simultaneity: align_by_weekday_and_hour_not_same_calendar_week
+counterfactual:
+  architecture: IG_1host
+  definition: zero_original_factory_load_reoptimized_minus_actual_load_reoptimized
+  interpretation: value_of_cooptimizing_AI_with_the_fixed_host_factory_load_shape
+interpretation: 31_industry_core_group_architecture_comparison

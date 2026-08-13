@@ -47,15 +47,15 @@
 
 ## 当前核心工作流
 
-根目录 `Snakefile` 是新的统一入口。`config/defaults.yaml` 保存共同参数，`config/runs/single_industry_core.yaml` 只选择C36及IF、IG、II_1host三个尺度，`config/runs/all_industries_core.yaml` 用于后续批量扩展。运行配置不再散落在脚本常量中。
+根目录 `Snakefile` 是统一入口。`config/defaults.yaml` 保存共同参数，`config/runs/all_industries_core.yaml` 选择31个行业，`config/scenarios/group_multisite_core_v1.yaml`定义活动核心的集团架构与整数边界。运行配置不再散落在脚本常量中。
 
 主线情景的统一选择入口是 `config/scenarios/mainline.yaml`。其中 `countries.enabled` 固定生成中国与美国结果：中国在核心逐时模型中按任务路由联合优化CPU/GPU装机、在线容量和设施功率，美国读取本国需求与价格参数进行下游重估，尚不重复运行一套美国逐时核心模型；`compute_hardware.active_routing_case` 默认选择 `practice_routed`；`resource_footprint` 分别选择水耗、空间、建筑材料、省级缺水度和云端地域分配的数据表及命名情景。硬件路由现在会改变中国核心物理负荷和成本，因而切换路由配置必须触发并完成31行业乘以三个架构的核心重跑，不能只重跑成本后处理或制图。
 
 `core/` 内部分工如下：`config.py` 负责配置合并与校验，`representative_group.py` 将行业份额和成员工厂数换算成三个等服务量尺度，`data.py` 保留并缩放六任务分辨率的刚性负荷与柔性作业，`model.py` 用PyPSA/Linopy/Gurobi在一次求解中分别优化GPU和CPU装机、在线容量、任务调度与功率，并联合计算最大需量、接入、光伏和储能，`io.py` 统一输出。服务器、电费和其他物理成本均由该次求解自下而上产生，不设口径校准项。默认求解器为Gurobi，配置中仍保留HiGHS作为显式可选项。
 
-每个行业先运行一次无AI典型工厂基准。随后，IF、IG和II_1host三个本地部署尺度按活动任务路由分别形成GPU和CPU的未错峰到达曲线；每个硬件池以`max(110%参考容量, ceil(参考容量)+1)`作为最低装机，再在同一次正式优化中调度两类硬件并进行增量归因。全国主线仍为31次无AI基准加93次正式情景求解，共124次优化，但每个正式情景现在是双硬件联合模型。`validate_core_scenario.py` 检查服务守恒、两类装机容量规则、CPU/GPU功率加总、GPU/CPU服务器成本拆分、设施总功率、既有屋顶光伏边界、逐时电价和总成本复算。完整测试设计见 [`../00_admin/core_scenario_test_plan.md`](../00_admin/core_scenario_test_plan.md)。
+31行业核心部署比较统一为`IF`、`IG_1host`和`IG_multisite`。`IF`表示集团内每厂独立安装且仅服务本厂，只有该架构的GPU/CPU安装量取整数；`IG_1host`表示集团在一个固定成员工厂设置共享池；`IG_multisite`表示集团可在多个成员工厂配置连续等效容量，并允许任务在原截止窗口内跨厂调度。`II_1host`不再属于核心情景，也不会由默认`core`目标触发。
 
-状态说明（2026-08-13）：代码改造和C36--IF单行业验证已完成；31行业乘以三个架构的全国重跑及Figure 2重生成按用户要求中止。`05_results/v0.8.0`中当前已有的全国异构汇总和Figure 2不得当作联合CPU/GPU物理模型的新结果。恢复工作时应从全国核心情景开始重跑，随后依次重建中国异构汇总、跨国成本汇总和Figure 2。
+状态说明（2026-08-13）：31行业集团架构工作流已接入默认`core`目标并通过干运行，但尚未执行全国优化。`05_results/v0.8.0`中既有的旧架构全国汇总和Figure 2不得当作IF、IG_1host、IG_multisite的新结果；应先完成本节的31行业核心运行，再更新相应表图和正文结论。
 
 已有 `pypsa` 环境时，C36可用以下命令运行：
 
@@ -87,7 +87,7 @@ conda run -n pypsa snakemake all --cores 1 --configfile config/runs/single_indus
 
 ## 集团单节点与跨节点灵活性测试
 
-`config/sensitivity/c36_group_multisite_continuous_v1.yaml`定义独立于全国核心场景的集团多工厂机制测试。当前使用C36汽车制造业、5个合成成员工厂和三种企业内部部署：
+`config/scenarios/group_multisite_core_v1.yaml`定义31行业核心集团架构比较；每个行业使用代表性集团参数表中的基础工厂数，并沿用活动核心负荷血缘登记的EWELD源ISIC。没有直接样本的C16、C25、C37和C42继续使用已有生产原型代理。`config/sensitivity/c36_group_multisite_continuous_v1.yaml`另保留C36、5个合成成员工厂的快速机制测试。两者均比较：
 
 - `IF`：每厂安装并仅服务本厂，GPU/CPU装机服务器组为整数；
 - `IG_1host`：集团在一个固定成员工厂建设共享池，装机采用连续等效容量；
@@ -95,7 +95,7 @@ conda run -n pypsa snakemake all --cores 1 --configfile config/runs/single_indus
 
 工厂曲线优先来自不同EWELD用户；若行业可用用户数不足，则从同一用户选择不同完整周，不复制完全相同的用户—周。所有曲线按星期—小时对齐，因此是合成机制输入，不表示真实同一集团的同步观测。
 
-测试只为核心`IG_1host`增加零基础负荷配对反事实。实际运行的四个汇总组合固定为：
+核心流程只为`IG_1host`增加零基础负荷配对反事实。每个行业固定运行四个汇总组合：
 
 1. `IF + actual_load`；
 2. `IG_1host + actual_load`；
@@ -104,7 +104,31 @@ conda run -n pypsa snakemake all --cores 1 --configfile config/runs/single_indus
 
 `zero_load`保持AI服务量、释放时刻、截止时间、CPU/GPU路由、价格和定容口径不变，并重新优化，不表示工厂停产。`IG_1host zero_load - actual_load`用于计算固定承载工厂的生产负荷匹配价值；实际负荷下`IG_multisite - IG_1host`用于分析跨节点调度价值。
 
-首次运行前建议先检查任务图，不求解：
+31行业核心流程先检查任务图、不求解：
+
+```bash
+make dry-run
+```
+
+正式运行：
+
+```bash
+make results CORES=5
+```
+
+等价的直接Snakemake命令：
+
+```bash
+conda run -n pypsa snakemake core \
+  --cores 5 \
+  --configfile config/runs/all_industries_core.yaml \
+  --runtime-source-cache-path "$(mktemp -d /private/tmp/dllm_group_core.XXXXXX)" \
+  --rerun-incomplete
+```
+
+每个行业生成`summary.csv`、`hourly.csv`、`curve_lineage.csv`、`load_alignment_value.csv`和`metadata.json`。全国结果汇总到`05_results/v0.8.0/result/group_architecture_core/national/`，包含93行实际负荷架构比较、31行`IG_1host`零负荷配对、合并曲线血缘和校验标记；校验会拒绝缺行业、缺架构、整数边界错误或服务量不守恒。
+
+C36快速机制检查可单独先检查任务图：
 
 ```bash
 make sensitivity-group-multisite-dry-run
@@ -126,7 +150,7 @@ conda run -n pypsa snakemake single_industry_group_multisite_sensitivity \
   --rerun-incomplete
 ```
 
-该目标不会由默认`make results`或`snakemake core`触发。结果写入`05_results/sensitivity/v0.8.0/group_multisite/C36/`：
+该C36目标不是31行业核心结果的替代品；结果写入`05_results/sensitivity/v0.8.0/group_multisite/C36/`：
 
 - `summary.csv`：四个架构—基础负荷组合的汇总；
 - `hourly.csv`：逐工厂、逐小时AI执行、设施功率和购电；
@@ -136,9 +160,26 @@ conda run -n pypsa snakemake single_industry_group_multisite_sensitivity \
 
 修改行业、工厂数、源ISIC、求解器或输出目录时，只编辑上述测试配置；Snakemake规则本身不保存这些实验参数。若要强制重跑，可追加`SNAKEMAKE_ARGS="--forceall"`，但这会覆盖同一`output_root`中的既有测试输出，运行前应先修改`output_root`保留旧版本。
 
-`analyze_core_industry_cost_differences.py`只读取31行业的IF、IG和II_1host核心结果，同时报告年成本总量与单位服务成本，并将行业差异拆分为服务器、电量、接入容量、PV/储能与模型固定费用。它另外计算需求规模、CPU路由、部署碎片化、定容冗余、能耗强度和接入容量强度与单位成本的描述性Spearman关联，不将其解释为因果归因。`make industry-cost-differences`可单独生成该表；默认核心流程也会在31行业核心结果完成后自动生成。
+## 新核心图件
 
-`analyze_land_material_footprint.py`读取全国 `core_scenarios.csv`，从 `II_1host` 的31行业安装服务器组和整机额定功率重建共同 MW-IT 容量，再生成小型厂房复用以及中美大型设施“既有容量—园区扩建—绿地新建”的空间结果。材料仅由新增总楼面面积驱动，钢筋与结构钢分开；ICEF 园区级材料参数只做独立量级校验。该脚本由 Snakemake 的 `analyze_land_material_footprint` 规则调用，并输出 CSV、血缘、结论和校验完成标记。
+`make extended-analysis`在31行业核心结果完成后生成Figure 1--5。活动制图链条只读取`group_architecture_core`中的IF、IG_1host和IG_multisite结果；Figure 4的大型云比较读取独立`national_cloud_center_v1`，不使用II_1host代理。Figure 4当前只报告运行取水和接入容量，旧的土地与建筑材料结果不会混入新图。Figure 5的本地空间分配读取新IF行业等效电量，云端仍使用已登记的省级智算容量代理。
+
+先检查全部核心与制图任务：
+
+```bash
+make dry-run TARGET=extended_analysis
+```
+
+核心结果完成后生成图件：
+
+```bash
+make results
+make extended-analysis
+```
+
+旧的`analyze_core_industry_cost_differences.py`仍读取历史IF、IG和II_1host输出，只用于历史结果复核，不再由默认核心流程触发。新的31行业核心汇总直接比较IF、IG_1host和IG_multisite，并另存IG_1host零原始负荷配对结果。
+
+旧的`analyze_land_material_footprint.py`仍依赖历史II_1host结果，因此不属于当前核心架构链条；若后续恢复大型云资源足迹，应改为读取独立云情景。
 
 `analyze_typical_industry_load_stacking.py`选取食品、纺织、化工、汽车和电子设备五个典型行业，比较IF工厂、IG集团和II行业集中代表节点的168小时原有负荷、AI设施负荷与叠加后负荷，并另行输出AI负荷时序图，避免小规模IF曲线在绝对叠加图中不可见。
 

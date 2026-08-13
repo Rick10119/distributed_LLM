@@ -73,7 +73,7 @@ selected_industries:
   - C41
   - C42
   - C43
-selected_scenarios: [IF, IG, II_1host]
+selected_scenarios: [IF, IG_1host, IG_multisite]
 
 industry_parameter_case: base
 industry_host_counts:

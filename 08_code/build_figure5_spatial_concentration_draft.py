@@ -76,7 +76,7 @@ def panel(ax, letter: str, title: str) -> None:
 
 def prepare(
     allocation_path: Path,
-    heterogeneous_root: Path,
+    core_path: Path,
     scarcity_path: Path,
     cloud_share_path: Path,
     routing_case: str,
@@ -85,14 +85,11 @@ def prepare(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     allocation = pd.read_csv(allocation_path, encoding="utf-8-sig")
     scarcity = pd.read_csv(scarcity_path, encoding="utf-8-sig")
-    industry_files = sorted(heterogeneous_root.glob("C*/comparison.csv"))
-    if len(industry_files) != 31:
-        raise ValueError("Figure 5 requires 31 China heterogeneous industry files")
-    heterogeneous = pd.concat([pd.read_csv(path, encoding="utf-8-sig") for path in industry_files], ignore_index=True)
-    core = heterogeneous[heterogeneous.routing_case.eq(routing_case)].drop_duplicates("industry_code")
-    if len(core) != 31:
-        raise ValueError(f"Routing case {routing_case} must cover all 31 China industries")
-    energy = core.set_index("industry_code")["local_total_facility_energy_twh"]
+    core = pd.read_csv(core_path, encoding="utf-8-sig")
+    core = core[core.architecture.eq("IF")].copy()
+    if len(core) != 31 or core.industry.nunique() != 31:
+        raise ValueError("Figure 5 requires 31 IF rows from the active group core")
+    energy = core.set_index("industry")["industry_equivalent_annual_ai_facility_energy_twh"]
     allocation["industry_ai_energy_twh"] = allocation["industry_code"].map(energy)
     allocation["province_ai_energy_twh"] = allocation["industry_ai_energy_twh"] * allocation["electricity_share_within_industry"]
     province = allocation.groupby("province", as_index=False)["province_ai_energy_twh"].sum()
@@ -243,10 +240,10 @@ def plot(province: pd.DataFrame, cloud: pd.DataFrame, map_path: Path, svg: Path,
 
 
 def main() -> None:
-    p=argparse.ArgumentParser(); p.add_argument("--scenario-registry",type=Path,required=True); p.add_argument("--routing-config",type=Path,required=True); p.add_argument("--allocation",type=Path,required=True); p.add_argument("--heterogeneous-root",type=Path,required=True); p.add_argument("--scarcity",type=Path,required=True); p.add_argument("--cloud-share",type=Path,required=True); p.add_argument("--map",type=Path,required=True); p.add_argument("--data-output",type=Path,required=True); p.add_argument("--cloud-data-output",type=Path,required=True); p.add_argument("--svg-output",type=Path,required=True); p.add_argument("--png-output",type=Path,required=True); a=p.parse_args()
+    p=argparse.ArgumentParser(); p.add_argument("--scenario-registry",type=Path,required=True); p.add_argument("--routing-config",type=Path,required=True); p.add_argument("--allocation",type=Path,required=True); p.add_argument("--core-input",type=Path,required=True); p.add_argument("--scarcity",type=Path,required=True); p.add_argument("--cloud-share",type=Path,required=True); p.add_argument("--map",type=Path,required=True); p.add_argument("--data-output",type=Path,required=True); p.add_argument("--cloud-data-output",type=Path,required=True); p.add_argument("--svg-output",type=Path,required=True); p.add_argument("--png-output",type=Path,required=True); a=p.parse_args()
     registry=yaml.safe_load(a.scenario_registry.read_text(encoding="utf-8")); routing=yaml.safe_load(a.routing_config.read_text(encoding="utf-8")); routing_case=registry["compute_hardware"]["active_routing_case"]
     if routing.get("active_core_routing_case") != routing_case: raise ValueError("Scenario registry and routing config disagree")
     water_case=registry["resource_footprint"]["water"]; water=pd.read_csv(Path(water_case["parameter_file"]),encoding="utf-8-sig").set_index("comparison_mode"); modes=water_case["comparison_modes"]
-    province,cloud=prepare(a.allocation,a.heterogeneous_root,a.scarcity,a.cloud_share,routing_case,float(water.loc[modes["local"],"site_water_use_l_per_kwh_it"]),float(water.loc[modes["china_cloud"],"site_water_use_l_per_kwh_it"])); a.data_output.parent.mkdir(parents=True,exist_ok=True); province.to_csv(a.data_output,index=False,encoding="utf-8-sig"); cloud.to_csv(a.cloud_data_output,index=False,encoding="utf-8-sig"); plot(province,cloud,a.map,a.svg_output,a.png_output)
+    province,cloud=prepare(a.allocation,a.core_input,a.scarcity,a.cloud_share,routing_case,float(water.loc[modes["local"],"site_water_use_l_per_kwh_it"]),float(water.loc[modes["china_cloud"],"site_water_use_l_per_kwh_it"])); a.data_output.parent.mkdir(parents=True,exist_ok=True); province.to_csv(a.data_output,index=False,encoding="utf-8-sig"); cloud.to_csv(a.cloud_data_output,index=False,encoding="utf-8-sig"); plot(province,cloud,a.map,a.svg_output,a.png_output)
 
 if __name__ == "__main__": main()

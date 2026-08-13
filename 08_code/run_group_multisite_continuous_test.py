@@ -33,6 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", type=Path, default=Path("config/runs/all_industries_core.yaml"))
     parser.add_argument("--experiment", type=Path, default=Path("config/sensitivity/c36_group_multisite_continuous_v1.yaml"))
     parser.add_argument("--output-dir", type=Path, default=Path("05_results/sensitivity/v0.8.0/group_multisite_continuous/C36"))
+    parser.add_argument("--industry", help="Override experiment.industry; used by the 31-industry core workflow.")
     parser.add_argument("--describe-only", action="store_true", help="Report continuous variable counts without solving.")
     return parser.parse_args()
 
@@ -88,7 +89,7 @@ def select_factory_weeks(archive: Path, target: np.ndarray, factory_count: int, 
             "week_end": (monday + pd.Timedelta(days=6)).date().isoformat(),
             "same_user_week_sequence": user_counts[user],
             "curve_role": "distinct_user_factory_proxy" if user_counts[user] == 1 else "same_user_distinct_week_factory_proxy",
-            "shape_rmse_to_C36_core": rmse,
+            "shape_rmse_to_industry_core": rmse,
             "calendar_interpretation": "weekday_hour_aligned_synthetic_simultaneous_week",
         })
     return lineage, np.asarray(curves, dtype=float)
@@ -295,20 +296,33 @@ def main() -> None:
     args = parse_args()
     experiment = yaml.safe_load((ROOT / args.experiment).read_text(encoding="utf-8"))
     config = load_config(ROOT, args.defaults, args.config)
-    industry = str(experiment["industry"])
-    count = int(experiment["factory_count"])
+    industry = str(args.industry or experiment.get("industry", ""))
+    if industry not in config["selected_industries"]:
+        raise ValueError(f"Industry {industry!r} is not selected by {args.config}")
     inputs = load_industry_inputs(config, industry)
     group = read_representative_groups(ROOT / config["paths"]["representative_group_report"])[industry]
+    count_setting = experiment.get("factory_count", "representative_group_case")
+    count = group.factories(config["industry_parameter_case"]) if count_setting == "representative_group_case" else int(count_setting)
     share = group.share(config["industry_parameter_case"])
     target = inputs.base_load_mw.reshape(7, 24)
     target = np.median(target / target.mean(axis=1, keepdims=True), axis=0)
+    source_setting = experiment["load_curve_selection"].get("source_isic", "auto_from_core_lineage")
+    if source_setting == "auto_from_core_lineage":
+        core_lineage = json.loads((ROOT / config["paths"]["hourly_industry_profiles_lineage"]).read_text(encoding="utf-8"))
+        source_by_industry = {
+            str(row["industry_code"]): int(row["source_isic_division"])
+            for row in core_lineage["records"]
+        }
+        source_isic = source_by_industry[industry]
+    else:
+        source_isic = int(source_setting)
     lineage, normalized_curves = select_factory_weeks(
-        ROOT / "02_data/raw_load_profiles/eweld/EWELD.zip",
+        ROOT / config["paths"]["eweld_archive"],
         target,
         count,
-        int(experiment["load_curve_selection"]["source_isic"]),
+        source_isic,
     )
-    print("selected C36 factory weeks", flush=True)
+    print(f"selected {industry} factory weeks from EWELD ISIC {source_isic}", flush=True)
     mean_per_factory = float(inputs.base_load_mw.mean()) * share / count
     five_factory_loads = normalized_curves * mean_per_factory
     host_index = int(np.argsort(five_factory_loads.max(axis=1))[count // 2])
@@ -406,6 +420,7 @@ def main() -> None:
     output = ROOT / args.output_dir
     output.mkdir(parents=True, exist_ok=True)
     summary_frame = pd.DataFrame(final_summaries)
+    summary_frame.insert(0, "industry", industry)
     expected_pairs = {
         ("IF", "actual_load"),
         ("IG_1host", "actual_load"),
@@ -427,6 +442,7 @@ def main() -> None:
     actual = paired.loc[("IG_1host", "actual_load")]
     zero = paired.loc[("IG_1host", "zero_load")]
     paired_frame = pd.DataFrame([{
+        "industry": industry,
         "architecture": "IG_1host",
         "load_alignment_value_total_cost_rmb": float(zero.annual_incremental_total_cost_rmb - actual.annual_incremental_total_cost_rmb),
         "load_alignment_value_server_cost_rmb": float(zero.annual_server_cost_rmb - actual.annual_server_cost_rmb),
@@ -439,6 +455,8 @@ def main() -> None:
     metadata = {
         "status": "completed_IF_integer_IG_continuous_capacity_mechanism_test",
         "experiment": experiment,
+        "industry": industry,
+        "source_isic": source_isic,
         "group_share": share,
         "synthetic_factory_count": count,
         "IG_1host_factory_id": f"F{host_index + 1}",

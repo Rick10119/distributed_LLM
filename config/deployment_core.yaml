@@ -2,8 +2,8 @@ core_architecture: IF
 core_architecture_label_cn: 工厂侧分布式、集团专网协同
 architecture_labels:
   IF: factory_side_distributed_group_network_coordinated
-  IG: group_centralized_compute_pool
-  II_1host: industry_single_large_node_upper_bound
+  IG_1host: group_single_factory_compute_pool
+  IG_multisite: group_multifactory_routable_compute_pool
 include_incremental_private_network_cost: false
 include_incremental_data_governance_cost: false
 interpretation: >-
