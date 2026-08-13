@@ -1,0 +1,6 @@
+run_config_path: config/runs/single_industry_core.yaml
+selected_industries: [C36]
+selected_scenarios: [IF, IG, II_1host]
+industry_parameter_case: base
+industry_host_counts:
+  C36: 1

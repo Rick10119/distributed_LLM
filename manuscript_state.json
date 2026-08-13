@@ -1,0 +1,1247 @@
+{
+  "schema_version": "1.1",
+  "project": {
+    "id": "distributed-llm-grid-expansion",
+    "title": "A Value Model for Factory- and Industry-Level Distributed Large Language Models",
+    "archetype": "framework_methods",
+    "study_designs": ["computational_model", "simulation", "AI_workload_study"],
+    "lifecycle_stage": "exploratory_full_manuscript_draft",
+    "review_maturity": "developmental",
+    "target_venue": "Joule",
+    "active_release": "working-joule-chinese-draft"
+  },
+  "artifacts": [
+    {
+      "id": "joule-chinese-main-manuscript",
+      "path": "06_manuscript/manuscript_cn.tex",
+      "role": "active_chinese_exploratory_main_manuscript_with_introduction_results_discussion_and_methods",
+      "status": "ACTIVE_WORKING_DRAFT",
+      "required_for_release": true
+    },
+    {
+      "id": "us-manufacturing-ai-demand-mapping-plan",
+      "path": "00_admin/us_manufacturing_ai_demand_mapping_plan.md",
+      "role": "proposed_official_data_driven_US_manufacturing_AI_demand_and_cost_recalculation_plan",
+      "status": "ACTIVE_PLAN_NOT_MODELED",
+      "required_for_release": false
+    },
+    {
+      "id": "research-logic-eyeball-notebook-v060",
+      "path": "output/jupyter-notebook/distributed_llm_research_logic_v060.ipynb",
+      "role": "active_formula_data_and_result_eyeball_check_notebook",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "chinese-si",
+      "path": "06_manuscript/SI.tex",
+      "role": "active_chinese_supplementary_methods_and_formula_document",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "integrated-review",
+      "path": "06_manuscript/integrated_manuscript_review_draft.md",
+      "role": "active_integrated_internal_draft",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "model-spec",
+      "path": "03_models/model_spec.md",
+      "role": "method_specification",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "core-formulas-review",
+      "path": "03_models/core_formulas_review.md",
+      "role": "active_chinese_core_formula_review_note",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "data-center-flexibility-modeling-notes",
+      "path": "01_literature/data_center_flexibility_modeling_notes.md",
+      "role": "active_data_center_flexibility_modeling_evidence_note",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-ai-cpu-gpu-routing-research",
+      "path": "02_data/manufacturing_ai_cpu_gpu_hardware_routing_research.md",
+      "role": "active_primary-source_review_of_task_level_cpu_gpu_edge_hardware_routing_practice",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "c36-heterogeneous-hardware-screen-v1",
+      "path": "05_results/v0.7.0/result/cost_benchmark/c36_heterogeneous_hardware_v1/findings.md",
+      "role": "active_main_workflow_C36_same_service_CPU_GPU_routing_and_country_cost_environment_module",
+      "status": "ACTIVE_EXTENDED_MAIN_WORKFLOW_NOT_NATIONAL_CORE",
+      "required_for_release": false
+    },
+    {
+      "id": "c36-heterogeneous-hardware-us-cost-v1",
+      "path": "05_results/v0.7.0/result/cost_benchmark/c36_heterogeneous_hardware_v1/us_cost_environment/findings.md",
+      "role": "active_US_cost_environment_repricing_with_CPU_server_purchase_price_sensitivity",
+      "status": "ACTIVE_EXTENDED_MAIN_WORKFLOW_FIXED_C36_DEMAND",
+      "required_for_release": false
+    },
+    {
+      "id": "national-heterogeneous-hardware-cost-v1",
+      "path": "05_results/v0.7.0/result/cost_benchmark/heterogeneous_hardware_v1/findings.md",
+      "role": "active_China_31industry_and_US_21industry_CPU_GPU_token_cost_comparison",
+      "status": "HISTORICAL_OLD_RECONCILIATION_BOUNDARY_PENDING_JOINT_PHYSICAL_RERUN",
+      "required_for_release": false
+    },
+    {
+      "id": "china-cpu-cloud-capacity-evidence-v1",
+      "path": "02_data/raw/curated/china_cpu_server_cloud_capacity_evidence_v1.csv",
+      "role": "active_local_CPU_procurement_cloud_instance_vCPU_topology_and_price_evidence",
+      "status": "ACTIVE_SCREENED_EVIDENCE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-task-flexibility-mapping-notes",
+      "path": "02_data/manufacturing_ai_task_flexibility_mapping_notes.md",
+      "role": "proposed_manufacturing_task_flexibility_parameter_note",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-task-flexibility-mapping-csv",
+      "path": "02_data/manufacturing_ai_task_flexibility_mapping.csv",
+      "role": "proposed_manufacturing_task_flexibility_scenario_matrix",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "c36-service-aligned-prototype-findings",
+      "path": "05_results/c36_service_aligned_prototype_findings.md",
+      "role": "active_single_industry_equal_service_mechanism_result",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "c36-pypsa-joint-prototype-findings",
+      "path": "05_results/c36_pypsa_joint_findings.md",
+      "role": "active_single_industry_joint_capacity_dispatch_result",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "c36-pypsa-diagnostic-notes",
+      "path": "03_models/c36_pypsa_diagnostic_notes.md",
+      "role": "active_parameter_and_result_diagnostic_note",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "distributed-ai-facility-parameter-report",
+      "path": "02_data/distributed_ai_facility_parameter_report.md",
+      "role": "active_local_facility_power_state_and_pue_parameter_evidence",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "distributed-ai-facility-parameters",
+      "path": "02_data/distributed_ai_facility_parameters.csv",
+      "role": "active_local_facility_power_state_parameter_table",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "ai-model-initialization-storage-cost-notes",
+      "path": "03_models/ai_model_initialization_and_storage_cost_notes.md",
+      "role": "active_model_lifecycle_cost_boundary_and_data_requirements_note",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "enterprise-llm-lifecycle-cost-report",
+      "path": "02_data/enterprise_llm_lifecycle_cost_report.md",
+      "role": "active_llm_lifecycle_cost_and_capacity_research_report",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "enterprise-llm-lifecycle-parameters",
+      "path": "02_data/enterprise_llm_lifecycle_parameters.csv",
+      "role": "proposed_llm_lifecycle_cost_parameter_table_pending_review_fixes",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "llm-model-hardware-storage-matrix",
+      "path": "02_data/llm_model_hardware_storage_matrix.csv",
+      "role": "proposed_qwen_l20_vram_and_storage_matrix_pending_benchmark",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "enterprise-llm-lifecycle-parameter-review",
+      "path": "03_models/enterprise_llm_lifecycle_parameter_review.md",
+      "role": "active_parameter_consistency_and_model_readiness_review",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "industry-design",
+      "path": "04_cases/industry_level_compute_pool.md",
+      "role": "industry_case_design",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "enterprise-group-factory-mapping-notes",
+      "path": "01_literature/enterprise_group_factory_mapping_notes.md",
+      "role": "active_representative_group_size_share_and_host_site_note",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "data-dictionary",
+      "path": "02_data/data_dictionary.csv",
+      "role": "input_output_schema",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "china-prototype-report",
+      "path": "06_manuscript/china_prototype_test_report.tex",
+      "role": "historical_high_workload_prototype_report",
+      "status": "SUPERSEDED",
+      "required_for_release": false
+    },
+    {
+      "id": "typical-manufacturing-base-findings",
+      "path": "05_results/typical_manufacturing_base_findings.md",
+      "role": "active_typical_manufacturing_screening_result",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-group-findings",
+      "path": "05_results/group_ai_center_findings.md",
+      "role": "active_manufacturing_group_pooling_screen",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "commercial-office-group-findings",
+      "path": "05_results/commercial_group_office_findings.md",
+      "role": "active_commercial_group_pooling_screen",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "regulatory-capital-bias-design",
+      "path": "04_cases/regulatory_capital_bias_test_design.md",
+      "role": "active_regulatory_incentive_test_design",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "regulatory-capital-bias-findings",
+      "path": "05_results/regulatory_capital_bias_findings.md",
+      "role": "active_regulatory_incentive_screening_result",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "national-industry-roadmap",
+      "path": "00_admin/national_industry_cost_analysis_roadmap.md",
+      "role": "active_national_manufacturing_scaleup_plan",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "water-land-site-footprint-plan",
+      "path": "00_admin/water_land_site_footprint_research_plan.md",
+      "role": "active_on_site_water_cooling_noise_land_and_site_postprocessing_research_plan",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "results-section-framework-and-todo",
+      "path": "00_admin/results_section_framework_and_todo.md",
+      "role": "active_six_figure_results_narrative_and_evidence_gap_register",
+      "status": "ACTIVE_PLAN_NOT_ALL_MODELED",
+      "required_for_release": false
+    },
+    {
+      "id": "resource-footprint-round1-research-notes",
+      "path": "01_literature/resource_footprint_round1_research_notes.md",
+      "role": "active_round1_primary_source_synthesis_for_on_site_water_cooling_noise_and_site_footprints",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "resource-footprint-missing-data-web-research-prompt",
+      "path": "00_admin/resource_footprint_missing_data_web_research_prompt.md",
+      "role": "active_primary_source_web_research_brief_for_water_source_factory_reuse_and_noise_gaps",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "china-us-hyperscaler-average-research-prompt",
+      "path": "00_admin/china_us_hyperscaler_data_center_average_research_prompt.md",
+      "role": "active_bilingual_web_research_brief_for_country_specific_hyperscaler_physical_average_parameters",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "china-manufacturing-ai-water-cooling-noise-space-report",
+      "path": "02_data/china_manufacturing_ai_water_cooling_noise_space_report.md",
+      "role": "screened_user_supplied_web_research_report_for_water_cooling_noise_and_space_reuse",
+      "status": "ACTIVE_WITH_EVIDENCE_QUALIFICATIONS",
+      "required_for_release": false
+    },
+    {
+      "id": "resource-footprint-province-allocation",
+      "path": "02_data/processed/resource_footprint/province_industry_ai_allocation.csv",
+      "role": "active_2030_within_industry_province_electricity_share_spatial_scenario_input",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "resource-footprint-round1-evidence",
+      "path": "02_data/interim/resource_footprint/evidence_extraction_round1.csv",
+      "role": "active_source_level_cooling_water_noise_area_evidence_extraction",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "resource-footprint-water-reuse-scenarios",
+      "path": "02_data/processed/resource_footprint/resource_footprint_water_scenarios.csv",
+      "role": "active_evidence_bounded_site_water_and_capacity_class_scenario_parameters_with_companion_reuse_table",
+      "status": "ACTIVE_SCREENING_PARAMETERS",
+      "required_for_release": false
+    },
+    {
+      "id": "resource-footprint-mvp-summary",
+      "path": "02_data/processed/resource_footprint/resource_footprint_architecture_summary_mvp.csv",
+      "role": "active_v060_architecture_water_and_reuse_screening_summary",
+      "status": "ACTIVE_SCREENING_RESULT",
+      "required_for_release": false
+    },
+    {
+      "id": "resource-footprint-mvp-findings",
+      "path": "05_results/v0.6.0/result/resource_footprint_mvp/findings.md",
+      "role": "active_interpretation_and_limitations_for_site_water_and_reuse_mvp",
+      "status": "ACTIVE_SCREENING_RESULT",
+      "required_for_release": false
+    },
+    {
+      "id": "hyperscaler-water-scenarios",
+      "path": "02_data/processed/resource_footprint/hyperscaler_water_scenarios.csv",
+      "role": "supplementary_observed_Alibaba_Tencent_portfolio_WUE_anchors_not_China_country_average",
+      "status": "REFERENCE_ONLY",
+      "required_for_release": false
+    },
+    {
+      "id": "china-cloud-water-us-proxy-scenarios",
+      "path": "02_data/processed/resource_footprint/china_cloud_water_us_proxy_scenarios.csv",
+      "role": "superseded_low_median_high_AWS_US_region_transfer_sensitivity",
+      "status": "HISTORICAL",
+      "required_for_release": false
+    },
+    {
+      "id": "small-china-us-water-baseline-parameters",
+      "path": "02_data/processed/resource_footprint/small_china_us_water_baseline_parameters.csv",
+      "role": "active_baseline_only_small_factory_and_shared_harmonized_large_cloud_water_parameters",
+      "status": "ACTIVE_SCREENING_PARAMETERS",
+      "required_for_release": false
+    },
+    {
+      "id": "small-china-us-water-baseline-comparison",
+      "path": "02_data/processed/resource_footprint/small_china_us_water_baseline_comparison.csv",
+      "role": "active_same_IT_energy_baseline_water_comparison_across_small_China_cloud_and_US_cloud_modes",
+      "status": "ACTIVE_SCREENING_RESULT",
+      "required_for_release": false
+    },
+    {
+      "id": "china-us-reported-water-reference-noncomparable",
+      "path": "02_data/processed/resource_footprint/china_us_reported_water_reference_noncomparable.csv",
+      "role": "descriptive_country_related_disclosure_references_excluded_from_harmonized_comparison",
+      "status": "REFERENCE_ONLY",
+      "required_for_release": false
+    },
+    {
+      "id": "concentrated-vs-hyperscaler-comparison",
+      "path": "02_data/processed/resource_footprint/concentrated_vs_hyperscaler_comparison.csv",
+      "role": "active_same_service_enterprise_payment_and_two_boundary_resource_comparison",
+      "status": "ACTIVE_SCREENING_RESULT",
+      "required_for_release": false
+    },
+    {
+      "id": "concentrated-vs-hyperscaler-findings",
+      "path": "05_results/v0.6.0/result/resource_footprint_mvp/concentrated_vs_hyperscaler_findings.md",
+      "role": "active_interpretation_of_industry_concentrated_ownership_versus_hyperscaler_procurement",
+      "status": "ACTIVE_SCREENING_RESULT",
+      "required_for_release": false
+    },
+    {
+      "id": "deferred-data-center-site-externalities",
+      "path": "03_models/data_center_land_building_noise_deferred_note.md",
+      "role": "historical_deferral_note_and_active_postprocessing_boundary_cross_reference",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "china-manufacturing-ai-evidence-update",
+      "path": "02_data/china_manufacturing_ai_evidence_update.md",
+      "role": "active_national_manufacturing_data_and_method_update",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "china-manufacturing-ai-future-scenarios",
+      "path": "02_data/china_manufacturing_ai_future_scenarios.md",
+      "role": "active_future_adoption_and_workload_scenario_note",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-ai-future-demo-findings",
+      "path": "05_results/manufacturing_ai_future_demo_findings.md",
+      "role": "active_five-industry_future-demand_scenario_demo",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-ai-task-hardware-demo-findings",
+      "path": "05_results/manufacturing_ai_task_hardware_demo_findings.md",
+      "role": "active_thirteen-industry_task_compute_electricity_screen",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "china-ai-industry-share-topdown-note",
+      "path": "01_literature/china_ai_industry_share_topdown_notes.md",
+      "role": "active_topdown_manufacturing_ai_share_evidence_and_scenarios",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-topdown-allocation-13sectors",
+      "path": "05_results/manufacturing_topdown_allocation_13sectors.csv",
+      "role": "conditional_topdown_allocation_within_thirteen_covered_manufacturing_divisions",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-ai-31sector-proxy-parameters",
+      "path": "02_data/china_manufacturing_ai_31sector_proxy_parameters.csv",
+      "role": "active_full_manufacturing_division_observed_baseline_and_task_proxy_crosswalk",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-topdown-allocation-31sectors",
+      "path": "05_results/manufacturing_topdown_allocation_31sectors.csv",
+      "role": "active_full_manufacturing_division_topdown_allocation_screen",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-topdown-31sector-findings",
+      "path": "05_results/manufacturing_topdown_31sector_findings.md",
+      "role": "active_full_manufacturing_division_allocation_findings",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-topdown-31sector-calibration-comparison",
+      "path": "05_results/manufacturing_topdown_31sector_calibration_comparison.csv",
+      "role": "active_pre_post_internal_calibration_comparison",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-topdown-allocation-31sectors-precalibration",
+      "path": "05_results/manufacturing_topdown_allocation_31sectors_precalibration.csv",
+      "role": "historical_nearest_neighbour_template_baseline",
+      "status": "SUPERSEDED",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-ai-31sector-calibration-red-team",
+      "path": "01_literature/manufacturing_ai_31sector_calibration_red_team.md",
+      "role": "active_calibration_evidence_and_reviewer_objection_matrix",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-load-archetype-findings",
+      "path": "05_results/manufacturing_load_archetype_findings.md",
+      "role": "active_manufacturing_load_profile_evidence_and_archetype_screen",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "manufacturing-31sector-peak-findings",
+      "path": "05_results/archive/equal_electricity_national/manufacturing_31sector_peak_findings.md",
+      "role": "historical_equal_electricity_sector_peak_screen",
+      "status": "HISTORICAL",
+      "required_for_release": false
+    },
+    {
+      "id": "national-equal-service-core-summary-v020",
+      "path": "05_results/v0.2.0/result/national/core_scenarios.csv",
+      "role": "historical_31industry_three_architecture_equal_service_summary",
+      "status": "HISTORICAL",
+      "required_for_release": false
+    },
+    {
+      "id": "national-equal-service-findings-v020",
+      "path": "05_results/v0.2.0/result/national/findings.md",
+      "role": "historical_31industry_equal_service_findings_and_boundary",
+      "status": "HISTORICAL",
+      "required_for_release": false
+    },
+    {
+      "id": "national-equal-service-core-summary-v060",
+      "path": "05_results/v0.6.0/result/national/core_scenarios.csv",
+      "role": "historical_old_boundary_31industry_equal_service_summary",
+      "status": "HISTORICAL",
+      "required_for_release": false
+    },
+    {
+      "id": "national-equal-service-core-summary-v061",
+      "path": "05_results/v0.6.1/result/national/core_scenarios.csv",
+      "role": "superseded_raw_load_peak_boundary_31industry_168h_equal_service_summary",
+      "status": "HISTORICAL_PENDING_RERUN_WITH_OPTIMIZED_NO_AI_NET_PEAK_BOUNDARY",
+      "required_for_release": false
+    },
+    {
+      "id": "manuscript-figure1-v070",
+      "path": "05_results/v0.7.0/result/manuscript_figures/figure1_demand_architecture.pdf",
+      "role": "active_manuscript_figure1_demand_architecture",
+      "status": "ACTIVE_VALIDATED_SNAPSHOT_FIGURE",
+      "required_for_release": false
+    },
+    {
+      "id": "manuscript-figure2-v070",
+      "path": "05_results/v0.7.0/result/manuscript_figures/figure2_enterprise_cost.pdf",
+      "role": "active_manuscript_figure2_enterprise_cost_and_deployment_choice",
+      "status": "ACTIVE_VALIDATED_SNAPSHOT_FIGURE",
+      "required_for_release": false
+    },
+    {
+      "id": "manuscript-figure3-v070",
+      "path": "05_results/v0.7.0/result/manuscript_figures/figure3_grid_capacity.svg",
+      "role": "active_figure3_electricity_load_and_incremental_grid_capacity",
+      "status": "ACTIVE_VALIDATED_SNAPSHOT_FIGURE",
+      "required_for_release": false
+    },
+    {
+      "id": "manuscript-figure4-v070",
+      "path": "05_results/v0.7.0/result/manuscript_figures/figure4_resource_footprint.svg",
+      "role": "active_manuscript_figure4_onsite_water_space_land_and_building_material_screen",
+      "status": "ACTIVE_VALIDATED_POSTPROCESSING_FIGURE",
+      "required_for_release": false
+    },
+    {
+      "id": "manuscript-figure5-v070",
+      "path": "05_results/v0.7.0/result/manuscript_figures/figure5_spatial_concentration.svg",
+      "role": "active_manuscript_figure5_spatial_water_scarcity_and_concentration_scenario",
+      "status": "ACTIVE_DRAFT_FIGURE",
+      "required_for_release": false
+    },
+    {
+      "id": "cloud-subscription-findings-v060",
+      "path": "05_results/v0.6.0/result/cloud_subscription/findings.md",
+      "role": "active_same_service_owned_vs_GPU_IaaS_enterprise_payment_screen",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "load-alignment-findings-v060",
+      "path": "05_results/v0.6.0/result/load_alignment/findings.md",
+      "role": "active_31industry_base_load_and_AI_power_alignment_diagnostic",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "typical-industry-load-stacking-findings-v060",
+      "path": "05_results/v0.6.0/result/typical_industry_load_stacking/findings.md",
+      "role": "active_five_industry_representative_host_base_and_AI_load_stacking_screen",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "typical-industry-load-stacking-figure-v060",
+      "path": "05_results/v0.6.0/result/typical_industry_load_stacking/load_stacking.png",
+      "role": "active_five_industry_three_architecture_absolute_load_stacking_figure",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "typical-industry-ai-load-figure-v060",
+      "path": "05_results/v0.6.0/result/typical_industry_load_stacking/ai_load_only.png",
+      "role": "active_five_industry_three_architecture_AI_only_timing_figure",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "c40-spot-price-pv-findings-v060",
+      "path": "05_results/v0.6.0/result/c40_spot_price_pv_test/findings.md",
+      "role": "active_C40_group_AI_spot_price_and_existing_PV_operational_test",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "c40-spot-price-pv-summary-v060",
+      "path": "05_results/v0.6.0/result/c40_spot_price_pv_test/summary.csv",
+      "role": "active_C40_group_AI_four_case_spot_price_PV_summary",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "c40-spot-price-pv-figure-v060",
+      "path": "05_results/v0.6.0/result/c40_spot_price_pv_test/comparison.png",
+      "role": "active_C40_group_AI_spot_price_PV_hourly_comparison_figure",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "flexibility-ablation-findings-v060",
+      "path": "05_results/v0.6.0/result/flexibility_ablation/findings.md",
+      "role": "active_same_service_IF_task_timing_flexibility_ablation",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "bolun-progress-briefing-v060",
+      "path": "05_results/v0.6.0/result/briefing/bolun_progress_briefing_2026-08-10.html",
+      "role": "active_chinese_project_progress_briefing_with_IG_core_scenario_and_C40_price_signal_result",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "bolun-manufacturing-ai-progress-brief-tex-v060",
+      "path": "06_manuscript/bolun_manufacturing_ai_progress_brief_2026-08-10.tex",
+      "role": "active_chinese_latex_progress_briefing_with_IG_core_scenario_and_C40_price_signal_result",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "bolun-manufacturing-ai-progress-brief-pdf-v060",
+      "path": "05_results/v0.6.0/result/briefing/bolun_manufacturing_ai_progress_brief_2026-08-10.pdf",
+      "role": "rendered_chinese_progress_briefing_with_IG_core_scenario_and_C40_price_signal_result",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "bolun-manufacturing-ai-progress-brief-pdf-pre-ig-update-v060",
+      "path": "06_manuscript/bolun_manufacturing_ai_progress_brief_2026-08-10.pdf",
+      "role": "historical_compiled_chinese_progress_briefing_before_IG_core_scenario_update",
+      "status": "HISTORICAL",
+      "required_for_release": false
+    },
+    {
+      "id": "compute-efficiency-findings-v060",
+      "path": "05_results/v0.6.0/result/compute_efficiency/findings.md",
+      "role": "active_evidence_bounded_compute_efficiency_cases",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "model-lifecycle-findings-v060",
+      "path": "05_results/v0.6.0/result/model_lifecycle/findings.md",
+      "role": "active_simplified_model_state_and_lifecycle_validation",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "c36-enterprise-direct-cost-findings",
+      "path": "05_results/c36_enterprise_direct_cost_findings.md",
+      "role": "active_single_industry_enterprise_payment_screen",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "caict-llm-roadmap-2024-project-notes",
+      "path": "01_literature/caict_llm_roadmap_2024_project_notes.md",
+      "role": "historical_industry_deployment_mechanism_and_evidence_boundary_note",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "core-scenario-test-plan",
+      "path": "00_admin/core_scenario_test_plan.md",
+      "role": "active_core_workflow_validation_protocol",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "c36-core-if-summary",
+      "path": "05_results/v0.1.0/model/C36/IF/summary.csv",
+      "role": "active_equal_service_independent_factory_core_result",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "c36-core-ig-summary",
+      "path": "05_results/v0.1.0/model/C36/IG/summary.csv",
+      "role": "active_equal_service_representative_group_core_result",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "c36-core-ii-summary",
+      "path": "05_results/v0.1.0/model/C36/II_1host/summary.csv",
+      "role": "active_equal_service_industry_pool_core_result",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "model-revision-todo-2026-08-10",
+      "path": "00_admin/model_revision_todo_2026-08-10.md",
+      "role": "user_approved_sequential_model_revision_queue_and_future_work_boundary",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "effective-service-calibration-findings",
+      "path": "05_results/effective_service_calibration_findings.md",
+      "role": "historical_superseded_unified_multiplier_calibration_record",
+      "status": "HISTORICAL",
+      "required_for_release": false
+    },
+    {
+      "id": "effective-service-calibration-selected",
+      "path": "05_results/effective_service_calibration_selected.json",
+      "role": "historical_superseded_unified_multiplier_parameters",
+      "status": "HISTORICAL",
+      "required_for_release": false
+    },
+    {
+      "id": "effective-service-model-ready-input",
+      "path": "02_data/processed/effective_service/manufacturing_ai_effective_service_2030.csv",
+      "role": "active_model_ready_task_specific_effective_service_input",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "effective-service-lineage",
+      "path": "02_data/processed/effective_service/lineage.json",
+      "role": "active_effective_service_data_lineage",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "effective-service-bottom-up-recalculation",
+      "path": "05_results/effective_service_bottom_up_recalculation.md",
+      "role": "active_task_specific_service_external_alignment_record",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "industry-rooftop-parameters-us-reference",
+      "path": "02_data/processed/core/china_manufacturing_industry_rooftop_parameters.csv",
+      "role": "active_industry_specific_us_mecs_rooftop_proxy_parameters",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "industry-rooftop-parameter-notes",
+      "path": "01_literature/us_manufacturing_rooftop_pv_project_notes.md",
+      "role": "active_rooftop_proxy_method_and_transfer_boundary_note",
+      "status": "ACTIVE",
+      "required_for_release": false
+    }
+  ],
+  "authority_sources": [
+    {
+      "id": "caict-llm-roadmap-2024",
+      "kind": "official_industry_roadmap",
+      "path_or_reference": "01_literature/P020240904538515747964.pdf",
+      "scope": ["2024 enterprise deployment considerations", "qualitative public private hybrid cloud distinctions", "industrial AI task examples", "resource scheduling and monitoring field candidates"],
+      "status": "VERIFIED_QUALITATIVE_HISTORICAL_ONLY",
+      "last_verified": "2026-08-10"
+    },
+    {
+      "id": "xiao-2025-ai-server-footprints",
+      "kind": "peer_reviewed_primary_method_source",
+      "path_or_reference": "01_literature/s41893-025-01681-y.pdf",
+      "scope": ["server_power", "utilization", "PUE", "WUE", "grid_carbon_water", "hardware_supply_sensitivity"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-08"
+    },
+    {
+      "id": "project-method-contract",
+      "kind": "current_methods",
+      "path_or_reference": "03_models/model_spec.md",
+      "scope": ["architectures", "task_equivalence", "grid_expansion", "DER", "reporting_boundary"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-08"
+    },
+    {
+      "id": "eweld-load-source",
+      "kind": "peer_reviewed_primary_data_source",
+      "path_or_reference": "01_literature/s41597-023-02503-6.pdf",
+      "scope": ["China industrial load profile", "C28 machinery manufacturing", "15-minute electricity consumption"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-08"
+    },
+    {
+      "id": "ndrc-transmission-distribution-cost-supervision-2025",
+      "kind": "official_regulatory_rule",
+      "path_or_reference": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202511/P020251127364890316760.pdf",
+      "scope": ["China cost recovery", "effective assets", "depreciation", "prudence review"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-08"
+    },
+    {
+      "id": "naruc-cloud-regulatory-treatment-2016",
+      "kind": "official_regulatory_resolution",
+      "path_or_reference": "https://pubs.naruc.org/pub/2E54C6FF-FEE9-5368-21AB-638C00554476",
+      "scope": ["cloud OPEX", "on-premise CAPEX", "regulatory accounting asymmetry"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-08"
+    },
+    {
+      "id": "namin-manufacturing-rooftop-pv-2023",
+      "kind": "peer_reviewed_primary_method_source",
+      "path_or_reference": "https://doi.org/10.1088/2634-4505/acb5bf",
+      "scope": ["national industry-region matrix", "manufacturing electricity intensity", "roof area proxy", "regional PV supply"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "china-fifth-economic-census-manufacturing-2023",
+      "kind": "official_national_statistics",
+      "path_or_reference": "https://www.stats.gov.cn/sj/zxfb/202412/t20241226_1957895.html",
+      "scope": ["manufacturing enterprise count", "employment", "assets", "revenue", "industry divisions"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "china-economic-census-2023-cross-tabs-and-ai",
+      "kind": "official_national_statistics",
+      "path_or_reference": "https://www.stats.gov.cn/sj/pcsj/jjpc/5jp/zk/left.htm",
+      "scope": ["industry_by_region enterprise counts", "industry_by_size enterprise counts", "state_holding distribution", "AI adoption by industry and region"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "china-economic-census-ai-definition-2023",
+      "kind": "official_statistical_questionnaire_and_definition",
+      "path_or_reference": "https://tjj.beijing.gov.cn/zwgkai/tjzd_31386/pcfa_31388/202401/P020240131515374527909.pdf",
+      "scope": ["AI adoption indicator definition", "legal unit", "industrial activity unit", "enterprise group fields"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "miit-manufacturing-ai-progress-2026",
+      "kind": "official_policy_progress_report",
+      "path_or_reference": "https://wap.miit.gov.cn/jgsj/ghs/gzdt/art/2026/art_a132d7b17b774c6b9ff72d7a0befe158.html",
+      "scope": ["above-designated-size manufacturing AI adoption above 30 percent", "2027 and 2030 digital transformation milestones"],
+      "status": "VERIFIED_WITH_DEFINITION_CAVEAT",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "jiangsu-ai-manufacturing-plan-2026",
+      "kind": "official_subnational_policy_target",
+      "path_or_reference": "https://gxt.jiangsu.gov.cn/art/2026/6/10/art_6278_11783480.html",
+      "scope": ["2027 functional AI coverage targets", "smart-factory AI scenario-depth targets"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "us-census-ai-diffusion-microstructure-2026",
+      "kind": "official_working_paper",
+      "path_or_reference": "https://www2.census.gov/library/working-papers/2026/adrm/ces/CES-WP-26-25.pdf",
+      "scope": ["firm adoption", "business-function breadth", "worker-task use", "top-down and bottom-up diffusion"],
+      "status": "VERIFIED_STRUCTURAL_EVIDENCE_ONLY",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "aea-industrial-ai-adoption-2026",
+      "kind": "peer_reviewed_primary_empirical_source",
+      "path_or_reference": "https://www.aeaweb.org/articles?id=10.1257%2Fpandp.20261033",
+      "scope": ["manufacturing establishment AI adoption", "intensity-weighted adoption", "organizational readiness and barriers"],
+      "status": "VERIFIED_STRUCTURAL_EVIDENCE_ONLY",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "oecd-firm-ai-adoption-2025",
+      "kind": "international_official_synthesis",
+      "path_or_reference": "https://www.oecd.org/content/dam/oecd/en/publications/reports/2025/05/the-adoption-of-artificial-intelligence-in-firms_8fab986b/f9ef33c3-en.pdf",
+      "scope": ["firm-size gradient", "digital readiness", "adoption maturity stages", "manufacturing adoption barriers"],
+      "status": "VERIFIED_STRUCTURAL_EVIDENCE_ONLY",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "iea-energy-and-ai-2025",
+      "kind": "international_energy_scenario_report",
+      "path_or_reference": "https://www.iea.org/reports/energy-and-ai/energy-demand-from-ai",
+      "scope": ["data-centre electricity scenarios", "China aggregate external validation", "adoption-efficiency-bottleneck decomposition"],
+      "status": "VERIFIED_EXTERNAL_BOUND_ONLY",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "stanford-ai-index-2025",
+      "kind": "research_synthesis_report",
+      "path_or_reference": "https://hai.stanford.edu/assets/files/hai_ai_index_report_2025.pdf",
+      "scope": ["inference cost trend", "hardware cost trend", "energy-efficiency trend"],
+      "status": "VERIFIED_GENERIC_AI_EFFICIENCY_ONLY",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "mlperf-inference-benchmark",
+      "kind": "official_benchmark_documentation",
+      "path_or_reference": "https://docs.mlcommons.org/inference/",
+      "scope": ["model-specific inference throughput", "latency scenarios", "power benchmark framework"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "caict-ai-compute-industry-distribution-2025",
+      "kind": "official_industry_research_report",
+      "path_or_reference": "https://www.caict.ac.cn/kxyj/qwfb/ztbg/202511/P020251106555844142999.pdf",
+      "scope": ["current China intelligent-compute demand distribution by broad user industry", "manufacturing current share anchor"],
+      "status": "VERIFIED_WITH_COMPUTE_TO_ELECTRICITY_CAVEAT",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "idc-china-ai-spending-guide-2025v2",
+      "kind": "primary_market_forecast_release",
+      "path_or_reference": "https://www.idc.com/resource-center/press-releases/idc%EF%BC%9A%E4%B8%87%E4%BA%BF%E7%BA%A7%E8%B5%9B%E9%81%93%E6%8C%81%E7%BB%AD%E5%A2%9E%E9%95%BF%EF%BC%8C2029%E5%B9%B4%E5%85%A8%E7%90%83%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E6%80%BB%E6%8A%95%E8%B5%84/",
+      "scope": ["China total AI IT spending CAGR", "2029 AI spending", "broad industry shares", "infrastructure-provisioning share"],
+      "status": "VERIFIED_WITH_SPENDING_TO_COMPUTE_CAVEAT",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "idc-china-industrial-ai-spending-2026",
+      "kind": "primary_market_forecast_release",
+      "path_or_reference": "https://www.idc.com/resource-center/blog/%E5%B9%B4%E5%A4%8D%E5%90%88%E5%A2%9E%E9%95%BF%E7%8E%87-38-%E8%83%8C%E5%90%8E%EF%BC%9A%E5%B7%A5%E4%B8%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%A6%82%E4%BD%95%E6%8E%A8%E5%8A%A8%E5%B7%A5%E4%B8%9A-ai-%E8%A7%84/",
+      "scope": ["China industrial-enterprise AI spending to 2028", "industrial AI spending CAGR"],
+      "status": "VERIFIED_WITH_INDUSTRIAL_TO_MANUFACTURING_CAVEAT",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "miit-building-materials-digital-transition-2020",
+      "kind": "official_sector_action_plan",
+      "path_or_reference": "https://wap.miit.gov.cn/jgsj/ycls/wjfb/art/2020/art_2d486ac506bd400c9902d3db107c5ef4.html",
+      "scope": ["C30 task relevance", "process optimization", "predictive maintenance", "quality inspection", "digital twin"],
+      "status": "VERIFIED_TASK_RELEVANCE_ONLY",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "miit-ai-application-cases-2025",
+      "kind": "official_selected_case_list",
+      "path_or_reference": "https://www.miit.gov.cn/cms_files/filemanager/1226211233/attach/20265/46872edcc9fd400dae2f20060d5cca7e.pdf",
+      "scope": ["C29 process control and defect inspection", "C33 metal and component vision", "C35 equipment R&D and agents"],
+      "status": "VERIFIED_SELECTED_CASES_NOT_INCIDENCE",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "nbs-digital-economy-classification-2021",
+      "kind": "official_statistical_classification",
+      "path_or_reference": "https://www.stats.gov.cn/sj/sjjd/202302/t20230206_1901777.html",
+      "scope": ["digitalized general and special equipment", "AI", "digital twin", "edge computing", "testing and simulation"],
+      "status": "VERIFIED_TASK_RELEVANCE_ONLY",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "mof-miit-sme-digital-pilot-2025",
+      "kind": "official_programme_notice",
+      "path_or_reference": "https://www.miit.gov.cn/jgsj/qyj/wjfb/art/2025/art_24011c0f91c345339a2813b431356f16.html",
+      "scope": ["general and special equipment priority", "R&D design", "visual inspection", "parameter optimization", "energy management"],
+      "status": "VERIFIED_POLICY_SCOPE_NOT_WORKLOAD_INTENSITY",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "manufacturing-load-profile-public-datasets",
+      "kind": "multi-source_public_load_profile_data",
+      "path_or_reference": "02_data/manufacturing_load_dataset_manifest.csv",
+      "scope": ["EWELD China manufacturing profiles", "Korean steel cement paper and metal factories", "UCI steel", "German industrial plants", "ELMAS sector clusters", "FfE industrial branches"],
+      "status": "VERIFIED_DOWNLOADS_AND_CHECKSUMS",
+      "last_verified": "2026-08-09"
+    },
+    {
+      "id": "china-manufacturing-energy-reference-scenario",
+      "kind": "user_authorized_local_scenario_dataset",
+      "path_or_reference": "02_data/external/d_energy.csv",
+      "scope": ["31-province by 31-manufacturing-division electricity baseline", "2020-2060 REFERENCE scenario", "2030 sector load scaling"],
+      "status": "ASSUMED_CORRECT_BY_AUTHOR",
+      "last_verified": "2026-08-10"
+    },
+    {
+      "id": "google-carbon-aware-vcc-2021",
+      "kind": "primary_operational_method_source",
+      "path_or_reference": "https://arxiv.org/abs/2106.11750",
+      "scope": ["aggregate flexible compute", "virtual capacity curves", "daily workload conservation", "hourly resource limits"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-10"
+    },
+    {
+      "id": "pscc-data-center-virtual-links-2020",
+      "kind": "peer_reviewed_primary_method_source",
+      "path_or_reference": "https://pscc-central.epfl.ch/repo/papers/2020/492.pdf",
+      "scope": ["temporal load shifting", "spatial load shifting", "backlog state", "virtual links"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-10"
+    },
+    {
+      "id": "data-center-dynamic-virtual-battery-2024",
+      "kind": "primary_method_source",
+      "path_or_reference": "https://arxiv.org/abs/2404.19387",
+      "scope": ["two-layer flexibility aggregation", "virtual battery", "scale-independent grid interface"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-10"
+    },
+    {
+      "id": "applied-energy-periodic-batch-flexibility-2022",
+      "kind": "peer_reviewed_primary_method_source",
+      "path_or_reference": "https://doi.org/10.1016/j.apenergy.2022.119665",
+      "scope": ["interactive versus batch workload flexibility", "periodic batch jobs", "job dependencies", "production cloud trace"],
+      "status": "VERIFIED_GENERAL_DATACENTER_BOUND_ONLY",
+      "last_verified": "2026-08-10"
+    },
+    {
+      "id": "alibaba-cluster-trace-program",
+      "kind": "primary_production_trace_repository",
+      "path_or_reference": "https://github.com/alibaba/clusterdata",
+      "scope": ["online services", "batch DAG workloads", "AI ML GPU workloads", "microservice latency"],
+      "status": "VERIFIED_GENERAL_DATACENTER_BOUND_ONLY",
+      "last_verified": "2026-08-10"
+    },
+    {
+      "id": "china-ai-plus-manufacturing-guide-2026",
+      "kind": "official_manufacturing_ai_guidance",
+      "path_or_reference": "https://www.nda.gov.cn/sjj/zwgk/zcfb/0112/20260107214358696030895_pc.html",
+      "scope": ["cloud edge endpoint allocation", "industrial low latency", "quality inspection", "production scheduling", "fault diagnosis"],
+      "status": "VERIFIED_QUALITATIVE_MAPPING_ONLY",
+      "last_verified": "2026-08-10"
+    },
+    {
+      "id": "oecd-orbis-corporate-group-mapping-2020",
+      "kind": "official_corporate_group_mapping_method",
+      "path_or_reference": "https://www.oecd.org/en/publications/tax-challenges-arising-from-digitalisation-economic-impact-assessment_0e3cc2d4-en/full-report/component-8.html",
+      "scope": ["global ultimate owner", "50 percent ownership threshold", "corporate group assignment", "double-counting control"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-10"
+    },
+    {
+      "id": "global-cement-asset-owner-mapping-2023",
+      "kind": "peer_reviewed_asset_level_ownership_method",
+      "path_or_reference": "https://www.nature.com/articles/s41597-023-02599-w",
+      "scope": ["plant direct owner", "ultimate parent", "joint venture ownership shares", "facility geolocation"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-10"
+    },
+    {
+      "id": "centralized-multi-plant-production-planning-2023",
+      "kind": "peer_reviewed_multi_plant_organization_method",
+      "path_or_reference": "https://doi.org/10.1080/03155986.2023.2209451",
+      "scope": ["exogenous organization plant set", "centralized versus independent plant decisions", "aggregate production targets"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-10"
+    },
+    {
+      "id": "alibaba-yugong-geodistributed-placement-2019",
+      "kind": "peer_reviewed_primary_production_system_source",
+      "path_or_reference": "https://www.vldb.org/pvldb/vol12/p2155-huang.pdf",
+      "scope": ["exogenous operator data-center fleet", "project placement", "data replication", "job outsourcing"],
+      "status": "VERIFIED",
+      "last_verified": "2026-08-10"
+    }
+  ],
+  "contract": {
+    "gap": "Existing work does not jointly compare factory-distributed, group-pooled, regional multi-node, industry-centralized, and hierarchical AI architectures under equal service while tracing multi-voltage-level grid expansion and bounded factory rooftop PV.",
+    "task": "Develop and later evaluate a task-driven compute-energy-grid planning model for factory- and industry-level distributed LLM deployment.",
+    "outcomes": ["installed and online compute capacity", "annual electricity", "grid expansion by layer", "maximum single connection", "operational carbon", "on-site water withdrawal and consumption", "cooling and heat-rejection noise screening", "land and site footprint", "risk-adjusted system value", "cost incidence by enterprise type, industry, region, and actor"],
+    "questions": [
+      {
+        "id": "Q1",
+        "text": "Under equal AI service, when do distributed, pooled, or hierarchical architectures reduce grid expansion and total system cost relative to one industry data center?",
+        "lock": "SEMANTIC"
+      },
+      {
+        "id": "Q2",
+        "text": "Under equal AI service, can asymmetric regulatory treatment of local AI assets and cloud operating expenses make a regulated enterprise favor local deployment when cloud has lower market direct cost or customer revenue requirement?",
+        "lock": "SEMANTIC"
+      },
+      {
+        "id": "Q3",
+        "text": "Across Chinese manufacturing industries and regions, how do enterprise organization, AI adoption, task mobility, local energy resources, and shared-compute scale change the enterprise and social costs of local, group-pooled, regional, and cloud deployment?",
+        "lock": "SEMANTIC"
+      }
+    ],
+    "contribution": "Integrate workload placement, utilization-calibrated server power, a zero-existing-headroom-credit grid-capacity boundary, layered grid expansion, bounded rooftop PV, on-site water, cooling, noise, land and site postprocessing, and multi-node siting in one conditional planning framework.",
+    "nonclaims": ["Distributed deployment is not presumed superior.", "Rooftop PV nameplate capacity is not treated as firm grid capacity.", "Scenario screening is not presented as an empirical industry-wide result.", "The US paper's spatial findings are not transferred directly to China.", "A 2024 server-platform roadmap does not determine current or future technology parameters and does not replace enterprise-site-grid architecture design."]
+  },
+  "semantic_locks": [
+    {"id": "equal-service", "text": "All architecture comparisons provide the same effective AI service subject to common quality, latency, reliability, and data-boundary constraints.", "status": "ACTIVE"},
+    {"id": "roof-cap", "text": "Factory PV capacity is bounded by projected roof area times technical density times a separate realization ratio.", "status": "ACTIVE"}
+  ],
+  "terminology": [
+    {"concept": "installed servers", "preferred": "installed server groups", "prohibited_variants": []},
+    {"concept": "online servers", "preferred": "online server groups", "prohibited_variants": []},
+    {"concept": "water use effectiveness", "preferred": "WUE", "prohibited_variants": []},
+    {"concept": "wide-area network", "preferred": "WAN", "prohibited_variants": []}
+  ],
+  "style_profile": {
+    "language_variant": "English main formula note; Chinese internal design files",
+    "protected_terms": ["PUE", "WUE", "Scope 1", "Scope 2", "Scope 3", "CVaR"],
+    "discouraged_phrases": [],
+    "allowed_repetitions": ["grid expansion", "installed server groups", "equal AI service"],
+    "sentence_opening_words": 4,
+    "phrase_words": 5,
+    "phrase_min_occurrences": 3
+  },
+  "facts": [
+    {"id": "xiao-method-boundary", "value": "The source study models operational Scope 1 water and Scope 2 grid water and carbon, while excluding embodied Scope 3 impacts from its primary spatial analysis.", "source_id": "xiao-2025-ai-server-footprints", "status": "CONFIRMED"}
+  ],
+  "alignment": [
+    {
+      "question_id": "Q1",
+      "method": "Joint task assignment, utilization-based server power, facility PUE/WUE, DER dispatch, multi-layer grid expansion, and architecture cost optimization.",
+      "evidence": "The active single-case screen uses the EWELD C28 U219 measured weekday shape, a token-derived 2030 integrated text/agent workload, three deployment modes, and deterministic battery and accounting checks. The earlier 24-scenario synthetic high-workload prototype is retained as historical stress-test evidence.",
+      "result": "In the active typical machinery case, enterprises prefer local deployment while reconstructed social resource cost modestly favors cloud; the roughly 3 kW local AI increment does not approach the assumed 1.25 MW enterprise connection limit even without DER.",
+      "interpretation": "The private-social wedge persists after replacing the reverse-engineered 25-server workload, but it is much smaller; the earlier strong enterprise grid-expansion benefit was driven by a deliberately tight connection and an overstated AI workload rather than a representative manufacturing mechanism.",
+      "limitation": "The load shape is measured but scaled to 1 MW; employee count, roof, DER, and connection capacity are scenario assumptions; L20 throughput, visual AI, cloud physical cost, PUE/WUE, and project-level grid cost remain to be calibrated.",
+      "contribution": "Separates compute efficiency, energy use, water and carbon footprints, aggregate grid expansion, and maximum single-point expansion.",
+      "status": "SCREENING_RESULT"
+    },
+    {
+      "question_id": "Q2",
+      "method": "Twelve-year deterministic revenue-requirement and shareholder-incentive screen comparing the commercial group local AI center with public cloud under changes in cloud price, rate-base eligibility, allowed-return spread, recovery lag, prudence disallowance, and technical obsolescence.",
+      "evidence": "At 75% of the current cloud price, cloud market direct cost is RMB 1.506 million per year below local. With full local rate-base eligibility, no lag or stranded balance, and allowed ROE one percentage point above equity cost, local adds RMB 0.665 million of shareholder economic present value while raising equivalent annual customer revenue requirement by RMB 0.804 million relative to cloud.",
+      "result": "Asymmetric treatment can reverse the shareholder ranking in a clean scenario, while one-year recovery lag or partial loss of undepreciated assets removes the economic advantage at a one-percentage-point return spread even though local assets still generate accounting earnings.",
+      "interpretation": "Regulatory capital preference is plausible as an accounting-profit mechanism, but its conversion into shareholder economic value depends on approval, timing, and obsolescence rules; it is not established as observed enterprise behavior.",
+      "limitation": "Cloud procurement price is not cloud social resource cost; Chinese AI server rate-base eligibility, depreciation, recovery lag, and management objectives are uncalibrated placeholders.",
+      "contribution": "Separates market direct cost, customer revenue requirement, accounting earnings, and shareholder economic value, identifying the conditions under which their deployment rankings diverge.",
+      "status": "SCREENING_RESULT"
+    },
+    {
+      "question_id": "Q3",
+      "method": "Version v0.6.1 is the active national manufacturing screening run. It uses 31 industry-specific bottom-up effective-service demands, six task classes, a continuous 168-hour representative week, representative group shares and factory counts, industry base-load profiles, and a common PyPSA/Linopy/HiGHS capacity-dispatch formulation for independent-factory, representative-group, and single-host industry-pool architectures. Each node's existing grid capacity is fixed to its no-AI baseline peak, prohibiting credit for unobserved contract, transformer, or feeder headroom. The completed workflow contains 31 no-AI baselines and 31 times three IF, IG, and II_1host architecture cases. All 124 optimizations use a Guangdong representative-week day-ahead retail price vector and existing rooftop PV at the representative roof limit; storage remains endogenous. Installed and online server groups are continuous equivalent capacities. No-flexibility ablation and the former separate spot/PV test remain optional diagnostics. The model retains the simplified 32B AWQ lifecycle layer and selects the evidence-bounded conservative compute case (0.416897 accelerator-hour per service unit) jointly with a 1.50 kW dual-L20 maximum server wall-power boundary. No global or output multiplier is used. External 8/14/28 TWh allocations validate national scale but do not define architecture electricity.",
+      "evidence": "All C13-C43 divisions have model-ready service, load-shape, group-scale, flexibility, compute-efficiency, lifecycle, and external-allocation inputs. The workflow produced 93 scenario optimizations and verified within every industry that all three architectures reconstruct the same service, preserve full-week storage state, meet 72-hour deadlines, satisfy server/replica/storage constraints, and reconcile lifecycle costs; the national aggregate is 95,544,802.789 effective-service units per day in every architecture. All three national optimized totals lie inside the external 8-28 TWh envelope. The workflow also validates 31-industry same-service GPU-IaaS payment comparisons, 93 industry-architecture hourly base-load alignment profiles, a nationwide IF no-flexibility counterfactual, and a C40 representative-group test using 168 hourly Guangdong day-ahead prices plus 0.25426875 CNY/kWh retail volumetric adders and a separate maximum-demand charge. The per-industry plus/minus 25% allocation comparison is diagnostic only; 17 of 31 industries lie inside that warning band.",
+      "result": "The completed and validated v0.6.1 national run reconstructs 95,544,802.789 effective-service units per day in each architecture. IF, IG, and II_1host each use 14.194244 TWh/year of AI-facility electricity and 912,825.087 equivalent installed server groups at the active continuous-capacity boundary. Their zero-existing-headroom-credit incremental grid-expansion screens are respectively 0.0 MW, 10.667 MW, and 1,202.408 MW, and annual incremental modeled costs are RMB 69.439 billion, RMB 68.317 billion, and RMB 68.422 billion. The large single host remains a concentration upper bound rather than an observed cloud location. v0.6.0 numerical series are historical old-boundary results and are not used for active capacity claims. At the current dual-L20 public-price proxy, cloud payment comparisons remain conditional and separate from cloud social resource cost.",
+      "interpretation": "Representative-group pooling is the core scenario because it captures server and fixed-cost sharing within a plausible organizational boundary while retaining independent-factory and single-industry-host scenarios as dispersed and concentrated bounds. Under the current high-utilization workload, public-retail GPU-IaaS payments exceed IG owned cost, but this is an enterprise-payment result rather than a cloud social-cost comparison. AI task execution is mildly anticorrelated with industry base load, yet shared facilities are almost flat baseloads. The flat-tariff flexibility ablation and the C40 hourly spot-price test jointly support a conditional mechanism interpretation: preserving high server-asset utilization and avoiding server stock currently dominate electricity-price arbitrage; the modeled energy and demand price signals induce limited peak avoidance but not material active compute-electricity coordination. Server capital cost is a leading explanation rather than a separately identified causal effect until capex, online-reserve, shutdown-capability, and price-spread sensitivities are run.",
+      "limitation": "The 31-division outputs remain representative-week screening scenarios, not forecasts or physical network estimates. The v0.6.0 compute and server-power settings form a joint high-electricity boundary, not a measured hardware mean or a 2030 point forecast, and its grid-capacity numbers predate the v0.6.1 zero-headroom-credit decision. The cloud screen uses linearly derived dual-L20 public-price proxies and excludes negotiated discounts, API/SaaS charges, network, storage, migration, integration, and option value. Daily profiles repeat within the week; industry buckets assume internal sharing of load, roof, and storage; and the industry-pool single host is a concentration upper bound. The new capacity boundary is deliberately conservative and does not represent observed contractual or physical spare capacity. The C40 spot-price result is one Guangdong group-scale representative week, combines wholesale prices with April 2026 regulated adders, and omits contract portfolios, deviation settlement, retail-service spreads, and risk; it cannot establish a universal Chinese tariff response. Industry-equivalent noncoincident credits are not national coincident peak reductions or avoided physical grid projects, and mechanism attribution still needs server-capex, online-reserve, shutdown, price-spread, no-PV, and no-storage sensitivities. Only 17 of 31 industries lie inside the external allocation warning band. AI timing is researcher-constructed, some load curves and task templates are borrowed, and the current two-hour storage cost remains an open robustness issue. Province, site, feeder, detailed KV/cache/cold-start behavior, multi-model state, RAG project costs, and social externalities remain outside the current model.",
+      "contribution": "Provides the first reproducible nationwide equal-service comparison across factory, representative-group, and industry-pool deployment scales while preserving explicit screening boundaries.",
+      "status": "ACTIVE_VALIDATED_SCREENING_RESULT"
+    }
+  ],
+  "dimensions": [
+    {"id": "architecture", "values": ["IF", "IG", "IR", "IC", "IH"], "status": "SPECIFIED"},
+    {"id": "time", "values": ["subhourly operation", "annual stock evolution"], "status": "SPECIFIED"},
+    {"id": "environment", "values": ["energy", "carbon", "on-site water withdrawal", "on-site water consumption", "scarcity-weighted on-site water", "cooling and heat-rejection noise", "land and site footprint"], "status": "SPECIFIED"}
+  ],
+  "decisions": [
+    {"id": "server-power-revision", "date": "2026-08-08", "decision": "Replace the task-energy-plus-single-idle-term approximation with a utilization-based server-group model linked to task throughput.", "authority": "user-approved revision"},
+    {"id": "environment-boundary", "date": "2026-08-08", "decision": "Add operational carbon and water accounting; retain Scope 3 only as an optional consistently measured sensitivity.", "authority": "user-approved revision"},
+    {"id": "china-prototype-reporting", "date": "2026-08-08", "decision": "Report the current China prototype as a conditional screening result, separating enterprise direct cost, reconstructed social resource cost, and node-level grid expansion, with exact switching thresholds and two-way sensitivity.", "authority": "user-requested prototype report"},
+    {"id": "replace-steel-stress-case", "date": "2026-08-08", "decision": "Replace the small synthetic steel stress case as the active mechanism test with one EWELD-based machinery manufacturing case and a token-derived 2030 integrated AI workload; run only the three base deployment modes before further sensitivity work.", "authority": "user-requested mechanism validation"},
+    {"id": "group-pooling-pivot", "date": "2026-08-08", "decision": "Retain single-facility cases as scale and indivisible-investment bounds, and make group-level pooling at one host facility the active mechanism for manufacturing and commercial office groups.", "authority": "user-requested research pivot"},
+    {"id": "deprioritize-hybrid-test", "date": "2026-08-08", "decision": "Do not treat hybrid deployment as a current core hypothesis or test priority; focus the next test on whether asymmetric regulatory treatment of local capital and cloud operating expense creates a local-investment incentive.", "authority": "user-requested scope change"},
+    {"id": "regulatory-capital-bias-first-screen", "date": "2026-08-08", "decision": "Use a twelve-year screening model to distinguish market direct cost, customer revenue requirement, accounting earnings, and shareholder economic value; do not label cloud procurement price as social resource cost or infer actual management choice.", "authority": "user-requested test and method-integrity boundary"},
+    {"id": "defer-data-center-site-externalities", "date": "2026-08-09", "decision": "Defer precise land, building, and noise externality calculations; retain their consistent system boundary and future scenario design in a model note.", "authority": "user-requested deferral"},
+    {"id": "national-manufacturing-scaleup", "date": "2026-08-09", "decision": "Make a province-by-manufacturing-division-by-enterprise-organization national cost comparison the next research scale; retain the 75-factory steel case as a mechanism test rather than a national sampling frame.", "authority": "user-requested research pivot"},
+    {"id": "two-stage-ai-adoption-calibration", "date": "2026-08-09", "decision": "Replace independent multiplicative task-adoption assumptions with a two-stage model: observed any-AI adoption margins followed by task shares conditional on adoption; keep adoption separate from workload intensity and heterogeneous task-to-compute benchmarks.", "authority": "evidence-driven methods update"},
+    {"id": "future-ai-diffusion-states", "date": "2026-08-09", "decision": "Represent future manufacturing AI with maturity-state transitions and separate scenarios for extensive adoption, application depth, physical service intensity, and task-specific compute efficiency; use 2023 and 2026 Chinese observations as anchors rather than applying one market-growth rate.", "authority": "user-requested future-oriented evidence update"},
+    {"id": "five-industry-future-demand-demo", "date": "2026-08-09", "decision": "Demonstrate the future-demand framework first for food, textiles, chemicals, automobiles, and electronic equipment; report normalized AI service-demand and compute-resource indices under slow, middle, and fast conditional scenarios before converting them to task-specific GPU hours or electricity.", "authority": "user-requested prototype demonstration"},
+    {"id": "five-industry-task-hardware-demo", "date": "2026-08-09", "decision": "Convert the five-industry middle scenario into six task classes, L20-equivalent service hours, future accelerator hours, pooled two-GPU server groups, and central-plus-edge electricity. Treat pooled server capacity as a lower bound and reserve local minimum-unit, redundancy, and temporal-coincidence effects for the next architecture test.", "authority": "user-requested prototype demonstration"},
+    {"id": "thirteen-industry-task-hardware-demo", "date": "2026-08-09", "decision": "Expand the task-hardware-electricity screen from five to thirteen representative manufacturing divisions by adding agro-food processing, paper, pharmaceuticals, ferrous metals, general equipment, transport equipment, electrical machinery, and instruments. Preserve observed 2023 above-size firm stocks and any-AI adoption rates while treating future diffusion and task multipliers as scenario assumptions.", "authority": "user-requested industry expansion"}
+    ,{"id": "topdown-manufacturing-ai-share-calibration", "date": "2026-08-09", "decision": "Add a top-down calibration layer that first estimates manufacturing's share of national AI data-centre demand and then allocates the manufacturing total using bottom-up industry task weights. Retain 4%, 7%, and 14% manufacturing shares as lower, central, and upper scenarios; treat the current thirteen-industry allocation as conditional within covered divisions until all 31 divisions are parameterized.", "authority": "user-requested two-level demand allocation"}
+    ,{"id": "full-31-division-manufacturing-allocation-screen", "date": "2026-08-09", "decision": "Complete the first C13-C43 allocation using observed 2023 above-size firm stocks and any-AI adoption for every division. Preserve independent six-task parameters for the original thirteen divisions and assign the remaining eighteen a transparent nearest-production-type template. Use the resulting bottom-up electricity only as a relative weight for allocating 8, 14, and 28 TWh top-down totals, not as a national electricity forecast.", "authority": "user-authorized full manufacturing-industry expansion"}
+    ,{"id": "four-high-impact-industry-internal-calibration", "date": "2026-08-09", "decision": "Replace nearest-neighbour task templates for C29, C30, C33, and C35 with same-task exposure ratios calculated from each division's own 2030 base task scenario relative to C36. Use VLM anomaly review for central visual compute and ordinary machine vision for edge-device intensity. Label this as internal consistency calibration rather than external empirical validation, and preserve the pre-calibration allocation for comparison.", "authority": "user-authorized automatic calibration and red-team review"}
+    ,{"id": "sector-specific-load-first-peak-screen", "date": "2026-08-09", "decision": "Use the most sector-specific available weekday load profile before falling back to six manufacturing archetypes. Keep foreign dedicated curves and one-user EWELD divisions explicitly graded, retain archetype results as structural uncertainty, and report absolute AI peaks separately from shape-only combined-peak coefficients until verified Chinese 31-sector baseline electricity totals are stored.", "authority": "user-authorized sector-specific-first analysis"}
+    ,{"id": "accept-d-energy-reference-baseline", "date": "2026-08-10", "decision": "Treat the local d_energy.csv REFERENCE scenario as correct for the current research stage and use its 2030 province-by-manufacturing-division electricity values to scale normalized baseline load profiles. This supersedes only the earlier missing-baseline restriction; sector buckets and representative-day peaks remain screening constructs rather than physical grid nodes.", "authority": "user instruction to assume the dataset is correct"}
+    ,{"id": "aggregate-data-center-flexibility-model", "date": "2026-08-10", "decision": "Retain six AI task classes for demand accounting but map them into three aggregate scheduling classes: rigid/near-real-time, intraday-flexible, and batch/multiday. Use aggregate execution, backlog, and cumulative deadline constraints rather than arrival-time-by-execution-time variables. Represent server dynamic load with a continuous equivalent-full-load-server variable to avoid utilization products, and enforce throughput, online-server nameplate power, facility capacity, and grid connection limits. Reserve job-level scheduling for later typical-site validation and virtual-battery envelopes for system-level sensitivity.", "authority": "user-approved literature-informed formula revision"}
+    ,{"id": "c36-equal-service-first-implementation", "date": "2026-08-10", "decision": "Implement the revised equations first as a C36 automobile-manufacturing mechanism test rather than rerunning all industries. Calibrate a common accelerator-service quantity to the C36 cloud reference energy, apply identical flexibility shares and deadlines to local and cloud architectures, enforce installed accelerator and server-power limits, and solve an exact cyclic 24-hour deadline-flow problem. Use a lexicographic dispatch objective that minimizes combined peak first and AI-facility peak second.", "authority": "user-requested single-industry implementation"}
+    ,{"id": "c36-pypsa-joint-capacity-dispatch", "date": "2026-08-10", "decision": "Supersede peak-only dispatch as the active C36 mechanism test with a PyPSA/Linopy/HiGHS joint capacity-dispatch prototype. Co-optimize continuous server groups, aggregate AI task timing, rooftop PV, fixed-two-hour storage, and incremental grid connection capacity under a flat retail energy tariff plus maximum-demand basic charge. Run no-AI, local-AI, and cloud-AI counterfactuals and attribute only differences from the optimized no-AI baseline to AI. Retain integer server procurement for later firm/group cases and do not yet rerun all manufacturing divisions.", "authority": "user-approved PyPSA implementation"}
+    ,{"id": "c36-enterprise-direct-cost-first-screen", "date": "2026-08-10", "decision": "Compare enterprise payments for the same C36 accelerator service under annualized local ownership, cloud monthly capacity contracting, and cloud on-demand instance hours. Treat cloud subscription prices as enterprise payments and do not double count the provider's underlying server, electricity, or grid resource costs. Use public dual-L20 IaaS prices only as first-screen references; exclude negotiated discounts, WAN and migration integration, cloud storage and support, taxes, and SaaS or model-API equivalence.", "authority": "user-requested enterprise direct-cost comparison"}
+    ,{"id": "defer-storage-cost-revision", "date": "2026-08-10", "decision": "Keep the active prototype's storage-cost settings unchanged for the current step. Preserve the storage-cost discrepancy as an open limitation and do not let it block the server-state, facility-energy, model-initialization, or enterprise-payment analysis.", "authority": "user instruction"}
+    ,{"id": "separate-installed-online-and-cold-spare-servers", "date": "2026-08-10", "decision": "For the next server-model revision, separate installed, online, and equivalent-full-load server capacity; apply online-idle power only to online servers and BMC standby power to cold spares. Use marginal facility energy rather than whole-room annual PUE for incremental on-premises AI load, keep provider reserve and cloud PUE out of the enterprise cloud bill, and apply N+1 discreteness at the enterprise or site level rather than directly to a national industry bucket.", "authority": "user-approved recording of facility-parameter review"}
+    ,{"id": "separate-llm-lifecycle-cost-layers", "date": "2026-08-10", "decision": "Separate foundation-model pretraining, enterprise adaptation, deployment initialization, and model/data storage. Treat shared foundation pretraining as a common upstream cost that cancels from a same-model local-cloud comparison unless model choice or duplicated training differs; add enterprise-specific adaptation, initialization, storage, engineering, and maintenance to direct cost, and add an explicit VRAM/model-replica constraint before interpreting accelerator-hour capacity as sufficient.", "authority": "user-requested model-initialization cost extension"}
+    ,{"id": "record-open-model-cost-incidence-gap", "date": "2026-08-10", "decision": "Retain as a potential extension the China-specific gap linking model openness, cost incidence, and deployment architecture: open models can remove downstream license and foundation-training payments while shifting upstream fixed costs to developers or ecosystems and simultaneously lowering cloud API prices. Do not replace the locked power-system architecture question; test this extension only under service-quality equivalence and separate enterprise payments, provider resource costs, and social costs.", "authority": "user-requested research-gap record"}
+    ,{"id": "bound-2024-caict-roadmap-use", "date": "2026-08-10", "decision": "Use the 2024 CAICT large-model deployment roadmap only as historical qualitative evidence for deployment constraints, industrial task examples, scheduling mechanisms, and monitoring-field design. Do not import its hardware-performance claims, model-size thresholds, cloud-edge allocation, or architecture rankings as current or future parameters; server-platform advice must remain subordinate to enterprise organization, site, DER, grid-node, and multi-voltage expansion design.", "authority": "user instruction"}
+    ,{"id": "multi-scale-lifecycle-cost-pooling", "date": "2026-08-10", "decision": "Measure lifecycle, compute, and infrastructure costs separately at factory, legal-enterprise, enterprise-group, and industry-consortium sharing scales, plus a frictionless perfect-industry-pooling theoretical lower bound. Keep organizational sharing orthogonal to physical placement, and represent common-model, RAG, MLOps, reserve, and private-adapter shares explicitly rather than dividing one fixed cost mechanically by participant count.", "authority": "user-requested multi-scale comparison"}
+    ,{"id": "three-scale-physical-and-direct-cost-comparison", "date": "2026-08-10", "decision": "Supersede the broader organizational-scale design with three main scenarios only: independent factory deployment, one shared compute pool per enterprise group, and one industry-wide shared pool as a theoretical pooling reference. Exclude privacy, cross-firm governance, and participation constraints from the quantitative core and retain them for Discussion. Compare equal AI service using compute physical cost, electricity/grid physical cost, compute-electricity coupling, and enterprise direct payments; keep cloud procurement as a payment benchmark rather than a fourth sharing scale.", "authority": "user-requested scope simplification"}
+    ,{"id": "typical-member-factory-host-mapping", "date": "2026-08-10", "decision": "Treat factory-to-group membership as exogenous data preprocessing based on the ultimate controlling enterprise rather than an optimization variable. Use typical member factories as all physical hosts: one host factory per group, and one or multiple host factories for the industry-wide logical pool. Retain the existing hourly aggregated workload representation without a separate cross-factory correlation parameter, and continue to report enterprise direct payments separately from physical resource costs.", "authority": "superseded by representative-industry-group-parameterization"}
+    ,{"id": "representative-industry-group-parameterization", "date": "2026-08-10", "decision": "Do not construct or require real factory-to-group ownership mappings. Represent each manufacturing industry by one typical group characterized by its number of member factories and its share of industry output, revenue, or capacity. Under the baseline proportional-AI-intensity assumption, use the inverse of that share as a non-integer equivalent-group scaling factor for factory- and group-scale results, while the industry-pool scenario directly serves total industry demand. Preserve typical member factories as physical hosts, hourly aggregated workloads, and the separation of enterprise payments from physical resource costs.", "authority": "user-requested simplification; supersedes real group mapping requirement"}
+    ,{"id": "snakemake-equal-service-core-workflow", "date": "2026-08-10", "decision": "Use one configuration-driven Snakemake workflow for independent-factory, representative-group, and industry-pool core scenarios. Calculate one optimized no-AI representative-factory counterfactual per industry; preserve identical industry accelerator service across scales; use integer installed and online dual-L20 server groups with separate standby, online-idle, and dynamic power; jointly optimize task timing, maximum demand, grid expansion, rooftop PV, and two-hour storage with PyPSA/Linopy/HiGHS; and require automated physical and cost-accounting validation before a result is considered complete. Preserve older scripts and outputs as historical screens.", "authority": "user-requested code and data restructuring"}
+    ,{"id": "bottom-up-service-external-energy-calibration", "date": "2026-08-10", "decision": "Define architecture-invariant effective service from bottom-up manufacturing task demand, map service to accelerator time and facility electricity through separate parameters, and use external 8/14/28 TWh estimates as calibration and validation targets rather than service-defining equalities. Retain three calibration rounds and select the parameter set minimizing target error plus departure from evidence priors. Implement only C36 first and wait for user approval before the 31-industry rerun.", "authority": "user-approved clarification"}
+    ,{"id": "national-31industry-equal-service-v020", "date": "2026-08-10", "decision": "After user confirmation of the C36 implementation, rerun C13-C43 under IF, IG, and II_1host with identical within-industry effective service. Store optimization outputs and analyses separately under 05_results/v0.2.0/model and result, archive pre-v0.2.0 equal-electricity national outputs, and require industry-level plus national service-reconstruction checks.", "authority": "user-approved sequential model revision item 2"}
+    ,{"id": "continuous-week-v030", "date": "2026-08-10", "decision": "Replace the 24-hour cyclic representative day with a continuous 168-hour representative week, allow the active central batch class to use a 72-hour cross-day deadline, annualize by represented days, and cycle storage only at the full-week boundary.", "authority": "user-approved sequential model revision item 3"}
+    ,{"id": "evidence-aggregated-compute-efficiency-v040", "date": "2026-08-10", "decision": "Retain only efficient, base, and conservative service-to-compute cases in the core model. Derive each with a weighted geometric aggregation of prefill/decode mix, context, batching, quantization, serving engine, and hardware utilization evidence; preserve the calibrated one-third accelerator-hour base and label non-base cases as sensitivity envelopes rather than L20 measurements or 2030 forecasts.", "authority": "user-approved sequential model revision item 4"}
+    ,{"id": "simplified-model-state-lifecycle-v050", "date": "2026-08-10", "decision": "Add one auditable Qwen2.5-32B-AWQ production replica, integer server/VRAM floor, 200 GB model-family storage against bundled 7.68 TB server storage, four annual initialization accelerator-hours, and a 0.25 FTE base operations scenario per deployment. Exclude request-level KV-cache scheduling, cold-start dispatch, multi-model assignment, and RAG project costs from the current core.", "authority": "user-approved sequential model revision item 5"}
+    ,{"id": "joint-high-energy-calibration-v060", "date": "2026-08-10", "decision": "Select the evidence-bounded conservative compute-efficiency case and a 1.50 kW dual-L20 maximum wall-power boundary, without a global or output multiplier, to test a nationally plausible higher-electricity setting. Treat the per-industry plus/minus 25% external-allocation comparison as diagnostic and retain the 8-28 TWh national envelope as the hard external scale check.", "authority": "user-approved rerun"}
+    ,{"id": "group-core-scenario-and-price-signal-conclusion", "date": "2026-08-11", "decision": "Use representative-group pooling (IG) as the core scenario for the stage report, with independent-factory and single-industry-host architectures as dispersed and concentrated comparison bounds. Record the C40 Guangdong representative-week result as conditional evidence that the modeled hourly energy-plus-demand price structure does not materially shift a high-utilization group AI facility; interpret server capital intensity as a leading but not yet causally isolated explanation, and require joint capex, reserve, shutdown, and price-spread sensitivity before generalizing.", "authority": "user-requested core-scenario and conclusion update"}
+    ,{"id": "group-core-grid-value-narrative", "date": "2026-08-11", "decision": "Frame the IG core scenario as a two-stage mechanism: high public GPU-IaaS payments, open-model deployability, and possible privacy or capital-ownership preferences can motivate local installation; after installation, compute-electricity coordination value should be sought primarily through maximum-demand and connection-capacity reduction rather than spot-energy arbitrage. For the active HTML report, remove the no-flexibility counterfactual narrative, distinguish temporal peak coincidence from spatial reuse of existing headroom, and state universality only within the 31 modeled manufacturing divisions rather than for every real enterprise.", "authority": "user-requested HTML narrative revision with evidence-scope qualification"}
+    ,{"id": "on-site-water-cooling-noise-site-boundary", "date": "2026-08-11", "decision": "Restart the water-land-site module as a v0.6.0 postprocessing study focused on on-site withdrawal and consumption, cooling and final heat rejection, equipment noise, buildings, land and site infrastructure. Exclude electricity-generation water use. Allocate factory AI service across provinces primarily with each manufacturing division's province-level electricity share, label aggregate-manufacturing-share fallbacks as spatial scenarios, and defer receptor-level noise exposure until city or site data exist.", "authority": "user-approved research boundary and spatial-allocation revision"}
+    ,{"id": "freeze-province-ai-allocation-and-separate-reuse-boundaries", "date": "2026-08-11", "decision": "Freeze the validated d_energy-based province-by-industry AI allocation as the accepted REFERENCE spatial scenario; do not improve, replace, recalibrate, or add sensitivity to these weights unless the user reopens the decision. For factory AI deployment, separately report no new land conversion, no new building floor area, and no new indoor/outdoor equipment space; locating servers inside an existing factory does not by itself establish zero footprint.", "authority": "user decision"}
+    ,{"id": "screen-user-water-cooling-noise-space-report", "date": "2026-08-11", "decision": "Accept the user-supplied web research report as a screened evidence input rather than a representative dataset. Use verified portfolio WUE values, retrofit component evidence, and equipment or EIA noise anchors to build bounded scenarios. Treat capacity-band reuse statements as model assumptions, not observed Chinese manufacturing frequencies, and require room, electrical, cooling, fire/safety, and outdoor-space reuse to be satisfied separately before assigning zero new equipment space.", "authority": "evidence review of user-supplied report"}
+    ,{"id": "resource-footprint-screening-mvp-v060", "date": "2026-08-11", "decision": "Implement the first v0.6.0 resource-footprint postprocessor with small (<=50 kW), medium (>50 to 500 kW), and large (>500 kW) representative-site capacity classes; three evidence-bounded site-water cases; and three reuse cases that separately track room, electrical, cooling, fire/safety, and outdoor-space capacity. Recover IT electricity by dividing the current facility energy by 1.30. Report site water use rather than calibrated withdrawal or consumption, retain square-metre area and scarcity-weighted results as missing, and do not spatially allocate II_1host until candidate data-center locations are defined.", "authority": "user-authorized next research step with evidence-integrity boundary"}
+    ,{"id": "separate-concentrated-ownership-from-hyperscaler-procurement", "date": "2026-08-11", "decision": "Treat II_1host as an industry-concentrated owned or shared physical reference rather than as purchase from a hyperscaler. Compare it separately with base-price GPU-IaaS reserved-capacity and on-demand procurement. Report manufacturing-enterprise site impacts and provider-inclusive system impacts as distinct boundaries: cloud procurement sets incremental compute-facility water, land, and continuous cooling noise at manufacturing premises to zero, but retains provider-side physical impacts. Until provider workload energy and facility assignment are available, use II_1host same-service IT energy multiplied by observed Alibaba and Tencent portfolio WUE only as a system-water proxy, not a marginal cloud footprint.", "authority": "user-requested concentrated-versus-big-vendor comparison with evidence-integrity qualification"}
+    ,{"id": "token-related-business-share-claim-boundary", "date": "2026-08-12", "decision": "Distinguish Token-related task-category count, compute-standardized effective-service share, and observed enterprise business-process share. The active model identifies only the second: office plus agent are 20.54% of China and 36.00-38.14% of US reference-L20-equivalent effective service. Do not call these percentages observed business volume, workflow, employee-time, transaction, revenue, or value shares. Treat arithmetic reproduction as high confidence, current compute-demand structure as medium-low confidence, observed enterprise business share and the China-US difference as low confidence. The current low/base/high ranges are scenarios, not confidence intervals, and do not independently vary task composition.", "authority": "user-requested Token-related business-share confidence assessment"}
+    ,{"id": "token-api-cost-share-claim-boundary", "date": "2026-08-12", "decision": "Record the current full-cloud payment composition as a screening result: Token API is not the largest payment component under the active office-plus-agent API and four-task reserved-GPU procurement mix. At base demand it is 1.18-2.57% for the formal US providers and 2.74-12.55% for the formal China providers. Use high confidence only for arithmetic reproduction, medium-high for within-scenario component ordering, medium-low for real-enterprise representativeness, and low for universal or future extrapolation. Do not state that manufacturing-AI Token cost is generally negligible. Reopen the claim when task procurement modes, enterprise usage traces, residual-GPU peak reoptimization, contract discounts, or quality/SLA equivalence change.", "authority": "user-requested confidence assessment and record"}
+    ,{"id": "country-specific-manufacturing-ai-cost-main-figure", "date": "2026-08-12", "decision": "Supersede the Figure 2 US price-transfer counterfactual with country-specific demand accounting. China local and cloud options serve China manufacturing AI demand (8.0/14.194/28.0 TWh low/base/high); US local and formal cloud options serve the bottom-up US manufacturing AI demand (4.955/8.625/17.331 TWh). Use five-year owned-server economic life in both countries. Retain the older US fixed-China-physics files for lineage only and do not use them in the main figure.", "authority": "user-requested main-figure update"}
+    ,{"id": "research-china-us-hyperscaler-country-averages", "date": "2026-08-11", "decision": "Commission primary-source web research for China- and US-located commercial hyperscaler data centers. Prefer IT-energy or IT-capacity weighted country averages; do not substitute global provider portfolios, revenue shares, policy targets, or unweighted vendor means. When representative weights are unavailable, report observable-sample distributions and bounded low/base/high scenarios. Keep self-use operators such as Meta outside the purchasable-cloud average and retain them only as technology references. Exclude electricity-generation water.", "authority": "user-requested China-US hyperscaler data-center average research prompt"}
+    ,{"id": "use-US-AWS-water-proxy-for-China-cloud", "date": "2026-08-11", "decision": "Because no representative China-country commercial-cloud WUE is available, use the published 2025 AWS Northern Virginia, Ohio, Northern California, and Oregon withdrawal-WUE observations as a transparent transfer proxy for the China-cloud system boundary. Set low/base/high to 0.06/0.09/0.39 L per kWh-IT, where base is the unweighted median of the four US regions. Preserve Alibaba and Tencent portfolio WUE as supplementary references rather than a China average. Keep China-relevant PUE evidence separate; do not transfer US PUE merely because the water proxy is transferred. Define small deployment as no more than 50 kW installed IT capacity per site, and retain its 0/0.05/0.329 L per kWh-IT site-water scenarios based on final heat rejection rather than server size alone.", "authority": "user decision to use US average water conditions and request to formalize small-server treatment"}
+    ,{"id": "baseline-only-small-China-US-water-comparison", "date": "2026-08-11", "decision": "Supersede the active low/base/high China-cloud US-transfer water comparison with baseline-only values. Use 0.050 L per kWh-IT for the <=50 kW small-factory central scenario, 1.322 for China large-cloud as the unweighted mean of Alibaba FY2025 1.144 and Tencent 2025 1.500 portfolio WUE, and 0.090 for US large-cloud as the unweighted median of four 2025 AWS US-region values. Apply the same 10.940 TWh II_1host IT-energy proxy for the three-mode screening comparison. Retain prior low/high parameter files only for lineage, and do not label either cloud value as an IT-energy-weighted national average or treat the nonharmonized water metrics as consumption.", "authority": "user decision to retain baseline values only and restore the Alibaba-Tencent combination for China"}
+    ,{"id": "harmonize-China-US-large-cloud-water-boundary", "date": "2026-08-11", "decision": "Supersede the direct comparison of China 1.322 and US 0.090 disclosure summaries because their provider portfolios, geography, cooling mix, and water definitions are not comparable. Retain them in a descriptive reference table only. For the active baseline model, use one shared 0.335 L per kWh-IT large-cloud cooling-and-humidification water parameter for both China and the United States, derived by rounding the unweighted mean of Alibaba FY2025 primarily air-cooled portfolio WUE 0.329 and Microsoft FY25 Americas cooling/humidification WUE 0.340. Keep the <=50 kW small-factory baseline at 0.050. Interpret country differences later through PUE, climate, water source, and scarcity rather than incompatible WUE samples.", "authority": "user request to harmonize China-US water accounting after rejecting the implausibly large disclosure-driven gap"}
+    ,{"id": "land-building-material-screening-mvp", "date": "2026-08-11", "decision": "Integrate a formula-driven land, building, concrete, rebar, and structural-steel screening module into the main Snakemake workflow. Reconstruct the common installed IT capacity dynamically from the 31-industry II_1host national core results rather than hard-coding 1555.9755 MW-IT. For the small distributed baseline, define existing-factory reuse as zero new structural shell and zero new land conversion while retaining total occupied indoor area and retrofit materials as NR. For large facilities, retain China 1100 m2/MW-IT GFA and 313 m2/MW-IT site proxies and US SJDC04 764 and 1175 m2/MW-IT proxies as project-sample scenarios rather than country averages. Estimate building-shell materials only from new GFA, keep rebar separate from structural steel, and use steel-frame and reinforced-concrete industrial archetypes as explicit sensitivities. Preserve the ICEF 200-MW concrete and steel screen as a separate facility/campus-scale plausibility check; do not add, average, or otherwise combine it with the GFA-based method. Do not estimate cement until project mix designs and supplementary-cementitious-material shares are available. Retain the spreadsheet only as a human-review artifact; CSV, lineage, findings, and validation outputs generated by Snakemake are authoritative.", "authority": "user approval to integrate the accepted screening into mainline data, code, and Snakemake"}
+    ,{"id": "us-grid-cost-transfer-with-china-load-shapes", "date": "2026-08-11", "decision": "For the first US grid-capacity cost evaluation, retain the Chinese manufacturing load curves, AI arrivals, scheduling constraints, service quantity, and resulting physical MW capacity difference. Replace only a boundary-matched US unit grid-investment cost and price year, and label the output a US grid-cost transfer counterfactual rather than a US manufacturing capacity-reduction estimate. Record SIELS as a future robustness dataset after its scheduled 2026-11-03 public release; when used, remap its seven energy-intensive subsectors and state weights, apply the same zero-existing-headroom-credit boundary, and re-solve the physical peak and capacity differences. Do not treat SIELS simulated profiles as nationally measured plant trajectories.", "authority": "user decision to retain Chinese curves for the US cost evaluation and defer US load-shape substitution"}
+    ,{"id": "zero-existing-headroom-credit-v061", "date": "2026-08-11", "decision": "Supersede the active 0.25% existing-headroom assumption with a zero-existing-headroom-credit boundary for all future distributed and centralized grid-capacity calculations. Set each node's existing capacity equal to its no-AI baseline peak and count every positive optimized post-AI net-peak increment as required capacity expansion. Preserve only hourly reductions produced by modeled task timing, PV, storage, or spatial aggregation. Retain v0.6.0 numerical outputs as old-boundary results and configure v0.6.1 without rerunning it at this stage.", "authority": "user instruction to retain planning margin and count all distributed-server load additions as capacity-upgrade requirements, followed by explicit instruction not to rerun the model"}
+    ,{"id": "core-default-124-spot-pv-continuous-v061", "date": "2026-08-11", "decision": "Limit the default all-industries workflow to 31 no-AI baselines plus 31 times three IF, IG, and II_1host architecture optimizations. Apply the same Guangdong representative-week day-ahead retail price vector and existing rooftop PV at the modeled roof limit to every baseline and architecture case, while retaining endogenous battery investment. Set installed and online server groups to continuous equivalent capacity by default with server_groups_integer=false. Move the no-flexibility ablation, former separate spot/PV test, and dependent progress briefing out of the default target and retain them only as optional diagnostics. Do not rerun the optimization while making this configuration and workflow change.", "authority": "user instruction to keep only the core architectures in the default run, use spot prices and PV throughout, omit the no-flexibility ablation, and default to continuous server groups"}
+    ,{"id": "split-battery-costs-from-costs-2025-v061", "date": "2026-08-11", "decision": "Supersede the single 1.2 CNY/Wh, ten-year battery proxy with split energy-capacity and inverter-power parameters read directly from 02_data/raw/curated/costs_2025.csv. Use the 2025 battery-storage investment of 99.189689 EUR/kWh, battery-inverter investment of 60.296474 EUR/kW, respective lifetimes of 22.5 and 10 years, inverter FOM of 0.25 percent per year, and round-trip efficiency of 0.96. Convert at the source table's China-cost convention of 7.8 CNY/EUR, retain the model discount rate of 8 percent and two-hour duration, yielding 773.6795742 CNY/kWh, 470.3124972 CNY/kW, and 221677.2157 CNY/(MW-year). Treat this as a transparent China power-system storage proxy rather than an observed manufacturing behind-the-meter quote. Do not rerun the optimization during this parameter revision.", "authority": "user instruction to use existing storage data and specifically costs_2025.csv if no other active source was present"}
+    ,{"id": "complete-and-mainline-us-core-cost-estimate", "date": "2026-08-11", "decision": "Mark the US core-cost estimate complete at the explicitly labelled proxy boundary and integrate it into the main Snakemake workflow. Use one shared 10% installed-capacity margin for China and US local deployment, applied once; retain China-only Alibaba Cloud and DeepSeek and US-only OpenAI, Anthropic and Google in formal regional panels; exclude on-demand GPU from formal tables; retain all-provider results for audit. Use the US server engineering BOM and two AWS g6e.4xlarge L40S instances as replaceable proxies rather than claiming observed native dual-L20 prices. Treat formal RFQs and Dominion GS-4 interval settlement as non-blocking evidence upgrades.", "authority": "user instruction to complete and merge the US cost estimate into the main workflow"},
+    {"id": "industry-specific-us-mecs-rooftop-proxy-v070", "date": "2026-08-12", "decision": "Retire the common 4000 square metre roof assumption and use a versioned 31-industry rooftop parameter table. Map each Chinese manufacturing division explicitly to a 2022 US MECS three-digit NAICS sector and transfer average enclosed floorspace per establishment as an American reference roof-area proxy following Namin, Eckelman and Isaacs (2023). Preserve direct, parent-sector and nearest-sector mapping grades; retain common 90 percent usable area, 22 percent module efficiency and 80 percent realization parameters. Label the transfer as a US reference rather than observed Chinese roof area, and require a future China transfer-factor sensitivity or measured building/remote-sensing replacement.", "authority": "user instruction to differentiate industry rooftop limits using the local US manufacturing rooftop PV literature"},
+    {"id": "plan-us-native-manufacturing-ai-demand", "date": "2026-08-12", "decision": "Develop a separate US-native manufacturing AI demand module at NAICS three-digit by establishment-size and six-task level. Use US Economic Census or CBP activity quantities, MOPS industrial-AI adoption and production-depth evidence, BTOS office and business-function AI use, MECS equipment-intensity proxies, and BERD R&D activity. Transfer only the existing per-active-driver service-intensity scenarios and provisional task arrival shapes; do not scale the Chinese national service total, employment, establishment stock, electricity total, or industry mix. Recalculate US local-versus-full-cloud enterprise costs from this demand before making US manufacturing cost claims, while preserving the completed China-load US-price counterfactual as historical bridge evidence. Defer US grid-capacity claims until US hourly manufacturing load data are available.", "authority": "user request for a simple US manufacturing AI demand mapping so US costs are based on US demand"},
+    {"id": "six-figure-results-narrative", "date": "2026-08-12", "decision": "Organize the manuscript Results around six main figures: manufacturing AI demand and deployment architecture; enterprise cost and deployment choice; electricity, load and incremental grid capacity; on-site water, space and construction materials; spatial distribution, water stress and impact concentration; and integrated trade-offs, Pareto frontiers and robustness. Limit each main figure to approximately three to five panels and place 31-industry detail, acoustics, extra providers, parameter tables and extended sensitivities in the Supplementary Information. Treat v0.6.0 grid-capacity values as historical old-boundary screens, distinguish 8/28 TWh linear cost displays from solved 14 TWh results, and label current US costs as a China-service US-price transfer counterfactual until US-native demand is modeled.", "authority": "user instruction to use the Fengqi You paper's result architecture to plan this study and record a data-and-method todo list"}
+    ,{"id": "us-fixed-physics-der-exclusion-boundary", "date": "2026-08-12", "decision": "Keep the current US owned-core module as a fixed-China-physics US-price counterfactual. Retain Chinese manufacturing task demand, architecture, installed server quantity and AI facility electricity, and replace only the US server engineering price, economic life and national industrial all-in electricity price. Exclude PV, battery, demand charges and grid expansion rather than transferring Chinese DER costs or introducing incomplete US DER parameters. Do not label this result complete US local-deployment cost or a US physical optimization; add US state-level DER and tariff inputs only if that separate research question is reopened.", "authority": "user instruction to preserve the current US cost logic and record the boundary"}
+    ,{"id": "optimized-no-ai-net-peak-grid-boundary", "date": "2026-08-12", "decision": "For every core AI architecture, define existing grid capacity as the optimized no-AI net grid-import peak under the same PV and storage investment rules. The no-AI solve itself may use the raw factory-load peak as its nonbinding physical connection boundary, but any storage- or PV-created reduction below that peak is not credited as free headroom for AI. Count the positive difference between the AI scenario net peak and this optimized no-AI net peak as required grid expansion. Pass the baseline peak explicitly into every AI solve and validate the identity in scenario outputs.", "authority": "user correction that grid investment increments must be measured against the storage-controlled no-AI optimized net-load peak"}
+    ,{"id": "country-native-resource-footprint-demand", "date": "2026-08-12", "decision": "For Figure 4 and subsequent physical resource-footprint comparisons, use Chinese manufacturing AI demand for China and the US-native manufacturing AI demand module for the United States. Within each country, compare local small-server and large-cloud deployment at that country's own IT-energy requirement. Scale land, building, and construction-material proxies using each country's own installed dual-L20 capacity rather than a shared Chinese capacity. This is a deterministic postprocessing update and does not require rerunning the China core optimization or the completed US demand module.", "authority": "user instruction that China and US resource-footprint results must each use their own national manufacturing AI demand"}
+    ,{"id": "core-results-only-html-and-cloud-grid-comparison", "date": "2026-08-12", "decision": "Reduce the active HTML briefing to the four core result figures and short evidence-boundary captions, removing progress reporting, workflow exposition, interactive price bars, spot-price side results, and task lists. In Figure 3, remove the industry-level grid-capacity contribution panel and compare IF, IG, and large cloud data-centre deployment directly. Until the corrected zero-headroom core is re-optimized, recompute IF and IG capacity increments from existing hourly dispatch relative to each industry's optimized no-AI net grid peak and label them fixed-dispatch transitional estimates. Represent large cloud using explicit project-scale node proxies, with 115 MW-IT and 145 MW facility power as the base split and other disclosed project sizes as sensitivities; do not label these as provider averages or actual locations.", "authority": "user instruction to keep only the results mainline and replace industry capacity contributions with distributed-versus-large-data-centre grid access comparison"}
+    ,{"id": "single-industry-grid-capacity-mechanism-test-plan", "date": "2026-08-12", "decision": "Before rerunning the national core, use C36 automotive manufacturing IG as a single-industry mechanism case. Separate planning reserve from normal-dispatch reserve, test storage through matched no-AI/AI and no-storage/storage controls, examine storage marginal value, and test integer server variables only after reserve semantics are isolated. Define distributed capacity mitigation separately for total grid capacity and maximum single-site capacity, and stop expanding mechanisms whose effects are below predeclared thresholds.", "authority": "user request for a single-China-industry test plan explaining flat data-centre operation, storage investment, integer capacity, reserve use, and conditions for distributed grid-capacity mitigation"}
+    ,{"id": "c36-grid-capacity-mechanism-round1", "date": "2026-08-12", "decision": "SUPERSEDED RESERVE INTERPRETATION. The storage 2x2 accounting remains an auditable preliminary result, but the case labelled R10-0 did not allow full use of installed capacity: its hourly planning-reserve constraint still limited compute to 90.91 percent of installed capacity. Do not use its flat profile to infer that reserve access has no value. The original result directory is retained only for audit and is superseded by c36-grid-capacity-external-reserve-correction.", "authority": "user challenge and code-level audit showing that the purported R10-0 case retained the binding hourly 110-percent planning constraint"}
+    ,{"id": "c36-grid-capacity-external-reserve-correction", "date": "2026-08-12", "decision": "Use a two-solve external planning-capacity formulation for server reserve. First solve the same C36 IG task, price, PV and storage boundary with zero reserve to obtain 4127.180178 required server groups. Then impose a 4539.898196-group minimum, equal to 110 percent of that external requirement, while allowing installed investment above the minimum and hourly compute and online groups to use 100 percent of installed capacity. Under this corrected P10_U100 case, online groups range from 825.337 to 4539.898, AI facility power has coefficient of variation 0.2568, and peak compute uses 100 percent of installed capacity. With storage prohibited in matched no-AI and AI cases, corrected reserve access reduces grid expansion from the legacy 8.058732 MW to 4.764324 MW, a 3.294408 MW or 40.9 percent reduction. With endogenous storage, both legacy and corrected cases avoid grid expansion; corrected reserve access raises optimal storage by 1.620888 MW but lowers annual cost by 1.280322 million RMB through energy-cost savings. Integer installed capacity rounds to 4540 groups, leaves expansion effectively zero, and changes annual cost by 5164 RMB. These are C36 mechanism results only and do not update national results or Figure 3.", "authority": "user instruction to retest with planning installed capacity at 110 percent of an external required-capacity reference and allow actual operation up to total installed capacity"}
+    ,{"id": "token-to-inference-energy-claim-boundary", "date": "2026-08-12", "decision": "Treat Token counts as a valid activity measure only for explicitly tokenized transformer inference after conditioning on model, precision, input/prefill and output/decode behavior, context/cache, batching, latency, hardware, utilization, tool calls and PUE. Do not use a universal kWh-per-Token factor or force vision, maintenance, scheduling and simulation into Token units. The active China and US Token-cost chains are not energy-closed against the effective-service chains: they share task labels and some demand drivers but use separate task-frequency, call and intensity assumptions. Until a task-level reconciliation module is calibrated, use Token counts for API payments only, describe national energy as six deployed-use task electricity rather than all-Token inference, and do not interpret Token-related effective-service shares as inference shares of total data-center electricity. Public evidence supports only operator-specific historical splits and modeled capacity scenarios; no representative observed national or customer-industry inference-electricity shares were identified.", "authority": "user-requested Token-to-inference and industry electricity-share assessment"}
+    ,{"id": "token-inference-cost-sensitivity-priority", "date": "2026-08-12", "decision": "Do not defend a universally low Token share. Separate API payment share, reference-effective-service share, and physically reconciled inference-electricity share. Prioritize joint sensitivity over Token-price-only perturbations: hold national service fixed while varying office/agent intensity and API conversion of vision and other tasks; remove converted work from residual GPU demand; re-optimize residual reserved capacity by hourly peak; and recompute identical-service local capacity. Pair this with Token energy-intensity/reasoning stress cases and server-life by reserved-GPU-effective-price switching surfaces. Treat the current US approximately 20 percent cloud premium as a base-case magnitude, not a robust lower bound: the least-cost formal cloud remains about 18.7 percent above local if Token payments are removed, but reaches break-even after roughly a 16.9 percent reserved-GPU effective-price reduction or under sufficiently short local server life. Treat China direction as more robust under the current proxy boundary. Report scenario-space coverage, not probability, unless empirical distributions are obtained.", "authority": "user request for sensitivity analysis protecting the manufacturing-AI cost conclusion"}
+    ,{"id": "token-local-energy-reconciliation-sensitivity", "date": "2026-08-12", "decision": "Add an explicit office- and agent-level reconciliation ratio between Token-implied hardware hours and active effective-service-implied hardware hours. A physical Token workload perturbation must update local peak capacity, server count, facility electricity and local cost as well as API payment; only a pure price perturbation may leave local electricity unchanged. Until model-specific prefill, decode, reasoning, cache, retry and tool-compute benchmarks are available, use clearly labeled structural ratios of 0.5, 1, 2 and 4 rather than claiming observed Token energy.", "authority": "user instruction to record the current local-energy mapping gap in the sensitivity plan"}
+    ,{"id": "heterogeneous-cpu-gpu-hardware-sensitivity", "date": "2026-08-12", "decision": "Label the active physical implementation an all-GPU/accelerator baseline: although effective service is architecture-invariant in concept and the general methods allow heterogeneous hardware, the current solver maps all six tasks through one L20-equivalent coefficient and one dual-L20 server technology, while the cloud payment layer sends all four non-Token tasks to reserved GPU IaaS. Add task-level CPU, GPU, edge-accelerator and managed-API routing sensitivities under identical quality and SLA. Use hardware-specific service time, throughput, utilization, idle/full power, capex, lifetime and PUE; do not apply one universal CPU-to-GPU multiplier. Separate use of spare CPU capacity already bundled in dual-L20 hosts from dedicated CPU servers to avoid both free-capacity assumptions and double counting. Prioritize scheduling, maintenance and simulation, then Agent tool execution, retrieval and low-rate vision. Recompute local and cloud costs symmetrically and report feasibility, installed hardware, substrate electricity and cost-switching boundaries.", "authority": "user request to account for CPU-served manufacturing AI workloads"}
+    ,{"id": "hardware-routing-practice-evidence-boundary", "date": "2026-08-12", "decision": "Follow the common report and deployment practice of workload-conditioned hardware selection rather than asserting a fixed national manufacturing CPU/GPU share. Screen task-hardware pairs by model memory, software compatibility, quality, latency and throughput, then compare full-system cost and wall-power per successful task among feasible CPU, GPU, edge accelerator and API paths. Retain the current all-L20 result as GPU-only baseline and retain proposed task CPU shares only as structural stress ranges, not observations, confidence intervals or new baselines. National energy accounting must maintain separate accelerated and non-accelerated server stocks. Start implementation with dedicated CPU servers versus dual-L20 servers and prioritize scheduling, maintenance and simulation; cloud and local pathways must be repriced symmetrically.", "authority": "primary-source review of LBNL, MLCommons, Azure, AWS, Siemens and NVIDIA practices"}
+    ,{"id": "c36-heterogeneous-hardware-first-screen", "date": "2026-08-12", "decision": "Use C36 automotive manufacturing and the IG local architecture for the first same-service heterogeneous hardware mechanism screen. Preserve active C36 task quantities, shapes and deadline windows; route structural shares of maintenance, scheduling and simulation between dedicated CPU servers and dual-L20 servers; retain five-year life and apply one 10 percent installed margin within each hardware pool. Reprice cloud CPU, GPU and Token API pathways consistently. Treat routing shares, CPU task-time multipliers, the 100,000 RMB CPU-server BOM and c8i cloud price as replaceable screening parameters, not observed industry facts. Keep v0.7.0 GPU-only as the core baseline until task-level quality/SLA benchmarks are obtained.", "authority": "user-authorized one-typical-industry recalculation following the reviewed hardware-routing logic"}
+    ,{"id": "task-specific-cpu-gpu-service-rate-definition", "date": "2026-08-12", "decision": "Define CPU/GPU conversion from successful-task service rates under matched quality and SLA, not FLOPS, core count or TDP. For each task, hardware and workload-size bucket record Q as quality/SLA-compliant jobs per full-system hour and derive hardware time a=1/Q; only then derive r_CPU_L20=Q_L20/Q_CPU. Use task-specific denominators: qualified diagnostic windows or assets for maintenance, scheduling instances reaching feasibility and a fixed optimality gap within a time limit, and simulations completing identical physics, mesh, accuracy and convergence criteria. Mark unsupported hardware infeasible instead of assigning an extreme multiplier. Split simulation into conventional CPU, GPU-native and AI-surrogate paths. Retain the current common 0.5/1/2/4 C36 multiplier only as a structural switching diagnostic and keep GPU-only as core until task benchmarks are available.", "authority": "primary-source review of MLPerf, AWS load testing, Intel industrial benchmarking, NVIDIA cuOpt and Ansys Fluent benchmarking practice"}
+    ,{"id": "c36-evidence-constrained-heterogeneous-core", "date": "2026-08-12", "decision": "Select the evidence-constrained heterogeneous setting as the C36 single-industry core mechanism scenario while retaining GPU-only as national lineage until industry-wide implementation. Route 50 percent of maintenance to CPU with r_maintenance=2.0, route 100 percent of scheduling to CPU with r_scheduling=1.0 as a neutral CPU-native-solver server-time normalization, and keep simulation on GPU because large automotive CFD can strongly benefit from supported GPU solvers. This places 29.0 percent of C36 effective service on CPU. Use five-year lives, one 10 percent installed margin in each physical hardware pool, dedicated CPU servers, and symmetric cloud CPU/GPU/API repricing. The least-cost formal cloud option is 1.381 times local cost; treat this as an ex-post check rather than a calibration target. Keep the common 0.5/1/2/4 multipliers only in the sensitivity plan and replace the task values when matched quality/SLA benchmarks become available.", "authority": "user request to select a research-consistent core setting whose local cost remains at least 20 percent below cloud"}
+    ,{"id": "cpu-cloud-capacity-specification-correction", "date": "2026-08-12", "decision": "Correct the unsupported one-to-one capacity mapping between a local dual-socket CPU server and a 32-vCPU cloud instance. Use a 2025 China public procurement configuration with two 32-physical-core processors and a price of 118000 CNY as the local base. Alibaba Cloud documents 32 vCPU for ecs.c8i.8xlarge and default two-way hyper-threading, so use 16 physical cores and 0.25 of the China local-server capacity per instance. For the US local proxy with one 32-core Xeon, use 0.5 per 32-vCPU cloud instance. These are transparent physical-core specification proxies pending matched task-quality and SLA throughput benchmarks, not cost-target calibration. The previously reported China 107.904 billion CNY local cost and 141.390-155.286 billion CNY cloud-payment range, and the US 21.901 billion USD local and 45.572-46.001 billion USD cloud values, are historical old-boundary results only. The China values are superseded pending the joint hourly CPU/GPU physical rerun; the US values remain downstream estimates rather than matching physical-optimization results.", "authority": "user-requested source audit of implausibly low China cloud CPU cost; status updated after joint physical-model decision"}
+    ,{"id": "local-server-max-ten-percent-n-plus-one-rule", "date": "2026-08-12", "decision": "For every owned local architecture (IF, IG and II_1host), calculate required equivalent server groups directly from the unshifted arrival-time hourly task peak, then set the reported case's minimum installed capacity to max(1.10 times required groups, ceil(required groups) plus one server group). Do not run a separate economic optimization for the reference capacity: prices, PV and storage must not redefine the planning reference. Treat the 10 percent component and N+1 component as engineering-practice scenario assumptions rather than an observed manufacturing-sector average. The rule constrains planning installation only: the formal optimization may use 100 percent of installed capacity and shift flexible work, so no hourly 10 percent dispatch withholding is applied. Cloud customer payments do not receive an additional local-server reserve markup; the US owned-cost counterfactual inherits the local installed stock from the physical architecture results.", "authority": "user decision after reserve-evidence review and request to calculate reference capacity directly"}
+    ,{"id": "if-federated-core-architecture", "date": "2026-08-12", "decision": "Replace IG with IF as the active core architecture. Interpret IF as factory-side distributed deployment coordinated through an enterprise or group private network: data-sensitive, high-bandwidth and real-time tasks remain at factory sites, while model management and eligible workloads may be coordinated within the group. Retain the current cost components and do not add separate private-network, data-governance, cloud-storage or coordination-platform costs because of this definition change. Re-run the China 31-industry heterogeneous CPU/GPU calculation at IF factory scale; retain IG as the group-centralized comparison and II_1host as the concentration upper bound. Drive the workflow, main figures and result labels from the explicit IF core-architecture configuration.", "authority": "user decision to make factory-distributed deployment the core scenario while retaining existing cost boundary"}
+    ,{"id": "joint-china-cpu-gpu-physical-core-no-calibration", "date": "2026-08-13", "decision": "Supersede the China heterogeneous post-processing reconciliation method. Preserve task identity through the 168-hour solve; route the active practice_routed task shares to separate GPU and CPU capacity pools; apply the planning-capacity rule separately to each pool; jointly solve online capacity, task timing and facility power; and calculate server, electricity, maximum-demand, DER and lifecycle costs within the same physical optimization. Report incremental grid connection capacity separately as a physical MW metric and do not monetize it. Do not emit or plot server-cost calibration or electricity-cost calibration components. China local cost components must sum bottom-up to the joint physical-model total. The implementation and a C36-IF solve were validated under an earlier boundary, but the user stopped the 31-industry by three-architecture rerun and Figure 2 regeneration. Existing national heterogeneous summaries and Figure 2 are historical old-boundary outputs and cannot support updated numerical claims. The US remains a native-demand downstream heterogeneous cost estimate rather than a matching hourly three-architecture physical solve.", "authority": "user instruction to send heterogeneous CPU/GPU sizing and energy directly into the China hourly physical model, followed by the decision to remove grid-upgrade cost from the enterprise objective"}
+    ,{"id": "v080-code-authoritative-formula-sync", "date": "2026-08-13", "decision": "Treat the executable v0.8.0 main flow as the authority for the active formula set: IF, IG and II_1host representative scaling; aggregate arrival-batch by admissible-hour scheduling; joint CPU/GPU routing and capacity; unshifted-arrival planning floors; three-state facility power; matched optimized no-AI net-import peak; enterprise retail energy and maximum-demand payments; and exactly eight reconstructed incremental cost components. Incremental and avoided grid connection capacity are physical MW metrics only and do not enter the enterprise objective. Retain SIELS-style bulk marginal value, environmental accounts, regional network flows and risk penalties only as explicitly labelled extensions. Do not use the revised formulas to interpret stale national heterogeneous outputs until the full rerun is completed.", "authority": "user request to update manuscript formulas from the current main-flow code and subsequent grid-cost boundary decision"}
+    ,{"id": "si-methods-first-chinese-restructure", "date": "2026-08-13", "decision": "Restructure the active Supplementary Information as a Chinese methods-first scholarly supplement rather than a code-correspondence manual. Organize it around research boundary, equal-service comparison, architecture scaling, scheduling, heterogeneous hardware, three-state power, matched no-AI counterfactual, physical incremental and avoided connection-capacity metrics, enterprise costs, evidence/originality labels, and inference limits. Keep implementation paths only in a short reproducibility subsection, omit stale national result tables, and reserve a structured future data-description section covering source, sample, processing, representativeness, uncertainty, and variable mapping.", "authority": "user request to merge the formula framework into the previous SI in Chinese and reserve future data documentation"}
+    ,{"id": "enterprise-decision-no-der-vs-der", "date": "2026-08-13", "decision": "Present the enterprise architecture decision separately under no-DER and DER-enabled energy boundaries. For each boundary, solve a matched no-AI counterfactual and compare architecture-specific incremental enterprise cost. In the no-DER case fix PV and battery to zero. In the DER case give no-AI and AI solutions the same rooftop, battery-investment, price and operating rules; the active sensitivity treats rooftop PV as an existing zero-incremental-capex resource and permits battery investment. Measure DER contribution with a difference-in-differences between the two matched incremental costs, so base-load DER benefits are not attributed to AI, and report whether DER changes the enterprise architecture ranking.", "authority": "user request to move the IEEE-style enterprise decision formulas into the SI and distinguish cases without versus with distributed generation and storage"}
+    ,{"id": "hybrid-owned-cloud-code-aligned-model", "date": "2026-08-13", "decision": "Document the already implemented hybrid_cloud model as a separate enterprise procurement model layered on each owned deployment scale IF, IG or II_1host. Distinguish three equations: pure owned execution, pure cloud reserved CPU/GPU capacity, and endogenous hybrid execution. Preserve flexible-batch and rigid-task service conservation across local and cloud paths; cloud work does not enter factory electricity balance and is charged through annual reserved GPU/CPU groups. Keep this joint optimization distinct from the full-cloud office/agent Token API plus residual reserved-capacity postprocessor. In the SI explicitly flag that enabling hybrid cloud currently removes the external unshifted-arrival N+1 floor, minimum online GPU and local model replica/storage floor, while retaining a 10 percent planning constraint on the realized local compute peak; conditional local fixed costs remain an author decision before promotion to the core model. Grid-expansion penalty is a structural scarcity stress term only, zero in the core and not a monetized grid-upgrade cost.", "authority": "user request to allow combined cloud and owned deployment and then clarify that the formulas must correspond to the existing code"}
+  ],
+  "issues": [
+    {"id": "I1", "status": "RESOLVED", "severity": "S3", "evidence_status": "CONFIRMED", "description": "The active C36 core now separates installed, online, and cold-spare server groups; applies online-idle power only to online groups and standby power to cold spares; uses the evidence-backed marginal facility multiplier; and passes facility-power identity checks. Wall-plug inference power and marginal cooling remain parameter sensitivities rather than measured C36 values."},
+    {"id": "I2", "status": "OPEN", "severity": "S3", "evidence_status": "CONFIRMED", "description": "No final 15-minute multi-layer grid optimization results exist; current numerical architecture comparisons remain screening scenarios."},
+    {"id": "I3", "status": "OPEN", "severity": "S2", "evidence_status": "CONFIRMED", "description": "China-specific spatial carbon factors remain unavailable for the broader environmental module. Electricity-generation water factors are no longer required for the active on-site water, cooling, noise, land and site-footprint study by user-approved boundary decision."},
+    {"id": "I4", "status": "OPEN", "severity": "S3", "evidence_status": "CONFIRMED", "description": "AI server rate-base eligibility, depreciation treatment, recovery lag, stranded-balance treatment, and management decision weights have not been calibrated from Chinese utility cases."},
+    {"id": "I5", "status": "OPEN", "severity": "S3", "evidence_status": "CONFIRMED", "description": "Version v0.2.0 provides a validated 31-industry equal-service comparison for IF, IG, and II_1host; the pre-v0.2.0 equal-electricity national screen is historical. Remaining limitations are material: roof, base load, and storage are representative-bucket constructs; the industry-pool single host is a concentration upper bound; cloud PV is omitted; the Guangdong spot-retail representative week is not a social marginal-energy-cost or national tariff sample; and national equivalent server stocks use continuous scaling. The configured v0.6.1 boundary deliberately gives zero credit for unobserved existing headroom, but its numerical results are pending. Common edge versus placement-choice service, minimum investment units, sparse or foreign load curves, researcher-constructed AI timing, borrowed task templates, and heterogeneous task-to-compute efficiency paths remain incomplete."},
+    {"id": "I6", "status": "RESOLVED", "severity": "S3", "evidence_status": "CONFIRMED", "description": "The configured v0.6.1 core now reads split 2025 battery-energy and inverter-power investment, component lifetimes, inverter FOM, and round-trip efficiency directly from costs_2025.csv and annualizes them separately. At 7.8 CNY/EUR, 8 percent discount rate, and two-hour duration, the active cost is 221677.2157 CNY/(MW-year), replacing the single 1.2 CNY/Wh proxy. The literal component rows imply 3565.03 CNY/kW for a four-hour system, whereas their source-description text mentions 2700 CNY/kW; the active model follows the structured rows and retains this as a source-note inconsistency. This resolves the missing cost-structure blocker at the user-selected proxy boundary, but the source remains a generic China power-system storage parameter rather than an observed manufacturing behind-the-meter quote and does not add degradation or augmentation. No v0.6.1 optimization has been rerun, so old storage capacities and costs remain historical and cannot be attributed to the revised parameters."},
+    {"id": "I7", "status": "OPEN", "severity": "S3", "evidence_status": "CONFIRMED", "description": "The C36 enterprise direct-cost screen uses public dual-L20 GPU IaaS reference prices, with the on-demand dual-card price derived approximately from single-card observations. It does not include negotiated enterprise discounts, WAN traffic, cloud storage, migration and systems integration, support, tax treatment, self-hosted operations staffing, or an equivalent SaaS/model-API product. The local-versus-cloud payment ranking is therefore conditional on a high-utilization industry bucket and the stated public-price boundary, not a general single-firm deployment result."},
+    {"id": "I8", "status": "OPEN", "severity": "S2", "evidence_status": "CONFIRMED", "description": "Version v0.6.0 retains the deliberately limited v0.5.0 lifecycle subset: official 32B AWQ weight/VRAM anchors, one production replica, bundled-storage capacity, initialization energy, and a base operations scenario per deployment. Request-level KV cache, cold starts, multiple model families, HA sensitivity, RAG project costs, adaptation, cloud model-specific hosting, and enterprise/group/site sharing units remain unmodeled. The 0.25 FTE assumption is not an observed manufacturing average and requires sensitivity analysis before lifecycle-adjusted architecture rankings are interpreted strongly."},
+    {"id": "I9", "status": "OPEN", "severity": "S3", "evidence_status": "CONFIRMED", "description": "The v0.6.0 Snakemake workflow previously passed 18 unit tests and its archived scenario outputs cover 93 IF, IG, and II_1host optimizations, but the current project contains conflicting v0.6.0 national summaries: the state/SI series reports 14.223-14.245 TWh/year and 1,395.2 MW for II_1host, whereas the current national findings file reports 14.194-14.209 TWh/year and 1,392.1 MW. Configuration and lineage must be audited before one series is designated authoritative. Version v0.6.1 locks zero existing-headroom credit, applies Guangdong representative-week spot-retail prices and existing roof-limit PV to all core cases, defaults to continuous equivalent server groups, and reads split battery-energy and inverter-power costs from costs_2025.csv. It passes 23 non-optimization core tests; the default Snakemake dry-run resolves to 31 no-AI baselines and 93 core architecture optimizations with no no-flexibility or separate spot/PV jobs. However, only partial model and validation artifacts from prior interrupted work are currently present and no complete aggregate exists under the revised boundary; these partial artifacts are not a valid run and must not be cited. The user explicitly deferred rerunning the optimization. The model remains a repeated-profile representative-week screening model: factory load and roof are proportional or synthetic representative-site constructs; group and industry demand are assumed proportional to industry share; the cloud comparison uses public dual-L20 retail-price proxies rather than negotiated procurement or API/SaaS products; and network location, seasonal chronology, detailed model-state scheduling, battery degradation, and social water, land, noise, and carbon costs are outside this run."},
+    {"id": "I10", "status": "OPEN", "severity": "S2", "evidence_status": "CONFIRMED", "description": "By user decision, detailed distribution-network modeling, full enterprise-versus-social marginal cost and carbon optimization, contracted flexibility capacity-credit mechanics, and project-pipeline stochastic realization are deferred to future work. Current results must continue to be labelled simple screening calculations for these dimensions."},
+    {"id": "I11", "status": "OPEN", "severity": "S3", "evidence_status": "CONFIRMED", "description": "The first v0.6.0 on-site water and facility-reuse screening MVP is complete: 93 industry-architecture summaries expand to 837 facility scenarios, 5,766 frozen-weight IF/IG province water rows, and 27 national architecture summaries; automated checks cover scenario coverage, water monotonicity, province conservation, and the five-constraint zero-new-equipment-space rule. A separate same-service comparison distinguishes industry-concentrated ownership from hyperscaler GPU-IaaS procurement. The active baseline water comparison uses 0.050 L/kWh-IT for <=50 kW small-factory sites and a shared 0.335 cooling-and-humidification parameter for China and US large clouds; the prior 1.322 and 0.090 disclosures are noncomparable references only. The land and building-material screen is now a tested mainline Snakemake postprocessor: it reconstructs the common installed capacity from the 31-industry II_1host national result, writes formal space, building-material, independent campus cross-check, lineage, findings, and validation outputs, and no longer depends on the review workbook. Existing-factory reuse is zero new structural shell and land by scenario definition but retains occupied area and retrofit materials as NR. Project-sample space proxies are 1100 m2/MW-IT GFA and 313 m2/MW-IT site area for China and 764 and 1175 m2/MW-IT for US SJDC04. New-GFA material sensitivities keep concrete, rebar, and structural steel separate, while the ICEF 200-MW facility/campus screen is retained as a non-additive plausibility check. The issue remains open because provider-specific workload energy, facility assignment, marginal capacity realization, water-source shares, scarcity factors, representative small-server occupied-area and retrofit-material quantities, national or provider-weighted land intensities, cloud existing-capacity/campus-expansion/greenfield shares, continuous outdoor cooling acoustics, and boundary propagation remain unavailable."},
+    {"id": "I12", "status": "OPEN", "severity": "S3", "evidence_status": "CONFIRMED", "description": "China core code now implements a single joint CPU/GPU hourly physical solve and removes server/electricity calibration components. One C36-IF case passed service, power, server-cost and total-cost reconciliation. The 31-industry by three-architecture rerun and Figure 2 rebuild were interrupted at the user's request, so existing national heterogeneous summaries, cross-country cost summaries, downstream footprint results that consume server stocks, and Figure 2 remain stale old-boundary artifacts. No updated national China cost, energy, grid-capacity, local-cloud ranking, or China-US comparison may be claimed until the full dependency chain is rerun and validated."}
+  ],
+  "release": {
+    "status": "WORKING",
+    "candidate_artifact_ids": ["chinese-si", "integrated-review", "model-spec", "industry-design", "data-dictionary"],
+    "required_checks": ["argument_structure", "evidence_scope", "scholarly_writing", "delivery_integrity", "functional_completeness"],
+    "completed_checks": ["argument_structure", "evidence_scope", "scholarly_writing", "delivery_integrity", "functional_completeness"],
+    "checked_hashes": {},
+    "visual_check": "NOT_APPLICABLE"
+  }
+}

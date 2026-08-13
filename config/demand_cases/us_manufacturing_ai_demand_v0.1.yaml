@@ -1,0 +1,162 @@
+demand_case_version: us_manufacturing_ai_demand_v0.3.0
+model_version: v0.6.1
+country: US
+reference_year: 2030
+parameter_cases: [low, base, high]
+annualization_days: 365
+
+# China is an external validation band only. It never rescales U.S. demand.
+external_scale_validation:
+  method: compare_bottom_up_us_energy_with_same_case_china_energy
+  china_energy_twh:
+    low: 9.924
+    base: 17.08237253602635
+    high: 34.165
+  expected_us_to_china_ratio_low: 0.45
+  expected_us_to_china_ratio_high: 0.55
+  central_manufacturing_value_added_ratio: 0.50
+  china_energy_source: 02_data/processed/effective_service/validated.done.json_and_05_results/effective_service_bottom_up_recalculation.md
+  evidence_status: external_validation_not_calibration
+
+# One workload unit retains the transferred reference-L20-equivalent service
+# intensity. The formerly missing bottom-up layer is the number of workload
+# units operated by each adopted employee/site/R&D employee per day.
+effective_service_units_per_workload_unit:
+  office: 0.0474141862
+  agent: 0.3147806465
+  vision: 6.6203168195
+  maintenance: 4.7554957633
+  scheduling: 12.3078270891
+  simulation: 0.8468134050
+
+workload_units_per_active_driver_day:
+  low:
+    office: 7
+    agent: 20
+    vision: 25
+    maintenance: 15
+    scheduling: 50
+    simulation: 29
+  base:
+    office: 10
+    agent: 28
+    vision: 35
+    maintenance: 20
+    scheduling: 70
+    simulation: 40
+  high:
+    office: 15
+    agent: 41
+    vision: 51
+    maintenance: 29
+    scheduling: 102
+    simulation: 58
+
+workload_unit_definition:
+  office: knowledge_work_episode
+  agent: tool_call_equivalent_workflow_step
+  vision: active_inspection_stream_or_batch
+  maintenance: monitored_critical_asset_group
+  scheduling: workcenter_optimization_cycle
+  simulation: experiment_or_digital_twin_job
+
+# Base-case operational decompositions make each workload-unit count auditable.
+# Their products equal workload_units_per_active_driver_day/base.
+base_operational_decomposition:
+  office:
+    knowledge_work_episodes_per_active_employee_day: 10
+  agent:
+    agentic_workflows_per_active_employee_day: 4
+    tool_steps_per_workflow: 7
+  vision:
+    active_inspection_streams_per_adopting_establishment: 5
+    reviewed_batches_per_stream_day: 7
+  maintenance:
+    monitored_critical_asset_groups_per_adopting_establishment: 20
+  scheduling:
+    modeled_workcenters_per_adopting_establishment: 10
+    optimization_cycles_per_workcenter_day: 7
+  simulation:
+    active_rd_projects_per_adopted_rd_employee_equivalent: 4
+    experiment_jobs_per_project_day: 10
+
+drivers:
+  office: employment
+  agent: employment
+  vision: establishments
+  maintenance: establishments_times_mecs_equipment_index
+  scheduling: establishments
+  simulation: berd_domestic_rd_employment
+
+task_shapes:
+  source: transferred_existing_task_shapes
+  profile_file: 02_data/future_manufacturing_ai_workload_model.csv
+  profile_scenario: 2030_integrated
+  profile_record_type: hourly_curve
+
+token_parameters:
+  task_intensity_multiplier_by_case:
+    low: 0.5
+    base: 1.0
+    high: 2.0
+  office:
+    business_tasks_per_active_employee_day: 20.0
+    calls_per_business_task: 1.5
+    input_tokens_per_call: 900
+    output_tokens_per_call: 450
+  agent:
+    business_tasks_per_active_employee_day: 6.0
+    calls_per_business_task: 6.0
+    input_tokens_per_call: 1400
+    output_tokens_per_call: 700
+
+compute:
+  efficiency_case: conservative
+  accelerators_per_server: 2
+  installed_utilization: 0.65
+  installed_reserve_fraction: 0.10
+  server_idle_power_kw: 0.36
+  cold_spare_standby_power_kw: 0.02
+  server_maximum_power_kw: 1.50
+  marginal_facility_multiplier: 1.30
+
+local_cost:
+  parameter_file: 02_data/processed/cost_benchmark/us_core_cost_parameters_v1.csv
+  server_parameter_id: us_server_purchase_usd_per_dual_l20_server
+  electricity_parameter_id: us_industrial_all_in_usd_per_kwh
+  server_price_cases: [low, base, high]
+  electricity_price_case: base
+  discount_rate: 0.08
+  # Five years is the conservative core economic life for an AI inference
+  # server. Company disclosures support 5-6 years (Meta 5-5.5, Amazon 5-6,
+  # Alphabet 6), while Microsoft Research's AI-fleet TCO study finds that many
+  # pre-B100 GPU generations can remain cost-effective beyond six years.
+  # 5.5/6 years are evidence-backed alternatives; 7 years is an extended-life
+  # stress case, not assumed to be a representative fleet average.
+  economic_life_years: 5
+  economic_life_sensitivity_years: [3, 4, 5, 5.5, 6, 7]
+  facility_capex_fraction: 0.20
+  annual_maintenance_fraction: 0.05
+
+cloud_cost:
+  gpu_parameter_id: us_cloud_reserved_usd_per_dual_l20_instance_year
+  gpu_price_case: base
+  storage_parameter_id: us_object_storage_usd_per_gb_month
+  formal_providers: [OpenAI, Anthropic, Google]
+  token_tasks: [office, agent]
+  gpu_tasks: [vision, maintenance, scheduling, simulation]
+  # First-pass storage is proportional to the U.S./China effective-service
+  # ratio using the current IG model-state footprint. Requests/egress excluded.
+  storage_reference_gb: 396370.2571937866
+  storage_reference_service_units_day: 95545093.26209275
+  storage_first_tier_gb: 50000
+  storage_first_tier_usd_per_gb_month: 0.023
+  storage_second_tier_usd_per_gb_month: 0.022
+  api_price_file: 02_data/processed/cost_benchmark/us_api_token_prices_v1.csv
+
+core_cloud_premium_target:
+  comparison_basis: least_cost_formal_cloud_provider_vs_base_price_local
+  target_ratio: 1.20
+  tolerance: 0.02
+  selected_driver: five_year_owned_server_economic_life
+  evidence_status: scenario_choice_with_official_and_company_accounting_bounds

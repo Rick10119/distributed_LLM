@@ -1,0 +1,96 @@
+scenario_version: cpu_gpu_routing_v1.1.0
+calibration_industry_code: C36
+calibration_owned_architecture: IF
+same_service_and_sla: true
+active_core_routing_case: practice_routed
+
+routing_cases:
+  gpu_only:
+    maintenance: 0.0
+    scheduling: 0.0
+    simulation: 0.0
+  practice_routed:
+    maintenance: 0.5
+    scheduling: 0.8
+    simulation: 0.5
+  cpu_heavy:
+    maintenance: 0.75
+    scheduling: 1.0
+    simulation: 0.75
+  evidence_core_candidate:
+    maintenance: 0.5
+    scheduling: 1.0
+    simulation: 0.0
+
+core_cpu_server_hour_per_reference_l20_accelerator_hour:
+  maintenance: 2.0
+  scheduling: 1.0
+  simulation: 1.0
+  rationale:
+    maintenance: conservative_CPU_inference_time_proxy_pending_matched_window_benchmark
+    scheduling: CPU_native_solver_normalization_pending_matched_instance_gap_and_time_limit_benchmark
+    simulation: inactive_in_core_CPU_route
+
+sensitivity_only_cpu_time_multipliers: [0.5, 1.0, 2.0, 4.0]
+
+cpu_server:
+  configuration: dedicated_dual_socket_2x32_physical_core_256GB_complete_delivery_server
+  service_capacity_cpu_server_h_per_h: 1.0
+  physical_cpu_cores: 64
+  logical_cpu_threads: 128
+  minimum_memory_gb: 256
+  purchase_price_case: base
+  purchase_cost_rmb: 90000.0
+  purchase_cost_cases_rmb:
+    low: 60000.0
+    base: 90000.0
+    high: 118000.0
+  purchase_cost_range_rmb: [60000.0, 118000.0]
+  maximum_wall_power_kw: 0.78
+  online_idle_wall_power_kw: 0.28
+  cold_spare_standby_power_kw: 0.02
+  installed_reserve_fraction: 0.10
+  economic_life_years: 5
+  annual_maintenance_fraction: 0.05
+  facility_capex_fraction: 0.20
+  marginal_facility_multiplier: 1.30
+  purchase_price_basis: matched_64core_256GB_complete_delivery_engineering_midpoint
+  purchase_price_case_basis:
+    low: 2025_public_procurement_dual_32core_256GB_server_with_installation_and_five_year_support_60000_RMB
+    base: engineering_midpoint_between_matched_256GB_procurement_and_768GB_high_memory_procurement
+    high: 2025_China_CDC_dual_32core_768GB_server_118000_RMB
+  evidence_status: public_procurement_bounded_matched_spec_proxy_not_task_benchmark
+
+cloud_cpu:
+  configuration: Alibaba_Cloud_ecs.c8i.8xlarge_32vCPU_64GiB_proxy
+  vcpu: 32
+  physical_cpu_cores_under_default_hyperthreading: 16
+  service_capacity_relative_to_local_cpu_server: 0.25
+  annual_reserved_price_case: base
+  annual_reserved_price_rmb: 28086.174
+  annual_reserved_price_cases_rmb:
+    low: 24422.76
+    base: 28086.174
+    high: 31749.588
+  public_annual_subscription_price_rmb: 24422.76
+  price_derivation: low_is_public_annual_subscription_quote;_base_and_high_apply_15pct_and_30pct_enterprise_delivery_allowances
+  evidence_status: public_developer_community_price_proxy_with_official_instance_and_vcpu_topology_plus_explicit_enterprise_delivery_scenarios_not_enterprise_contract
+
+cloud_capacity_price_scenarios:
+  active_case: base
+  multiplier_relative_to_public_price:
+    low: 1.0
+    base: 1.15
+    high: 1.30
+  scope: reserved_CPU_and_GPU_capacity_only;_token_API_prices_remain_provider_observations
+  interpretation:
+    low: public_subscription_price_proxy
+    base: public_price_plus_15pct_enterprise_storage_support_network_delivery_allowance
+    high: public_price_plus_30pct_enterprise_delivery_allowance
+
+method:
+  capacity_basis: short_deadline_first_waterfilled_peak_upper_bound_under_existing_task_release_and_deadline_windows
+  server_count: continuous_equivalent_capacity_for_alignment_with_active_core
+  local_reconciliation: none_single_joint_hourly_physical_optimization
+  cloud_boundary: office_and_agent_token_API_plus_task_routed_reserved_CPU_and_GPU
+  warning: routing_shares_and_cpu_service_time_are_structural_scenarios_not_observed_shares_or_benchmarks

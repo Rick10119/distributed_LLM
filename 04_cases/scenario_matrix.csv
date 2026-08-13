@@ -1,0 +1,7 @@
+case_id,architecture,ai_service_scale,central_pue,edge_pue,local_headroom_share,coincidence_with_system_peak,flexible_workload_share,storage_hours,pv_share,notes
+C_BASE,central,1.0,1.20,,0,0.90,0.10,0,0,central baseline
+D_LOW,distributed,1.0,,1.35,0.20,0.80,0.10,0,0,low-benefit distributed case
+D_MID,distributed,1.0,,1.30,0.50,0.55,0.30,0,0,mid distributed case
+DF_HIGH,distributed_flexible,1.0,,1.25,0.75,0.30,0.60,2,0.30,high-benefit sensitivity case
+H_MID,hybrid,1.0,1.20,1.30,0.50,0.55,0.40,1,0.20,hybrid case
+

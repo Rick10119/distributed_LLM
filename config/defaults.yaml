@@ -1,0 +1,251 @@
+schema_version: 1
+model_version: v0.8.0
+run_config_path: config/runs/all_industries_core.yaml
+scenario_registry_path: config/scenarios/mainline.yaml
+paths:
+  representative_group_report: 02_data/china_manufacturing_representative_group_parameters.md
+  legacy_hourly_industry_profiles: 05_results/archive/equal_electricity_national/manufacturing_31sector_hourly_peak_profiles.csv
+  daily_hourly_industry_profiles: 02_data/processed/core/manufacturing_31sector_base_load_profiles.csv
+  hourly_industry_profiles: 02_data/processed/core/manufacturing_31sector_real_weeks.csv
+  hourly_industry_profiles_lineage: 02_data/processed/core/manufacturing_31sector_real_weeks.lineage.json
+  eweld_archive: 02_data/raw_load_profiles/eweld/EWELD.zip
+  manufacturing_load_crosswalk: 02_data/manufacturing_load_curve_source_crosswalk.csv
+  raw_workload_parameters: 02_data/raw/curated/china_manufacturing_ai_workload_parameters.csv
+  raw_effective_service_growth: 02_data/raw/curated/effective_service_task_growth_scenarios.csv
+  raw_effective_service_template_fallbacks: 02_data/raw/curated/effective_service_template_fallbacks.csv
+  upstream_31sector_bottomup: 02_data/interim/effective_service/legacy_manufacturing_ai_31sector_bottomup_weights.csv
+  upstream_task_templates: 02_data/interim/effective_service/legacy_manufacturing_ai_task_hardware_demo_task_results.csv
+  model_ready_task_service: 02_data/processed/effective_service/manufacturing_ai_effective_service_2030.csv
+  model_ready_service_summary: 02_data/interim/effective_service/manufacturing_ai_effective_service_summary.csv
+  model_ready_service_lineage: 02_data/processed/effective_service/lineage.json
+  model_ready_service_validation: 02_data/interim/effective_service/external_alignment.csv
+  model_ready_service_findings: 05_results/effective_service_bottom_up_recalculation.md
+  model_ready_service_done: 02_data/processed/effective_service/validated.done.json
+  raw_compute_efficiency_micro_scenarios: 02_data/raw/curated/inference_compute_efficiency_micro_scenarios.csv
+  model_ready_compute_efficiency: 02_data/processed/compute_efficiency/accelerator_h_per_service_unit.csv
+  model_ready_compute_efficiency_lineage: 02_data/processed/compute_efficiency/lineage.json
+  raw_model_lifecycle_parameters: 02_data/enterprise_llm_lifecycle_parameters.csv
+  raw_model_hardware_matrix: 02_data/llm_model_hardware_storage_matrix.csv
+  model_ready_model_lifecycle: 02_data/processed/model_lifecycle/base_parameters.json
+  enterprise_ai_cost_parameters: 02_data/china_enterprise_ai_cost_parameters.csv
+  api_token_prices: 02_data/processed/api_token_cost/api_token_prices_v1_1.csv
+  flexibility_mapping: 02_data/manufacturing_ai_task_flexibility_mapping.csv
+  topdown_allocation: 02_data/processed/effective_service/external_energy_allocation_31sectors.csv
+  workload_shape_source: 02_data/future_manufacturing_ai_workload_model.csv
+  pv_profile_source: 04_cases/two_user_pv_battery_typical_day.csv
+  spot_price_source: 02_data/raw/curated/gd_province_avg_node_price_dayahead_actual_20211101_20260603.csv
+  battery_cost_source: 02_data/raw/curated/costs_2025.csv
+  raw_us_manufacturing_mecs: 02_data/raw/curated/us_manufacturing_mecs_2022.csv
+  industry_rooftop_crosswalk: 02_data/raw/curated/china_manufacturing_to_us_mecs_rooftop_crosswalk.csv
+  model_ready_industry_rooftop: 02_data/processed/core/china_manufacturing_industry_rooftop_parameters.csv
+  model_ready_industry_rooftop_lineage: 02_data/processed/core/china_manufacturing_industry_rooftop_parameters.lineage.json
+  results_root: 05_results
+
+selected_industries:
+  - C13
+  - C14
+  - C15
+  - C16
+  - C17
+  - C18
+  - C19
+  - C20
+  - C21
+  - C22
+  - C23
+  - C24
+  - C25
+  - C26
+  - C27
+  - C28
+  - C29
+  - C30
+  - C31
+  - C32
+  - C33
+  - C34
+  - C35
+  - C36
+  - C37
+  - C38
+  - C39
+  - C40
+  - C41
+  - C42
+  - C43
+selected_scenarios: [IF, IG, II_1host]
+
+industry_parameter_case: base
+industry_host_counts:
+  C36: 1
+
+demand:
+  year: 2030
+  temporal_scenario: task_timed
+  flexibility_scenario: central
+  allocation_column: central_14twh_allocation_twh
+  effective_service:
+    definition: quality_and_sla_compliant_task_service_normalized_to_reference_L20_hour
+    source_column: effective_service_units_day
+    parameter_case: base
+    compute_efficiency_case: conservative
+    quality_gate: same_task_quality_latency_reliability_privacy
+  external_energy_alignment:
+    lower_allocation_column: lower_8twh_allocation_twh
+    central_allocation_column: central_14twh_allocation_twh
+    upper_allocation_column: upper_28twh_allocation_twh
+    warning_ratio_low: 0.75
+    warning_ratio_high: 1.25
+    per_industry_check: diagnostic
+    role: calibration_and_external_validation_not_service_definition
+  reference_energy_check:
+    pue: 1.20
+    installed_utilization: 0.65
+    accelerators_per_server: 2
+    online_idle_power_kw: 0.36
+    maximum_power_kw: 1.25
+
+model:
+  horizon_hours: 168
+  load_profile_mode: measured_continuous
+  annualization_days: 365
+  discount_rate: 0.08
+  grid_capacity_upgrade_boundary: no_ai_optimized_net_peak_zero_headroom_credit
+  server_groups_integer: false
+  minimum_online_servers: 1
+  solver:
+    name: gurobi
+    mip_gap: 0.001
+    threads: 5
+    log_to_console: false
+
+compute_hardware:
+  mode: heterogeneous_cpu_gpu
+  routing_config: config/compute_hardware/cpu_gpu_routing_v1.yaml
+  local_cpu_price_case: base
+
+model_state:
+  enabled: true
+  parameter_case: base
+
+server:
+  configuration: 2x_NVIDIA_L20_48GB
+  accelerators_per_server: 2
+  purchase_cost_rmb: 150000
+  maximum_wall_power_kw: 1.50
+  online_idle_wall_power_kw: 0.36
+  cold_spare_standby_power_kw: 0.02
+  installed_capacity_rule: max_10pct_planning_headroom_and_n_plus_1
+  installed_reserve_fraction: 0.10
+  n_plus_spare_server_groups: 1
+  # Installed headroom is a planning floor, not an hourly withholding rule.
+  # The operational solve may use 100% of installed capacity.
+  normal_dispatch_reserve_fraction: 0.0
+  # China evidence supports five years as the conservative AI-server core:
+  # Alibaba computer equipment 3-5 years; QingCloud servers 5 years; Tencent
+  # moved a subset of servers from 4 to 6 years in 2025. Six years is an
+  # evidence-backed alternative and seven years is extended-life sensitivity.
+  economic_life_years: 5
+  economic_life_sensitivity_years: [4, 5, 6, 7]
+  annual_maintenance_fraction: 0.05
+  facility_capex_fraction: 0.20
+  marginal_facility_multiplier: 1.30
+  source_parameter_ids:
+    purchase_cost: L02
+    accelerators_per_server: L03
+    maximum_wall_power: SRV01
+    online_idle_wall_power: SRV03
+    cold_spare_standby_power: SRV06
+    installed_reserve_fraction: SRV13
+    marginal_facility_multiplier: PUE04
+
+factory:
+  roof_area_mode: industry_us_mecs_2022_reference
+  roof_usable_fraction: 0.90
+  pv_module_efficiency: 0.22
+  pv_realization_fraction: 0.80
+  pv_profile_case: steel
+
+energy:
+  flat_grid_energy_rmb_per_kwh: 0.65856875
+  grid_energy_price_mode: guangdong_spot_retail_representative_week
+  # Core baseline: ordinary manufacturing sites are not assumed to have DER.
+  # Rooftop PV and battery deployment enter through a separate sensitivity run.
+  pv_capacity_mode: none
+  spot_representative_week:
+    province_code: GD
+    settlement_type: dayahead
+    start_date: '2026-05-28'
+    end_date: '2026-06-03'
+  spot_retail_volumetric_adders_rmb_per_kwh:
+    line_loss: 0.0147
+    transmission_and_distribution: 0.1260
+    system_operation: 0.0859
+    government_funds_and_surcharges: 0.02766875
+  maximum_demand_rmb_per_kw_month: 36.1
+  pv_capex_rmb_per_w: 2.8
+  pv_asset_life_years: 25
+  battery_duration_h: 2
+  battery_roundtrip_efficiency: 0.96
+  battery_investment_enabled: false
+  # Grid expansion is a physical result in the core case. These two controls
+  # are activated only by structural sensitivity cases.
+  grid_expansion_limit_mw: null
+  grid_expansion_objective_penalty_rmb_per_mw_year: 0.0
+  battery_cost:
+    source_year: 2025
+    energy_technology: battery storage
+    power_technology: battery inverter
+    eur_to_rmb: 7.8
+  source_parameter_ids:
+    flat_grid_energy: E01
+    spot_retail_volumetric_adders: [E08, E09, E10, E11]
+    maximum_demand: E05
+    grid_expansion: X01
+    pv_capex: U06
+    battery_energy_and_power_cost: costs_2025_battery_storage_and_inverter
+
+hybrid_cloud:
+  enabled: false
+  # Reserved-capacity proxies aligned with the active China CPU/GPU cost case.
+  gpu_annual_subscription_rmb_per_group: 210068.43
+  gpu_capacity_accelerator_h_per_h: 2.0
+  cpu_annual_subscription_rmb_per_group: 28086.174
+  cpu_capacity_local_server_h_per_h: 0.25
+  maximum_cloud_service_share: 1.0
+
+enterprise_payment:
+  cloud_product_boundary: dual_L20_GPU_IaaS_price_proxy_not_model_API_or_SaaS
+  cloud_reserved_annual_parameter_id: C19
+  cloud_ondemand_hourly_parameter_id: C18
+  accelerators_per_cloud_instance: 2
+  price_cases: [low, base, high]
+
+api_token_cost:
+  cost_case_version: api_token_cost_v1.1.0
+  included_core_tasks: [office, agent]
+  workload_parameter_status: sensitivity_only_existing_project_D_assumptions
+  cache_hit_rate: 0.0
+  batch_share: 0.0
+  retry_rate: 0.0
+  reasoning_tokens_per_call: 0.0
+  large_workload_weight_when_unobserved: 0.5
+  residual_non_token_cost_method: proportional_II_1host_cost_allocation_not_reoptimized
+  result_status: sensitivity_only_not_main_result
+
+full_cloud_cost:
+  scenario_version: full_cloud_cost_v1.0.0
+  token_tasks: [office, agent]
+  gpu_tasks: [vision, maintenance, scheduling, simulation]
+  gpu_billing_mode: cloud_reserved_capacity
+  main_gpu_price_case: base
+  main_cpu_price_case: base
+  residual_gpu_cost_method: proportional_effective_service_share_not_peak_reoptimized
+  cloud_storage_parameter_id: CL004
+  cloud_storage_price_case: base
+  storage_reference_architecture: IG
+  display_ondemand: false
+  formal_country: China
+  formal_allowed_providers: [Alibaba Cloud, DeepSeek]
+  provider_filter_rule: provider_origin_policy_screen_not_technical_availability_claim
+  result_status: formal_enterprise_payment_scenario_capacity_proxy

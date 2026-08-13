@@ -1,0 +1,57 @@
+.DS_Store
+~$g_dLLM.docx
+*.docx
+*.pdf
+
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Snakemake runtime metadata and workflow caches
+.snakemake/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Solver and local scratch outputs
+gurobi.log
+/tmp/
+/output/
+
+# LaTeX build products
+*.aux
+*.log
+*.out
+*.toc
+*.lot
+*.lof
+*.bbl
+*.blg
+*.brf
+*.fls
+*.fdb_latexmk
+*.spl
+*.xdv
+*.synctex.gz
+00_admin/*
+01_literature/*
+02_data/*
+03_models/*
+05_results/*
+07_figures/*
+09_meetings/*
+output/*
+outputs/*
+tests/*

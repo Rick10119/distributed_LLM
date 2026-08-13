@@ -1,0 +1,18 @@
+cost_case_version: us_full_cloud_cost_v1.0.0
+physical_model_version: v0.6.1
+owned_cost_case_version: us_core_cost_v1.0.0
+region: US East (N. Virginia)
+gpu_parameter_id: us_cloud_reserved_usd_per_dual_l20_instance_year
+storage_parameter_id: us_object_storage_usd_per_gb_month
+gpu_price_case: base
+token_tasks: [office, agent]
+gpu_tasks: [vision, maintenance, scheduling, simulation]
+storage_reference_architecture: IG
+storage_first_tier_gb: 50000
+storage_first_tier_usd_per_gb_month: 0.023
+storage_second_tier_usd_per_gb_month: 0.022
+display_ondemand: false
+formal_us_allowed_providers: [OpenAI, Anthropic, Google]
+formal_china_allowed_providers: [Alibaba Cloud, DeepSeek]
+regional_model_eligibility_rule: provider_origin_policy_screen_not_technical_availability_claim
+result_status: formal_us_payment_counterfactual_with_l40s_capacity_equivalent_proxy_and_provider_origin_screen

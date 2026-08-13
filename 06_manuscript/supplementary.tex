@@ -1,0 +1,1216 @@
+%% 
+%% Copyright 2007-2020 Elsevier Ltd
+%% 
+%% This file is part of the 'Elsarticle Bundle'.
+%% ---------------------------------------------
+%% 
+%% It may be distributed under the conditions of the LaTeX Project Public
+%% License, either version 1.2 of this license or (at your option) any
+%% later version.  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.2 or later is part of all distributions of LaTeX
+%% version 1999/12/01 or later.
+%% 
+%% The list of all files belonging to the 'Elsarticle Bundle' is
+%% given in the file `manifest.txt'.
+%% 
+%% Template article for Elsevier's document class `elsarticle'
+%% with harvard style bibliographic references
+
+\documentclass[preprint,12pt]{elsarticle}
+
+%% Use the option review to obtain double line spacing
+%% \documentclass[preprint,review,12pt]{elsarticle}
+
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+%% \documentclass[final,1p,times]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn]{elsarticle}
+%% \documentclass[final,3p,times]{elsarticle}
+%% \documentclass[final,3p,times,twocolumn]{elsarticle}
+%% \documentclass[final,5p,times]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn]{elsarticle}
+
+%% For including figures, graphicx.sty has been loaded in
+%% elsarticle.cls. If you prefer to use the old commands
+%% please give \usepackage{epsfig}
+
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+%% \usepackage{amsthm}
+
+%% The lineno packages adds line numbers. Start line numbering with
+%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
+%% for the whole article with \linenumbers.
+%% \usepackage{lineno}
+\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{url}
+\usepackage{xurl}
+\Urlmuskip=0mu plus 1mu
+\urlstyle{same}
+\usepackage{amsmath, amsfonts}
+\usepackage{amsthm}
+\usepackage{array}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+% after loading amsmath to restore such page breaks as IEEEtran.cls normally
+% does. amsmath.sty is already installed on most LaTeX systems. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/pkg/amsmath
+% \newtheorem{example}{?}             
+% \newtheorem{algorithm}{??}
+\newtheorem{theorem}{\textit{Theorem}}
+\newtheorem{definition}{\textit{Definition}}
+% \newtheorem{axiom}{??}
+\newtheorem{property}{\textit{Property}}
+\newtheorem{proposition}{\textit{Proposition}}
+% \newtheorem{lemma}{??}
+\newtheorem{corollary}{\textit{Corollary}}
+\newtheorem{remark}{\textit{Remark}}
+% \newtheorem{condition}{??}
+% \newtheorem{conclusion}{??}
+\newtheorem{assumption}{\textit{Assumption}}
+
+
+
+% \usepackage[caption=false, font=normalsize, labelfont=sf, textfont=sf]{subfig}
+
+% \usepackage[caption=false, font=footnotesize]{subfig}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{color}
+\usepackage{tabularx}
+\usepackage{makecell} % For line breaks in table cells
+
+
+  % \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+  \graphicspath{{./pdf/}{./jpeg/}{./figures/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+
+
+
+\usepackage[numbers]{natbib}
+
+\journal{Nature Energy}
+
+\begin{document}
+
+\tableofcontents
+%% main text
+\newpage
+% ! Introduction
+
+\section{Supplementary Figures and Tables}
+
+\begin{table}[h]
+  \centering
+  \caption{Aluminum Demand Projection (unit: 10,000 t/year).}
+  \label{tab:aluminum_demand}
+  \footnotesize % Adjust font size to fit the page
+  \setlength{\tabcolsep}{3pt} % Reduce column separation
+  \begin{tabular}{llllllll}
+    \hline
+    \multicolumn{1}{c}{\textbf{Scenario}} & \multicolumn{1}{c}{\textbf{Year}} & \multicolumn{1}{c}{\textbf{\begin{tabular}[c]{@{}c@{}}Total\\ Demand\end{tabular}}} & \multicolumn{1}{c}{\textbf{\begin{tabular}[c]{@{}c@{}}Domestic\\ Scrap\end{tabular}}} & \multicolumn{1}{c}{\textbf{\begin{tabular}[c]{@{}c@{}}Imported\\Scrap \end{tabular}}} & \multicolumn{1}{c}{\textbf{\begin{tabular}[c]{@{}c@{}}Recycled\\ Aluminum\\ Production\end{tabular}}} & \multicolumn{1}{c}{\textbf{\begin{tabular}[c]{@{}c@{}}Primary\\ Aluminum\\ Demand\end{tabular}}} & \multicolumn{1}{c}{\textbf{\begin{tabular}[c]{@{}c@{}}Overcapacity\\ Rate (\%)\end{tabular}}} \\ \hline
+    Low Demand                            & 2030                              & 3706                                                                                             & 2177                                                                                             & 218                                                                                                & 1796                                                                                                               & 1910                                                                                                          & 58                                                                                            \\
+    Low Demand                            & 2035                              & 3847                                                                                             & 3179                                                                                             & 318                                                                                                & 2623                                                                                                               & 1224                                                                                                          & 73                                                                                            \\
+    Low Demand                            & 2040                              & 3947                                                                                             & 3772                                                                                             & 377                                                                                                & 3112                                                                                                               & 835                                                                                                           & 81                                                                                            \\
+    Low Demand                            & 2045                              & 3719                                                                                             & 3827                                                                                             & 0                                                                                                  & 2870                                                                                                               & 849                                                                                                           & 81                                                                                            \\
+    Low Demand                            & 2050                              & 3440                                                                                             & 3749                                                                                             & 0                                                                                                  & 2812                                                                                                               & 628                                                                                                           & 86                                                                                            \\
+    Low Demand                            & 2055                              & 3390                                                                                             & 3880                                                                                             & 0                                                                                                  & 2910                                                                                                               & 480                                                                                                           & 89                                                                                            \\
+    Low Demand                            & 2060                              & 3222                                                                                             & 3884                                                                                             & 0                                                                                                  & 2913                                                                                                               & 309                                                                                                           & 93                                                                                            \\
+    Mid Demand                            & 2030                              & 4873                                                                                             & 2559                                                                                             & 256                                                                                                & 1971                                                                                                               & 2902                                                                                                          & 36                                                                                            \\
+    Mid Demand                            & 2035                              & 5028                                                                                             & 3876                                                                                             & 388                                                                                                & 2984                                                                                                               & 2044                                                                                                          & 55                                                                                            \\
+    Mid Demand                            & 2040                              & 5210                                                                                             & 4808                                                                                             & 481                                                                                                & 3702                                                                                                               & 1508                                                                                                          & 66                                                                                            \\
+    Mid Demand                            & 2045                              & 4881                                                                                             & 4915                                                                                             & 0                                                                                                  & 3440                                                                                                               & 1440                                                                                                          & 68                                                                                            \\
+    Mid Demand                            & 2050                              & 4642                                                                                             & 4965                                                                                             & 0                                                                                                  & 3476                                                                                                               & 1167                                                                                                          & 74                                                                                            \\
+    Mid Demand                            & 2055                              & 4593                                                                                             & 5153                                                                                             & 0                                                                                                  & 3607                                                                                                               & 986                                                                                                           & 78                                                                                            \\
+    Mid Demand                            & 2060                              & 4224                                                                                             & 4997                                                                                             & 0                                                                                                  & 3498                                                                                                               & 726                                                                                                           & 84                                                                                            \\
+    High Demand                           & 2030                              & 4953                                                                                             & 2812                                                                                             & 0                                                                                                  & 1828                                                                                                               & 3125                                                                                                          & 31                                                                                            \\
+    High Demand                           & 2035                              & 5770                                                                                             & 3989                                                                                             & 0                                                                                                  & 2593                                                                                                               & 3176                                                                                                          & 29                                                                                            \\
+    High Demand                           & 2040                              & 5871                                                                                             & 4527                                                                                             & 0                                                                                                  & 2943                                                                                                               & 2928                                                                                                          & 35                                                                                            \\
+    High Demand                           & 2045                              & 5941                                                                                             & 5063                                                                                             & 0                                                                                                  & 3291                                                                                                               & 2650                                                                                                          & 41                                                                                            \\
+    High Demand                           & 2050                              & 6136                                                                                             & 5726                                                                                             & 0                                                                                                  & 3722                                                                                                               & 2414                                                                                                          & 46                                                                                            \\
+    High Demand                           & 2055                              & 5837                                                                                             & 5880                                                                                             & 0                                                                                                  & 3822                                                                                                               & 2014                                                                                                          & 55                                                                                            \\
+    High Demand                           & 2060                              & 5513                                                                                             & 5971                                                                                             & 0                                                                                                  & 3881                                                                                                               & 1632                                                                                                          & 64                                                                                            \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{./figures/cost_comparison_refactored_f.png}
+  \caption{\textbf{Reduction in electricity system costs due to overcapacity-enabled flexibility in aluminum smelting, compared to the no-overcapacity case.} (Flexible labor scenario)}
+  \label{fig_value_flexible_labor}
+  \end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{./figures/mmmf_2050_analysis.png}
+  \caption{\textbf{Trade-off analysis and cost-effective strategy for retaining overcapacity.} Annual net benefit of different aluminum smelting overcapacities in 2050. (Flexible labor scenario)}
+  \label{fig_tradeoff}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{./figures/battery-ll-current+Neighbor-linear2050-2050.png}
+  \caption{Heatmap of battery operation (DP-2050; core scenario). Positive numbers for discharging (red); negative numbers for charging (blue).}
+  \label{fig:battery}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{./figures/H2-ll-current+Neighbor-linear2050-2050.png}
+  \caption{Heatmap of H2 storage operation (DP-2050; core scenario). Positive numbers for discharging (red); negative numbers for charging (blue).}
+  \label{fig:h2}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{./figures/water-ll-current+Neighbor-linear2050-2050.png}
+  \caption{Heatmap of hot water storage operation (DP-2050; core scenario). Positive numbers for discharging (red); negative numbers for charging (blue).}
+  \label{fig:water_tank_operation}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{./figures/water_store-ll-current+Neighbor-linear2050-2050.png}
+  \caption{Stored thermal energy (normalized with respect to rated value) in hot water tanks (DP-2050; core scenario).}
+  \label{fig:water_tank_energy}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{./figures/flexibility_LMMF_MMMF_HMMF_2050_15p_aluminum.png}
+  \caption{Aluminum smelter operation heatmap with different flexibility scenarios (DP-2050; Flexible labor scenario; 30\% overcapacity). 1 for consuming electricity at rated power (red); 0 for shutting down (blue).}
+  \label{fig:aluminum_high}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \subfloat[\footnotesize Monthly electricity demand and generation in Xinjiang (DP-2050).\label{fig_operation}]{
+    \includegraphics[width=0.8\textwidth]{./figures/net_demand_2050_Xinjiang.png}
+  }
+  \vspace{0.5cm}
+  \subfloat[\footnotesize Monthly electricity demand and generation in Yunnan (DP-2050).\label{fig_monthly_demand}]{
+    \includegraphics[width=0.8\textwidth]{./figures/net_demand_2050_Yunnan.png}
+  }
+  \caption{\textbf{Monthly electricity demand and generation profiles for representative provinces in the DP-2050 scenario.} \textbf{a}, Xinjiang (Northwest China) exemplifies a \textit{demand-driven} seasonality. In deeply decarbonized scenarios, widespread electrification of the heating sector creates severe winter load peaks that significantly outpace local generation capabilities, resulting in high winter residual load. \textbf{b}, Yunnan (Southwest China) illustrates a \textit{supply-driven} (hydrology-driven) seasonality. The region's heavy reliance on hydropower provides abundant generation during the summer wet season but leads to severe power deficits during the winter dry season. This physical reality mirrors the actual winter curtailments increasingly faced by Yunnan's aluminum smelters today. Despite having fundamentally different drivers (heating demands in the North vs. renewable scarcity in the South), both regions experience their most pronounced winter peaks in residual load. This spatial analysis demonstrates that the systemic value of seasonal industrial flexibility---curtailing smelting operations during winter scarcity periods---holds true across diverse regional grid conditions.}
+  \label{fig_operation_demand}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{./figures/aluminum_cost_composition_2020_2050_stacked_bar_s_U.png}
+  \caption{Comparison of the levelized cost per tonne of aluminum between the 2020 baseline and various 2050 overcapacity levels.}
+  \label{fig_cost_composition_transition}
+  \end{figure}
+
+\newpage
+
+\section{Primary Aluminum Demand Projection}
+
+We forecast China's aluminum demand over the coming decades while simultaneously projecting the availability of recycled aluminum. Our methodology assumes that per capita aluminum stock levels tend to saturate with economic development, a standard approach for forecasting demand for metallic raw materials such as steel and aluminum~\citep{song_mapping_2020, li_analysis_2022}. Having obtained the annual aluminum demand projections, we assume that the hourly aluminum demand remains constant throughout each year. This assumption simplifies temporal demand variations, allowing us to focus on smelter operational flexibility in meeting steady hourly demand. A similar approach was adopted by~\citet{livalue}. The constant hourly demand assumption eliminates the complexity of modeling short-term demand fluctuations while imposing stricter supply-demand balance constraints: any production shortfall must be compensated by inventory drawdown, and any production surplus must be stored, both of which incur additional costs.
+
+\subsection{Historical Aluminum Stock Calculation}
+
+To obtain historical aluminum stock data (which is not explicitly reported in official statistics), we extracted historical aluminum production data from the \textit{China Statistical Yearbook} and calculated aluminum stock by accumulating historical production while accounting for product aging. Specifically, using primary and secondary aluminum production data from 1990 to 2023 in China, we calculated the annual in-use aluminum stock through 2024. The historical aluminum stock calculation uses a dynamic material flow analysis approach considering both primary production and recycling. The methodology employs a Weibull distribution to model the lifetime and decay patterns of in-use aluminum products. For each target year $t$, the aluminum stock $S(t)$ is calculated as:
+\begin{equation}
+S(t) = \sum_{y=1950}^{t} P_{adj}(y) \cdot \phi(t-y)
+\end{equation}
+where $P_{adj}(y)$ represents the adjusted aluminum production in year $y$ (including recycled content), and $\phi(t-y)$ is the survival probability function for aluminum products of age $(t-y)$.
+
+The survival probability is modeled using a Weibull distribution with the following parameters: Shape parameter $k = 2$, Scale parameter $\lambda = \frac{\mu}{\Gamma(1 + 1/k)}$, where $\mu$ is the mean product lifetime. Mean lifetime $\mu$ varies by scenario: 14-18 years depending on the configuration. Here, $k = 2$ implies a linearly increasing hazard with age and captures wear-out behavior typical of capital equipment and infrastructure; this value is widely adopted in reliability and stock-turnover studies, lies within the empirical range reported for comparable technologies (approximately k$\approx$1.5-3), and avoids imposing extreme skewness. We treat k=2 as an explicit modeling assumption and our results align with existing studies~\citep{li_when_2020,yang_supply_2024}, confirming it does not alter the study's qualitative conclusions.
+
+The survival probability function is defined as:
+\begin{equation}
+\phi(age) = 1 - F_{Weibull}(age; k, \lambda)
+\end{equation}
+where $F_{Weibull}$ is the cumulative distribution function of the Weibull distribution.
+
+
+The methodology incorporates recycling effects through an iterative two-pass calculation:
+\textit{First Pass:} Calculate initial stock without considering recycling effects using historical production data.
+\textit{Second Pass:} For each year $t > 1950$, calculate the decay amount from previous years' production:
+\begin{align}
+D(t) &= \sum_{y=1950}^{t-1} P_{adj}(y) \cdot f_{Weibull}(t-y; k, \lambda) \\
+&= \sum_{y=1950}^{t-1} P_{adj}(y) \cdot \frac{k}{\lambda} \cdot \left(\frac{t-y}{\lambda}\right)^{k-1} \cdot e^{-\left(\frac{t-y}{\lambda}\right)^k}
+\end{align}
+where $f_{Weibull}$ is the probability density function of the Weibull distribution. The recycled aluminum amount is then calculated as:
+\begin{equation}
+R(t) = D(t) \cdot \rho
+\end{equation}
+where $\rho$ is the recycling rate (ranging from 0.65 to 0.75 depending on the scenario). The adjusted production for year $t$ becomes:
+\begin{equation}
+P_{adj}(t) = P_{primary}(t) + R(t)
+\end{equation}
+
+\subsection{EnergyPathways Model Configuration}
+
+To integrate aluminum demand forecasting into the EnergyPathways framework~\citep{Farid2024}, we configured the model using the stock-based method with national population data as the primary driver. The national population data was processed from provincial population projections by \citet{chen_provincial_2020} and aggregated to create a national population driver. 
+The historical aluminum stock values from 2003-2025 were input into EnergyPathways as the baseline data for fitting an S-shaped growth curve. The model applies logistic regression to fit a sigmoid function to the historical stock data, capturing the characteristic saturation behavior where per capita aluminum stock levels approach an asymptotic maximum as economic development progresses. This S-curve fitting approach allows the model to project future aluminum stock levels beyond the historical data period by extrapolating the fitted growth trajectory. The EnergyPathways model then employs the following formula to calculate the projected national aluminum demand~\citep{ADP2024}:
+\begin{equation}
+D_{yrc} = \sum_{t \in T} \sum_{v=1}^{V} U_{tvryc} \cdot f_{tvc} \cdot d_{yr} \cdot (1 - R_{yrc})
+\end{equation}
+where $D_{yrc}$ represents the aluminum demand in year $y$ of carrier $c$ in region $r$, $U_{tvryc}$ is the normalized share of service demand for technology $t$ of vintage $v$, $f_{tvc}$ is the efficiency of technology $t$ using carrier $c$, $d_{yr}$ is the total service demand input for year $y$ in region $r$, and $R_{yrc}$ represents unitized service demand reductions.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.65\textwidth]{./figures/projection.png}
+  \caption{EnergyPathways model outputs in core scenarios (unit: Mt/year). The model validation against 2024 actual data shows strong agreement: projected total aluminum demand of 50 Mt closely matches the actual domestic demand of 52 Mt (54 Mt total demand minus 2 Mt primary aluminum imports). The projected scrap aluminum availability of 15 Mt aligns with the model's historical stock calculation, and the 70\% recycling rate used in the model is consistent with the actual recycled aluminum production of 10 Mt (15 Mt $\times$ 70\% = 10.5 Mt). }
+  \label{fig:projection}
+\end{figure}
+
+After running the EnergyPathways model, aluminum scrap availability and primary aluminum demand were calculated using the model-generated outputs (Figure \ref{fig:projection}). The model produces two key outputs: total aluminum demand by year, and aluminum production and sales by year. Aluminum scrap is calculated as the difference between total demand and stock increase using the formula:
+\begin{equation}
+S_y = D_y - \Delta\text{Stock}_y
+\end{equation}
+where $\Delta\text{Stock}_y = \text{SD}_y - \text{SD}_{y-1}$, $S_y$ represents scrap in year $y$, $D_y$ represents sales, and $\text{SD}_y$ represents service demand.
+Primary aluminum demand accounts for recycling and import scenarios through the following calculation:
+\begin{equation}
+P_y = D_y - (S_{d,y} + S_{i,y}) \cdot R_y
+\end{equation}
+where $P_y$ is primary demand, $D_y$ is domestic demand, $S_{d,y}$ and $S_{i,y}$ are domestic and imported scrap, and $R_y$ is recycling rate.
+The calculation incorporates scenario-specific parameters where domestic scrap is calculated from model outputs.
+
+\subsection{Consideration for Recycled Aluminum Production}\label{recycled_operation}
+
+
+In our long-term projections (up to 2050), secondary (recycled) aluminum production is assumed to play a primary role in meeting China's total aluminum demand. Secondary production consumes approximately 95\% less energy and generates lower carbon emissions compared to the primary smelting process. To ensure consistency between our industrial and energy models, we adopt a sequential fulfillment logic: secondary aluminum—driven by the availability of domestic and imported scrap—is used to satisfy as much of the total demand as possible, with primary aluminum production serving as the variable component to cover the remaining deficit. Thus, primary aluminum demand is calculated as the total projected demand minus the available supply of recycled aluminum.
+
+While secondary aluminum is a cleaner production route, its role in providing seasonal grid flexibility is limited compared to the primary sector. In our 2050 scenarios, recycled aluminum facilities are modeled as continuous baseload operations for three technical and economic reasons. First, the secondary aluminum industry is projected to undergo rapid expansion, requiring significant capital investment (CAPEX) to reach a production share of over 60\% by 2050 \citep{li_when_2020}. Unlike the primary sector, which can leverage existing overcapacity at zero marginal capital cost, flexibility in the recycling sector would require building redundant capacity. Second, the energy intensity of secondary production is approximately 20 times lower than that of primary smelting, representing less than 5\% of total production costs \citep{peng_life_2022}. Consequently, the electricity cost savings from seasonal shifting are insufficient to cover the financing and depreciation costs of idle recycling capacity. Third, the high market value and logistical complexity of aluminum scrap—relative to the lower-value bauxite and alumina used in primary smelting—make the large-scale stockpiling required for seasonal shutdown prohibitive. Therefore, our model assigns the role of seasonal load-shifting exclusively to the primary aluminum industry's overcapacity.
+
+
+\subsection{Scenario Configuration for Aluminum Demand}
+
+\subsubsection{Per Capita Stock Saturation}
+In our scenario configuration, the parameter that most directly influences national aluminum demand is the empirical saturation value used when fitting per capita aluminum stock demand with a logistic curve. For the baseline scenario (Mid), we set the per capita aluminum stock demand saturation at the U.S. demand level (approximately 600 kg per capita). The saturation values for primary aluminum demand in the Low and High scenarios are set at 500 and 700 kg per capita, respectively. The former represents a future where, despite China's economic scale potentially exceeding the United States, per capita consumption may not reach U.S. levels due to constrained per capita resources; this aligns closely with settings in existing literature~\citep{yang_supply_2024}. The latter represents a scenario where the growth of electric vehicles and renewable energy-related industries significantly drives aluminum demand—industries that have not yet fully dominated developed countries but may become a major component of China's economy, pushing China's future per capita aluminum stock beyond current U.S. levels.
+
+\subsubsection{Scrap Availability and Imports}
+China is a major importer and exporter of aluminum-related products. We established scenarios reflecting variations in export levels. Historically, due to insufficient domestic scrap availability, China relied heavily on imported scrap aluminum. In 2005, imported scrap accounted for up to 60\% of the scrap used in national recycled aluminum production~\citep{li_when_2020}. Since then, both the volume and proportion of imported scrap have steadily declined. Over the past decade, imported scrap as a proportion of domestic available scrap has decreased from approximately 30\% to around 10\%. As domestic scrap availability increases, we expect the proportion of imported scrap to decline further. Therefore, in the baseline scenario (Mid), the ratio of imported to domestic scrap is set at 5\%. In the Low demand scenario, the import ratio remains at 10\%, representing higher scrap availability and correspondingly lower primary production demand. Conversely, in the High scenario, the import ratio is set at 0\%, as abundant domestic supply may render imported scrap uneconomical.
+
+\subsubsection{Recycling Rates and Product Lifetimes}
+Two parameters indirectly affect primary aluminum demand through multiplier effects: the scrap aluminum recycling rate and the average lifetime of aluminum products. The average lifetime also affects total demand, as new products must replace aging items that become scrap. In the Low demand scenario, we assume that improved sustainability practices increase the recycling rate to 75\%, while the average product lifetime increases from 16 years (baseline) to 18 years. This produces more recycled aluminum from the same available scrap pool while reducing replacement demand, thereby further lowering primary demand. In the High Demand scenario, recognizing that increased scrap may include harder-to-recycle materials from the construction sector, the recycling rate is set at 65\% alongside a shorter average product lifetime.
+
+
+\subsubsection{Implicit Accounting for Product Exports}\label{product_exports}
+Our demand modeling accounts for the historical export of aluminum and aluminum-containing products implicitly through the \textbf{scrap recycle rate} parameter. Specifically, the exportation of finished goods reduces the domestic availability of aluminum scrap at the end of their product lifetimes. In our formulation, the scrap recycle rate is defined as the volume of domestically available scrap divided by the total scrap generated from end-of-life products originally produced in China (including exports). Consequently, a higher export rate implies a larger portion of the potential scrap ``stock'' is located outside of China, reflected as a lower effective domestic scrap recycle rate. 
+
+This approach is standard in industrial ecology when granular data on end-use specific exports are unavailable. For our core scenario, we determined a scrap recycle rate of 70\% based on existing literature and historical data (e.g., the 2024 calculation of ~10.5 Mt available scrap out of ~15 Mt generated). This value is consistent with other China-specific studies but is intentionally lower than the rates used for mature economies like the United States (~80\%), because of China's historically higher net export of aluminum products. To ensure robustness, we performed sensitivity analyses with rates of 65\% and 75\%.
+
+
+\subsubsection{Neutrality of Ingot Trade}
+We did not explicitly model the impact of aluminum ingot import and export volumes on China's primary demand. In recent years, China's aluminum ingot exports have accounted for less than 5\% of national primary production, having a negligible impact on results. Moreover, ingot exports are primarily a consequence, rather than a cause, of domestic supply-demand dynamics. Future ingot export volumes are unlikely to increase significantly, as exports from resource-rich countries like Australia remain highly competitive. Simultaneously, as the proportion of recycled aluminum increases and average domestic production costs decrease, China is unlikely to significantly increase ingot imports. Therefore, the overall impact of ingot trade on national electrolytic aluminum demand is treated as neutral, with domestic demand and scrap availability serving as the dominant drivers.
+
+\newpage
+\section{Smelter Operation Modeling and Capacity Distribution}
+
+
+\subsection{Electrolytic Cell Flexibility Modeling}
+
+The model captures the key characteristics of electrolytic cell operation: temperature constraints and stoichiometry. This reflects the complex thermal dynamics of electrolytic cells and the expensive restart procedures required if internal temperatures fall below critical points.
+
+This study employs a mixed-integer linear model, an initial version of which was developed by Shen et al.~\citep{shen_improved_2025} for production and energy consumption decisions in smelter operations. The model accurately reproduces the relationships between internal temperature changes and electrolysis rates with applied voltage and current, transforming them into a linear programming model through piecewise linearization and numerical approximation. It optimizes the input voltage and current of electrolytic cells at hourly intervals while maintaining internal temperatures within allowable ranges.
+
+Our modeling method for electrolytic aluminum loads (EALs) incorporates more accurate thermal balance constraints and efficient mathematical approximations. It provides a computationally efficient optimization framework that accounts for the complex energy-material-temperature conversion mechanisms within EALs.
+
+The model starts with the fundamental \textit{power-current coupling constraint}, which models a potline as an equivalent circuit with internal electromotive force (EMF) and resistance.
+This leads to a quadratic relationship between power and current, given by $P_{j,t}^{\mathrm{al}} = I_{j,t}^{\mathrm{al}~2} R_{j,m} + I_{j,t}^{\mathrm{al}} E_{j,m}$.
+To improve computational efficiency, a first-order Taylor expansion approximation is applied, resulting in the following linear relationship:
+\begin{equation}
+P_{j,t}^{\mathrm{al}} = (2I_{j,\mathrm{N}}^{\mathrm{al}} R_{j,m} + E_{j,m}) I_{j,t}^{\mathrm{al}} - I_{j,\mathrm{N}}^{\mathrm{al}~2} R_{j,m}
+\end{equation}
+where $P_{j,t}^{\mathrm{al}}$ and $I_{j,t}^{\mathrm{al}}$ are power and current of potline $j$ at time $t$.
+
+A key improvement is the more accurate \textit{power-temperature coupling constraint}, which recognizes that input power perturbations disrupt the thermal balance of the electrolytic cell.
+Unlike original models that oversimplified dynamic thermal responses, this method incorporates the thermal inertia of both the electrolyte and the cell shell.
+The energy balance is described by a set of discretized differential equations:
+\begin{multline}
+P_e(t) - k \eta (W_h + W_r) I(t) - S_1 h_1 (T_e(t) - T_s(t)) \\
+= c_e m_e (T_e(t+1) - T_e(t))
+\end{multline}
+\begin{multline}
+S_1 h_1 (T_e(t) - T_s(t)) - S_2 h_2 (T_s(t) - T_0(t)) \\
+= c_s m_s (T_s(t+1) - T_s(t))
+\end{multline}
+Here, $T_e$ and $T_s$ represent the electrolyte and cell shell temperatures, respectively, and the equations account for input power, reaction energy, heat dissipation, and the change in internal energy over time.
+Furthermore, the model addresses inherently nonlinear \textit{yield-current coupling} and \textit{temperature-current relationships}.
+Instead of imposing rigid yield constraints, the model removes them, allowing the optimization to naturally determine the most economical yield level through cost function minimization.
+
+The improved model is a Mixed Integer Nonlinear Programming (MINLP) model that accounts for the piecewise, discontinuous nature of EAL regulation costs. The cost function includes electricity costs, production losses, and the risk of cell shutdowns. To handle the \textit{discontinuity at piecewise points}, the model introduces additional weight variables ($w_k$) to perform a weighted sum of the function values on both sides of each point. For \textit{time-coupled variables}, the model simplifies the calculation of potline shutdown risk costs, which are typically tied to the duration of operation in a ``Cooling State''. The model establishes a lower bound for the duration of the Cooling State and calculates the shutdown risk cost as a simple sum over all time steps where the potline is in this state:
+\begin{equation}
+S_j^\mathrm{wtr-cool} = (1-e^{-\gamma}) S_{j,on}^\mathrm{al} \sum_t^T y_{1,j,t}
+\end{equation}
+This simplification is justified by the observation that in optimal operation, potlines rarely enter the Cooling State due to economic considerations.
+
+We introduced startup and shutdown variables and costs into the linear model, transforming it into a mixed-integer model to capture shutdown decisions. This allows our model to optimize smelter operational decisions over a larger time scale. Since the introduction of integer variables makes direct embedding into a power system planning model computationally infeasible, we designed a decomposition-based iterative algorithm for the solution (detailed in Note 4).
+
+Although our baseline model (Mid-flexibility) adopts advanced formulations and precise numerical simulation results, parameters carry uncertainty due to the limited historical implementation of deep grid interaction by aluminum smelters (e.g., adjusting internal temperatures to near-critical levels or full restarts). To encompass these uncertainties, we established Low and High flexibility scenarios:
+
+Low: No progress has been made in smelter operational flexibility, and restart costs from historical high-cost reports are used.
+High: New technologies significantly improve smelter operational flexibility, and restart costs drop substantially, representing the goal of ongoing R\&D efforts~\citep{lukin_reduction_2016}.
+Un-constrained: An idealized scenario that disregards temperature constraints, start-up/shutdown constraints, and restart costs, considering only rated power constraints to represent the theoretical maximum value of grid interaction.
+
+\subsection{Consideration for Smelter Operational Stability}\label{sec:stability}
+
+Primary aluminum smelting is designed as a continuous process. Large deviations from the rated operating point trigger energy losses, accelerate ledge recession, or induce cell freeze and costly restarts. In our modeling framework, these operational stability constraints are enforced explicitly by combining internal thermal balance equations with high restart costs for potlines. The mixed-integer formulation distinguishes between normal operation, cooling states, and shutdown/restart states, assigning economic penalties to trajectories that bring temperatures outside safe ranges or require a full restart. As a result, the optimal solutions preserve continuous operation for most of the year and avoid frequent on-off cycling.
+
+Seasonal flexibility in our results therefore arises from a limited number of economically justified shutdown events rather than high-frequency modulation. When winter electricity prices in deeply decarbonized grids are sufficiently high, a complete seasonal shutdown (typically once per year) is preferable to continuous operation, provided the one-time restart and maintenance costs are offset by the avoided winter energy expenditures. This aligns with industrial practice: smelters avoid repeated short shutdowns due to thermal stress, but routinely plan extended outages for major relining and refurbishment. 
+
+We benchmark our assumed flexibility ranges against technological demonstrations and empirical experience. Active heat management projects such as TRIMET Aluminium SE's “virtual battery” trials in Essen and the EnPot system in New Zealand use shell heat exchangers to decouple power input from internal thermal balance; industrial tests show that retrofitted cells can sustain power modulation of $\pm$25-30\% over many hours without compromising cell stability~\citep{lukin_reduction_2016, enpot_2026}. Furthermore, during the 2021-2022 European energy crisis, approximately half of EU primary aluminum capacity curtailed production under extreme price signals. In Yunnan, smelters frequently reduce load by 10-40\% during dry seasons to manage hydropower scarcity~\citep{european_aluminum_crisis_2022, alcircle_yunnan_cuts_2023, smm_yunnan_cuts_2024}. Guided by this evidence, our scenario design restricts the “Mid” flexibility case to a 10\% power reduction (current un-retrofitted practice) and the ``High'' flexibility case to 30\% (wide deployment of advanced heat-management technologies). Crucially, even under these conservative bounds, the dominant contribution to system-level flexibility comes from seasonal batch operation rather than full hourly modulation.
+
+
+\subsection{Province-level Capacity Distribution}\label{sec:province_capacity_distribution}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Capacity distribution by province (unit: 10,000 t/year).}
+  \label{tab:capacity_distribution}
+  \footnotesize % Adjust font size to fit the page
+  \setlength{\tabcolsep}{3pt} % Reduce column separation
+  \begin{tabular}{rlrrlr}
+    \hline
+    \multicolumn{1}{l}{Node \#} & Province       & \multicolumn{1}{l}{\begin{tabular}[c]{@{}l@{}}Aluminum Smelter \\ Capacity\end{tabular}} & \multicolumn{1}{l}{Node \#} & Province  & \multicolumn{1}{l}{\begin{tabular}[c]{@{}l@{}}Aluminum Smelter \\ Capacity\end{tabular}} \\ \hline
+    1                           & Heilongjiang   & 15                                                                                                & 17                          & Anhui     & 161                                                                                               \\
+    2                           & Inner Mongolia & 506                                                                                               & 18                          & Xizang    & 0                                                                                                 \\
+    3                           & Jilin          & 8                                                                                                 & 19                          & Shanghai  & 0                                                                                                 \\
+    4                           & Liaoning       & 56                                                                                                & 20                          & Hubei     & 73                                                                                                \\
+    5                           & Xinjiang       & 536                                                                                               & 21                          & Sichuan   & 106                                                                                               \\
+    6                           & Beijing        & 0                                                                                                 & 22                          & Chongqing & 38                                                                                                \\
+    7                           & Hebei          & 5                                                                                                 & 23                          & Zhejiang  & 43                                                                                                \\
+    8                           & Tianjin        & 0                                                                                                 & 24                          & Jiangxi   & 161                                                                                               \\
+    9                           & Gansu          & 300                                                                                               & 25                          & Hunan     & 123                                                                                               \\
+    10                          & Shanxi         & 93                                                                                                & 26                          & Guizhou   & 117                                                                                               \\
+    11                          & Ningxia        & 91                                                                                                & 27                          & Fujian    & 62                                                                                                \\
+    12                          & Shandong       & 527                                                                                               & 28                          & Yunnan    & 461                                                                                               \\
+    13                          & Qinghai        & 186                                                                                               & 29                          & Guangxi   & 308                                                                                               \\
+    14                          & Shaanxi        & 124                                                                                               & 30                          & Guangdong & 41                                                                                                \\
+    15                          & Henan          & 298                                                                                               & 31                          & Hainan    & 0                                                                                                 \\
+    16                          & Jiangsu        & 59                                                                                                & \multicolumn{1}{l}{}        &           & \multicolumn{1}{l}{}                                                                              \\ \hline
+    \end{tabular}
+\end{table}
+
+
+The assumption that China's primary aluminum smelting capacity remains at 45 million tonnes (Mt) per year without early retirement is based on policy and facility-level data. The 45~Mt capacity ceiling follows the compliance cap set by the Chinese government's supply-side structural reform and industry entry standards. In 2017, the National Development and Reform Commission and other ministries issued the \textit{Notice on the Special Action Plan for Cleaning Up and Rectifying Illegal and Non-compliant Projects in the Primary Aluminum Industry}, explicitly setting the capacity ceiling at 45.54~Mt \citep{ndrc_al_capacity_ceiling_2017}. As of early 2024, China's total installed capacity had reached this limit. We assume this capacity continues until 2060 if no early retirement is chosen. The assumption that smelting assets can remain operational for over 50 years is supported by facility-level and international evidence. The CEADs-AGE database \citep{tan_different_2025}, tracking 249 primary aluminum smelters in China, shows several large smelters commissioned in the 1970s and 1980s remain operational today following periodic cell relining; all four currently operating primary smelters in the U.S. have also exceeded 50 years of operation. CEADs-AGE indicates approximately 91.7\% of China's operational smelting capacity in 2021 was commissioned after the year 2000. Thus, the majority of Chinese smelting capacity is relatively young, making natural retirement before the 2050--2060 horizon unlikely. Figure~\ref{fig:smelter_age_distribution_SI} illustrates this age distribution.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\linewidth]{./figures/tech_age_running_distribution.png}
+  \caption{Distribution of commissioning years for primary aluminum smelters operational in China as of 2021 (based on the CEADs-AGE dataset \citep{tan_different_2025}).}
+  \label{fig:smelter_age_distribution_SI}
+\end{figure}
+
+
+Since not all provinces have complete statistical data on aluminum smelting capacity, we distributed the national capacity to each province based on provincial aluminum production in 2023 (Table \ref{tab:capacity_distribution}), assuming capacity shares remain unchanged across scenarios. Theoretically, an optimal retirement strategy should prioritize retiring capacity in provinces with high operational costs or low renewable energy potential. However, this requires treating smelter capacity as decision variables co-optimized with power system capacity expansion, which is computationally intractable within the PyPSA-China framework. Given that this study focuses on the value of overcapacity rather than optimal capacity distribution, we leave this optimization for future work.
+
+To systematically explore the trade-offs between overcapacity maintenance costs and flexibility benefits, we designed multiple retention scenarios across different combinations of demand, flexibility, and market settings. In addition to the extreme cases of complete overcapacity elimination and complete capacity retention, we established intermediate scenarios with 5\%, 10\%, ..., 90\% overcapacity retention rates. The retention rate refers to the proportion of overcapacity retained relative to the initial overcapacity. For example, if demand is 5 Mt and initial capacity is 45 Mt, a 10\% retention corresponds to a capacity of 5 + (45-5) $\times$ 10\% = 9 Mt. We assume capacity reductions are proportionally distributed among provinces. Given declining demand trends, we do not consider capacity expansion scenarios.
+
+
+
+\subsection{Smelter Costing}
+
+\begin{table}[htbp]
+  \centering
+\caption{Typical costing of aluminum smelting in 2020 (In 2020 CNY).}
+  \label{tab:smelter_costing}
+  \footnotesize % Adjust font size to fit the page
+  \setlength{\tabcolsep}{3pt} % Reduce column separation
+  \begin{tabular}{llll}
+    \hline
+    Item                & Unit Consumption & Unit Price (CNY) & Cost (CNY/tonne aluminum) \\ \hline
+    Alumina             & 1.925            & 2885             & 5553.625   \\
+    Electricity         & 13500            & 0.463            & 6250.5     \\
+    Anode Carbon Block  & 0.45             & 5800             & 2610       \\
+    Aluminum Fluoride   & 0.025            & 10650            & 266.25     \\
+    Cryolite            & 0.003            & 7100             & 21.3       \\
+    Labor               &                  &                  & 150        \\
+    \multicolumn{2}{l}{Maintenance Costs}  &                  & 400        \\
+    \multicolumn{2}{l}{Other   Expenses}   &                  & 1500       \\
+    \multicolumn{2}{l}{Depreciation Costs} &                  & 300        \\
+    Total               &                  &                  & 17051.675  \\ \hline
+    \end{tabular}
+\vspace{0.2em}
+
+\raggedright
+\footnotesize
+Exchange rate (annual average 2020): 1\,EUR = 7.868\,CNY.
+\normalsize
+\end{table}
+
+The investment, operation, and maintenance costs of aluminum smelting are assessed based on industry reports. We base our calculation of aluminum electrolysis cost changes across various scenarios on the production cost composition disclosed in the 2020 annual report of China Aluminum Corporation (Table \ref{tab:smelter_costing}). In the optimization model, we treat raw material costs as constant across all scenarios since they do not affect operational optimization results. Investment costs and maintenance costs are related only to the maintained capacity, therefore modeled as fixed costs. Other costs such as management and sales expenses are treated as variable costs proportional to production volume. We model labor costs as standby costs, paid only when smelters operate. The electricity cost is a result of the optimization model, where the energy component is settled at nodal marginal electricity prices. We assume the end-user electricity price faced by smelters is twice this energy component, representing transmission and distribution tariffs. While current industrial retail tariffs in China are often below 2$\times$ market LMP, we adopt this assumption to reflect rising grid balancing and reliability costs as renewable penetration increases.
+
+
+To integrate these empirical costs into the PyPSA framework, which defines assets on an electrical power capacity basis (MW) rather than a physical production basis (tonnes), we apply a unit conversion based on the smelters' specific energy consumption. Assuming a specific electricity consumption of 13.4 MWh/tonne, 1 MW of continuous electrical capacity corresponds to a maximum annual output of $8760/13.4$ tonnes. Consequently, cost parameters in PyPSA are derived by multiplying per-tonne costs by this annual production factor.
+
+Within PyPSA, the \texttt{capital\_cost} parameter typically aggregates annualized capital investments and fixed operation and maintenance (O\&M) costs. Because our scenarios evaluate the retention of existing overcapacity, initial capital investments are treated as sunk costs. We separate the reported maintenance cost in Table~\ref{tab:smelter_costing} (400 CNY/tonne) into a \textbf{fixed maintenance} component (250 CNY/tonne) and a \textbf{variable maintenance} component (150 CNY/tonne). The fixed maintenance component is added to \texttt{capital\_cost} as:
+\[
+\texttt{capital\_cost}_{\text{maint,fixed}} = 250 \times (8760/13.4)\ \text{CNY/MW-year}.
+\]
+The variable maintenance component is modeled as an operating cost proportional to production (equivalently proportional to operating hours for a given MW of capacity).
+
+The allocation of labor costs depends on the labor flexibility scenario. (1) If labor is treated as an \textbf{inflexible fixed cost}, it is included in \texttt{capital\_cost} together with fixed maintenance, yielding:
+\[
+\texttt{capital\_cost}_{\text{fixed}} = (250 + 150) \times (8760/13.4)\ \text{CNY/MW-year}.
+\]
+(2) If labor is treated as a \textbf{standby/operational cost} (reducible during shutdown), it is excluded from \texttt{capital\_cost} and modeled as a variable operating cost proportional to active production hours.
+
+Finally, the ``other expenses'' item in Table~\ref{tab:smelter_costing} mainly represents corporate overheads. We assume these expenditures are not directly determined by the installed electrolysis capacity (MW) and do not scale with overcapacity retention decisions. In our optimization, these costs are treated as capacity-independent.
+ 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{./figures/restart.png}
+    \caption{If the restart process is not done properly, it may cause permanent damage to the cell~\citep{oye_power_nodate}. The restart process of an aluminum electrolytic cell requires a lot of manual work, including complex steps such as cleaning the cell, preheating, adding electrolyte, and powering on. }
+    \label{restart}
+\end{figure}
+
+Historical data on prolonged idling and startup/shutdown costs are limited because smelters rarely shut down due to insufficient demand. High investment costs typically require high capacity utilization. Furthermore, shutting down smelters requires substantial labor for complex operations to avoid irreversible damage from temperature changes and internal liquid solidification (Figure \ref{restart}), making it extremely expensive. According to publicly available reports on restarts following demand declines, the average cost of a single cell restart ranges from 110,000 CNY/MW to 760,000 CNY/MW~\citep{Hu2009, noauthor_high_2020,noauthor_alcoa_2021}, which is 1000 times higher than restarting coal-fired units~\citep{smith_analysis_2019}. This study does not attempt to predict the exact future trajectory of smelter restart costs, but rather sets up extreme cases to represent the spectrum of flexibility technology development:
+
+In the \textit{Low flexibility} and \textit{Mid flexibility} cases, parameters are set based on current literature. The former's restart cost comes from a U.S. smelter restart (760,000 CNY/MW). The latter's is from a documented restart event in Yunnan, China (110,000 CNY/MW).
+
+In the \textit{High flexibility} case, we assume improved electrolytic cell insulation and restart technologies significantly enhance grid interaction flexibility, lowering restart costs due to technological improvements.
+
+
+
+In the main manuscript (Figure 6), we present the incremental changes ($\Delta$ costs) in aluminum production expenses to highlight the dynamic trade-offs between electricity cost savings and the added flexibility penalties (e.g., storage, capital, and restart costs) under the seasonal operational paradigm.
+
+However, to provide a complete commercial perspective, it is essential to contextualize these variations within the absolute cost structure of primary aluminum production. Raw materials, predominantly alumina and carbon anodes, represent the largest baseline expenses in the smelting process, accounting for over half of the total production costs. Power consumption represents the second-largest component, typically accounting for 30\% to 40\% of the total costs.
+
+Because our optimization model assumes that upstream raw material procurement and supply chains remain constant throughout the year, the absolute costs of bauxite and alumina do not fluctuate between the baseline continuous operation scenario and the optimized seasonal operation scenarios.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{./figures/aluminum_cost_composition_2020_2050_stacked_bar_s_U.png}
+    \caption{Comparison of the composition of levelized cost per tonne of aluminum between the 2020 baseline and various 2050 overcapacity levels.}
+    \label{fig_absolute_cost}
+\end{figure}
+
+To illustrate this, Figure \ref{fig_absolute_cost} presents the absolute cost breakdown for the various scenarios with the y-axis strictly starting from zero. As demonstrated, the massive baseline of raw material costs remains unchanged across all paradigms. The net reductions in total production costs are entirely driven by the compression of the electricity cost component, which outweighs the newly introduced, relatively minor costs associated with inventory carry, idle capacity, and seasonal restarts.
+
+\subsection{Warehouse Costs}
+
+For smelters to conduct seasonal production to help adapt to seasonal supply and demand fluctuations in the power grid, they must manage the decoupled timing between uniform raw material procurement, seasonal production, and uniform product sales. Therefore, we also need to model the warehouse costs for both primary aluminum products and raw materials (specifically alumina).
+
+The physical warehouse cost is primarily determined by the density of aluminum, which defines how much space one metric ton occupies. The calculation method follows: storage demand equals cumulative production minus cumulative demand, and storage area equals storage demand divided by density, warehouse height, and storage efficiency. Using Kunming rental rates of 0.8 CNY/m²·day (including tax) as an example, assuming flat storage warehouses with good load-bearing capacity, 7-meter height, and 70\% storage efficiency, the volume of 1 ton of primary aluminum is 0.37 m³ (1/2.7), requiring a floor area of 0.14 m² (0.37 m³ / 7 m / 0.7). The storage cost per hour is $4.7 \times 10^{-3}$ CNY (0.14 m² $\times$ 0.8 CNY/m²·day / 24 hours). For 1 ton of aluminum, the cost for storing one month is less than 3 CNY. Compared to electricity costs of approximately 6000 CNY, this indicates that actual physical storage costs are nearly negligible. Furthermore, aluminum smelters typically build their own warehouses, and long-term storage is expected to be cheaper than short-term rentals of general-purpose warehouses.
+
+
+In addition to aluminum products, we must consider the upstream storage of bauxite and alumina. Assuming the enterprise maintains a steady, uniform procurement plan for alumina throughout the year, the storage profile of alumina is the exact inverse of the aluminum products. During the winter shutdown (or low-production months), alumina inventory accumulates while aluminum inventory is depleted to meet uniform market demand. Conversely, during the high-production season, alumina is consumed at a rate faster than it is procured, while aluminum products are overproduced and stockpiled. This inverse relationship implies that the storage dynamics of raw materials and finished products are complementary, potentially allowing for shared or repurposed warehouse space.
+
+Based on our system modeling, the seasonal operational paradigm necessitates an average inventory of less than 2 million tonnes (Mt). Integrated over a year, this cumulative storage requirement amounts to approximately 22 Mt$\cdot$month. Given an annual production volume of nearly 12 Mt, the average effective storage duration is slightly less than 2 months per tonne of aluminum produced. Under typical empirical domestic warehousing rates, the storage cost for the finished aluminum alone over this brief holding period is less than 3 CNY/tonne. Even when concurrently accounting for the required storage of raw alumina prior to smelting, the combined empirical storage cost remains under 6 CNY/tonne.
+
+However, to ensure a robust assessment and avoid underestimating logistical friction, we adopted a conservative approach. We deliberately treated the storage requirements as additive rather than completely offset. Furthermore, instead of using the empirical baseline calculated above, we adjusted the comprehensive storage cost parameter to an overestimated rate of 1 USD/tonne/month (approximately 6.9 CNY/tonne/month). Applied to the 2-month average holding period, this imposes a penalized total cost of approximately 14 CNY per tonne of aluminum produced, providing a rigorous upper bound.
+
+This assumption of negligible physical storage costs is fundamentally grounded in the unique material properties of primary aluminum. As a highly homogeneous commodity protected by a naturally forming surface oxide layer, aluminum ingots are immune to significant environmental degradation, allowing for low-maintenance outdoor storage with virtually zero loss of product quality. 
+
+While the incremental storage costs add only a minor fraction to the unit cost, the electricity cost savings achieved through flexible seasonal operation—avoiding extreme winter peak prices—exceed 2,000 CNY/tonne in our co-optimization scenarios. Therefore, even after explicitly accounting for overestimated raw material and product holding costs, warehouse expenses do not alter the optimality of the retained overcapacity choice. Furthermore, because aluminum ingots possess a highly standardized physical form and a high value-to-weight ratio, they are highly logistically efficient; thus, we do not specifically consider dynamic changes in transportation costs.
+
+Beyond physical storage, the seasonal operation paradigm modeled in our study inherently mitigates market risk. This strategy typically requires holding the inventory for only a few months (e.g., buffering autumn overproduction against a winter shutdown). The market price risk over this relatively short temporal horizon is secondary to the massive energy price arbitrage achieved. Moreover, because aluminum is a highly liquid, globally traded commodity, any residual short-term price volatility can be routinely managed through standard financial hedging practices (e.g., futures contracts) that are already prevalent among major smelting corporations.
+
+While we acknowledge that other energy-intensive commodities face stricter storage constraints—such as steel, which is susceptible to corrosion and demands climate-controlled warehousing, or cement, which has a strict moisture sensitivity and limited shelf life—the fundamental economic driver of our study remains broadly applicable. Even if the physical holding costs and market risks for these alternative materials were an order of magnitude higher than those of aluminum, these expenses would likely still be dwarfed by the substantial savings accrued from avoiding peak-season energy prices in a net-zero grid. This underscores that while the net benefit margin might be narrower for sectors with higher storage constraints, the systemic value of demand-side flexibility persists.
+
+\subsection{Incremental Capital Costs}
+
+The shift from continuous production to seasonal operation introduces additional capital costs from inventory holding and idle capacity. Traditional industrial management emphasizes lean production and just-in-time (JIT) inventory to reduce working capital requirements (WCR). Seasonal operation decouples production from sales and therefore requires carrying inventory across time.
+
+We use a monthly cash-flow and inventory model to quantify these incremental capital costs. We compare seasonal production (e.g., producing 12 months of sales within a 9-month operating window, with about 30\% capacity idle in winter) against a balanced baseline (12 months of production matched to 12 months of sales). Physical warehousing and storage fees are excluded from this specific capital-cost boundary. The incremental capital cost has two main components:
+
+(1) \textbf{Cost of Capital for Seasonal Inventory}: During the inventory accumulation phase (the production season), WCR increases as production rates exceed sales rates. To quantify this, we establish a monthly inventory balance:
+
+
+$$Inv_t = Inv_{t-1} + P_t - D_t$$
+
+
+where $Inv_t$ is the inventory at the end of month $t$, $P_t$ is the actual production, and $D_t$ is the uniform monthly demand. Based on the actual dispatch profile, the annual demand of 11.57 million tonnes (for the core scenario) is distributed evenly, resulting in a baseline monthly demand ($D_t$) of approximately 0.964 million tonnes. Because production ($P_t$) drops to near zero from December to February, inventory accumulates from March to November, peaking in October at over 3.08 million tonnes. Summing the monthly balances, the seasonal strategy requires holding an average of 1.58 million tonnes of additional inventory each month over the year.
+
+The capital tied up in this additional seasonal inventory incurs an opportunity cost or interest expense. Using a benchmark primary aluminum production cost ($C$) of 2,600 USD/tonne and the global aluminum industry's typical Weighted Average Cost of Capital ($r$) of 9.6\%, the incremental interest cost is calculated as the integral of the additional inventory value over the year:
+
+
+$$\text{Incremental Inventory Capital Cost} = \sum_{t=1}^{12} \left( Inv_t \times C \times \frac{r}{12} \right)$$
+
+
+This translates to an annual capital holding cost of approximately 394 million USD. Divided by the total annual production of 11.57 million tonnes, the inventory capital cost alone adds approximately 34 USD/tonne (roughly 245 CNY/tonne).
+
+(2) \textbf{Opportunity Cost of Idle Capacity}: During winter shutdown months, capital-intensive smelting assets---including machines, potlines, and buildings---remain idle. Although these assets continue to depreciate, the capital tied up in them is not generating output. From a commercial perspective, this underutilization should be counted as an incremental depreciation-related cost.
+
+Our analysis indicates that for a typical smelter operating 9 months per year, these incremental capital costs (inventory holding and idle capacity) add about 1.5\% to 2.0\% to total production cost (roughly 250 to 350 CNY/tonne). These costs are material, but still much smaller than electricity-cost savings from shifting production to periods with higher renewable output and lower marginal prices, which exceed 2,000 CNY/tonne in the net-zero scenarios. The net economic benefit therefore remains positive after accounting for these commercial and financial constraints.
+
+\subsection{Workforce Estimation}
+
+The distribution of industrial workers required for aluminum smelters and coal/gas power plants across different months is estimated based on the monthly capacity utilization rate, maximum output, and the average number of workers required per unit of operating smelting capacity or generation capacity. For aluminum smelters, we use data from the 2020 annual report of China Aluminum Corporation (CHALCO)~\citep{CHALCO2020AnnualReport} as a reference: with 6.79 million tons of aluminum production capacity, the company employs 104,801 workers, approximately 100,000 people. In 2024, China's aluminum industry employed 600,000-700,000 workers. We assume that the number goes down with the decrease in aluminum smelting capacity and use the average number of workers required per unit of operating smelting capacity to estimate the maximum labor force required for aluminum smelters and coal/gas power plants.
+
+Gas-fired power plants have a high degree of automation. A typical 1 GW combined cycle gas turbine unit typically requires only 100-300 personnel for operation and maintenance. We use 200 workers per GW for gas-fired power plants based on expert experience. For coal-fired power plants, the staffing requirements are higher, typically 600-1,000 workers per GW, and we use 800 workers per GW based on expert experience. These numbers are higher than the global average due to China's relatively low labor costs. While the actual number of workers at each plant varies depending on when it was built and its level of automation, we use these broad technology-based estimates without distinguishing between different coal/gas power technologies. Generally, 60-85\% of the workforce at a smelter or power plant is fixed, independent of operational status. However, for seasonal operations where facilities are completely shut down for certain months, maintenance typically requires only 10-15\% of the total workforce. We use 10\% in our estimates, as this type of seasonal operation may become common practice in the future, leading industries to optimize their operational structure to further reduce staffing needs during shutdown periods.
+
+When considering capacity factors, for the winter months of November to February, we use the maximum monthly output as the reference for employment estimation. This is because in low-carbon power systems, to cope with winter load peaks and heating demand, coal and gas power plants operate at high intensity and are likely to be fully staffed, even when capacity factors are less than 50\%. In this case, estimating based on output hours would significantly underestimate the required workforce.
+
+\subsection{On-site Fossil-fuel Power Plants}\label{on_site_generation}
+
+
+The scale of on-site captive fossil-fuel power plants in China's aluminum sector is important for understanding load flexibility and labor dynamics. As of 2025, coal-fired captive capacity associated with primary aluminum smelting is estimated at about 82--84~GW \citep{ember_aluminium_coal_2025, transitionasia_aluminium_2025}, equivalent to roughly 6\%--7\% of China's installed coal-fired generation capacity. Analysis of the CEADs-AGE facility-level database, which tracks 249 primary aluminum smelters and 280 captive units, indicates that the share of aluminum production powered by these on-site fossil-fuel sources rose from 37\% in 2012 to about 49\% in 2021 \citep{tan_different_2025}.
+
+This reliance on captive power varies substantially by region. Smelting centers in Northern and Northwestern China, such as Shandong and Xinjiang, have historically developed integrated coal-power-aluminum complexes to use low-cost local coal. In these regions, captive power shares reached 100\% and 88\%, respectively, in 2021. In contrast, emerging \textit{clean aluminum hubs} in Southern China, such as Yunnan and Guangxi, rely more on the public grid and local hydropower, with captive shares of 0\% and 44\%, respectively \citep{tan_different_2025}. In many integrated on-site complexes, the smelter and power plant are owned by the same group and located in the same industrial compound, which makes personnel redeployment between the two sectors easier.
+
+
+\newpage
+
+\section{Power System Capacity Expansion Model}
+This study aims to evaluate the load flexibility value of aluminum smelters for China's decarbonized power system. A provincial resolution is needed because China's aluminum industry is unevenly distributed across multiple provinces, and the highly interconnected nature of China's power grid means that the impact of this flexibility is likely to span across provincial boundaries. While China's national target is to achieve carbon neutrality by 2060~\citep{yang_chinas_2024}, we define a sector-specific 2050 net-zero scenario for the power and heating sectors. This target is grounded in the principle of sectoral differentiated decarbonization, which recognizes that different sectors follow asynchronous transition timelines based on their marginal abatement costs and technical maturity. Power and heating are widely considered ``easy-to-abate'' sectors due to the rapid decline in renewable energy costs and the maturity of electrification technologies such as heat pumps. Achieving net-zero in these sectors by 2050 is a necessary prerequisite for the successful decarbonization of downstream end-use sectors. 
+
+Furthermore, according to several studies and scenario analyses (\ref{tab:comparison_2050}), China's power sector is expected to reach net-zero emissions between 2045 and 2055~\citep{liu_chinas_2025}. This early transition allows the power sector to eventually provide net-negative emissions (e.g., via bioenergy with carbon capture and storage, BECCS) to offset residual emissions from ``hard-to-abate'' sectors such as heavy industry and long-haul transport, which are expected to retain some fossil fuel use even as the nation approaches its 2060 aggregate target. This timeline is supported by authoritative studies: the International Energy Agency's (IEA) ``Accelerated Transition Scenario'' suggests that the Chinese power sector must reach net-zero by 2050 to align with global 1.5$^\circ$C goals \citep{iea_roadmap_2021}; research by Tsinghua University's ICCSD indicates that under a 1.5$^\circ$C pathway, China's power sector should achieve net-negative emissions of approximately -150 million tonnes of CO$_2$ by 2050 \citep{tsinghua_iccsd_2020}; and the Rocky Mountain Institute (RMI) emphasizes that complete decarbonization of power generation by 2050 is a fundamental pillar of China's long-term climate strategy \citep{rmi_china_2050}. For the heating sector, the transition is driven by the rapid adoption of air-source heat pumps, particularly in rural areas, and the integration of industrial waste heat in urban networks, which are projected to enable near-zero operational emissions by 2050 as the grid decarbonizes. To compare the effects of different carbon reduction constraints, we set up scenarios with 20\%, 60\%, and 100\% reductions in carbon emissions for 2030, 2040, and 2050, respectively, based on 2020 emission levels. 
+
+\begin{table}[htbp]
+  \centering
+  \caption{Comparison of authoritative projections for China's power system transition by 2050.}
+  \label{tab:comparison_2050}
+  \footnotesize
+  \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}X l}
+  \hline
+  \bfseries Institution & \bfseries Report/Scenario & \bfseries Status in 2050 & \bfseries Key Indicator (2050) & \bfseries Ref. \\ \hline
+  Tsinghua ICCSD & Long-term Low-carbon Development Strategy (1.5$^\circ$C Scenario) & Net-zero / Negative emissions & -150 Mt CO$_2$ (BECCS); Non-fossil generation $>$90\% & \citep{tsinghua_iccsd_2020} \\
+  IEA & Energy Sector Roadmap to Carbon Neutrality in China (APS) & Near net-zero emissions & Net-zero before 2055; coal without CCUS phased out & \citep{iea_roadmap_2021} \\
+  IEA & Energy Sector Roadmap to Carbon Neutrality in China (ATS) & Net-zero emissions & Net-zero by 2050; substantial increase in solar and wind & \citep{iea_roadmap_2021} \\
+  RMI / ETC & China 2050: A Fully Developed Zero-Carbon Economy & Zero-carbon electricity & 100\% grid decarbonization; 70\% wind and solar & \citep{rmi_china_2050} \\
+  LBNL / DNV & Energy Transition Outlook & Deeply low-carbon system & Fossil fuels $<$7\% in power mix; 5.5 TW solar capacity & \citep{liu_chinas_2025} \\ \hline
+  \end{tabularx}
+\end{table}
+
+We consider three main power system scenarios (see Table 1) that reflect different levels of power generation technology development. All scenarios assume that a variety of competitive, clean, and stable technologies are available, covering a range from high fixed costs and low variable costs to low fixed costs and high variable costs. We also assume the availability of cost-competitive long-duration storage technologies (in the form of hydrogen and hot water) and a certain degree of flexibility in residential heating.
+
+This study uses PyPSA, an open-source model that has been described in detail elsewhere~\citep{PyPSA}, to explore China's pathway to carbon emission reduction. Our model operates at hourly resolution and adopts a framework of simultaneous operation and investment optimization for capacity expansion planning, with investment periods corresponding to 2030, 2040, and 2050. Within each investment period, both operational and investment costs are minimized. The model covers thirty-one provincial administrative regions of China (excluding Hong Kong, Macau, and Taiwan), with each province aggregated into a single independent node. Although we refer to the model as an electricity system in this paper, each node actually resolves electricity, heat, hydrogen, biomass, methane, and coal carriers, making it a multi-energy coupled system where electricity serves as the core energy exchange and conversion medium (see Figure \ref{fig:node}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{./figures/node.png}
+  \caption{Energy flow at a single node. In the model, a node
+  represents a provincial-level administrative region in China. Within each
+  node, there is a bus (thick horizontal line) for each energy carrier (electricity,
+  heat, hydrogen, biomass, methane, and coal) to which different loads
+  (triangles), energy sources (circles), storage units (rectangles), and
+  converters (lines connecting buses) are attached. The notation ``boiler/CHP to heat'' indicates
+  that coal and biomass can either be converted directly to heat through boilers,
+  or simultaneously produce both electricity and heat through combined heat and
+  power (CHP) plants.}
+  \label{fig:node}
+\end{figure}
+
+The electricity buses are connected via high-voltage direct current (HVDC) or high-voltage alternating current (HVAC) lines, representing transmission. Hydrogen buses are connected via hydrogen pipelines. Different sector buses are connected within nodes through energy converters (as shown in Figure \ref{fig:node}). Our model utilizes the PyPSA modeling framework, which can model the operation and optimal investment of energy systems across multiple periods. The model employs linear optimization methods to minimize annual operational and investment costs under technical and physical constraints, assuming perfect competition and perfect foresight of weather conditions. The capacity of generators, storage, converters, and transmission, as well as the hourly operational dispatch of each unit, are subject to optimization.
+
+In the model, demand curves (for different sectors), the ratio of district heating to decentralized heating, and the hydro capacity of reservoirs and run-of-river generators and pumped hydro storage are exogenous variables that are not optimized. Transmission network assets can be reinforced but not removed. The detailed mathematical modeling formulations are outlined in the original paper. The detailed input data for the model is primarily from the PyPSA China-specific project, originally established and open sourced by Zhou et al.~\citep{zhou_multienergy_2024}, and has been used for peer-reviewed publications.
+This section details the input data and key assumptions used in the model, covering network infrastructure, electricity and heat demand, and the techno-economic characteristics of various energy technologies. Most of the technical data regarding costs, efficiencies, and lifetimes are based on the database used in PyPSA-Eur~\citep{PyPSAEur}, which includes technology cost projections from 2020 to 2050. We assume these parameters remain constant after 2050.
+
+\subsection{Mathematical Formulation}
+The model's objective is to determine the optimal capacities of generators, storage units, and transmission lines, as well as their hourly dispatch, to minimize the total annual system cost. This cost is a combination of fixed investment costs and variable operational costs. The model assumes a multi-node system, where buses are denoted by $n$, generation and storage technologies at a given bus by $s$, the hour of the year by $t$, and branches (including transmission lines and energy converters) by $\ell$.
+
+The objective function in each investment period is to minimize the sum of all costs:
+\begin{equation}
+\min_{G_{n,s}, E_{n,s}, F_\ell, g_{n,s,t}, f_{\ell,t}} \sum_{n,s} c_{n,s} G_{n,s} + \sum_{n,s} \hat{c}_{n,s} E_{n,s} + \sum_{\ell} c_{\ell} F_{\ell} + \sum_{n,s,t} o_{n,s,t} g_{n,s,t} + \sum_{\ell,t} o_{\ell,t} f_{\ell,t}
+\end{equation}
+The terms in the objective function represent the following costs:
+\begin{itemize}
+    \item $c_{n,s} G_{n,s}$: Fixed annualised cost of generation and storage power capacity, where $c_{n,s}$ is the specific cost and $G_{n,s}$ is the power capacity.
+    \item $\hat{c}_{n,s} E_{n,s}$: Fixed annualised cost of storage energy capacity, where $\hat{c}_{n,s}$ is the specific cost and $E_{n,s}$ is the energy capacity.
+    \item $c_{\ell} F_{\ell}$: Fixed annualised cost of branches, where $c_{\ell}$ is the specific cost and $F_{\ell}$ is the branch capacity.
+    \item $o_{n,s,t} g_{n,s,t}$: Variable operational cost for generator and storage dispatch, with $o_{n,s,t}$ as the specific cost and $g_{n,s,t}$ as the hourly dispatch.
+    \item $o_{\ell,t} f_{\ell,t}$: Variable operational cost for power flow through branches, with $o_{\ell,t}$ as the specific cost and $f_{\ell,t}$ as the hourly power flow.
+\end{itemize}
+We assume a social discount rate of 2\% in this study~\citep{victoria2020early}, which is consistent with assumptions in Zhou et al.~\citep{zhou_multienergy_2024}.
+The model is subject to several technical and physical constraints. The first is the energy balance constraint, ensuring that the inelastic energy demand $d_{n,t}$ at each bus $n$ is met at every time step $t$. This is achieved by local generation, storage dispatch, or energy flow from connected branches.
+\begin{equation}
+\sum_{s} g_{n,s,t} + \sum_{\ell} \alpha_{\ell,n,t} \cdot f_{\ell,t} = d_{n,t} \quad \forall n, t
+\end{equation}
+where $\alpha_{\ell,n,t} = -1$ if branch $\ell$ starts at bus $n$, representing an outflow, and $\alpha_{\ell,n,t} = \eta_{\ell,t}$ if branch $\ell$ ends at bus $n$, representing an inflow. The efficiency factor $\eta_{\ell,t}$ can be time-dependent to account for technologies whose efficiency, such as that of a heat pump, varies with external conditions.
+
+The dispatch $g_{n,s,t}$ of each generator and storage unit is bounded by its installed capacity $G_{n,s}$ and time-dependent availability factors, $\underline{g}_{n,s,t}$ and $\bar{g}_{n,s,t}$:
+\begin{equation}
+\underline{g}_{n,s,t} \cdot G_{n,s} \leq g_{n,s,t} \leq \bar{g}_{n,s,t} \cdot G_{n,s} \quad \forall n, s, t
+\end{equation}
+For conventional flexible generators, the availability factors are typically constant with $\underline{g}_{n,s,t} = 0$ and $\bar{g}_{n,s,t} = 1$. For variable renewable energy technologies, such as wind and solar, the time-varying $\bar{g}_{n,s,t}$ represents the weather-dependent available power per unit, and since curtailment is allowed, $\underline{g}_{n,s,t} = 0$. For storage units, the availability factors are $\underline{g}_{n,s,t} = -1$ and $\bar{g}_{n,s,t} = 1$, where the negative value of the lower bound denotes the available charging power.
+
+The power capacity $G_{n,s}$ itself is subject to minimum $\underline{G}_{n,s}$ and maximum $\bar{G}_{n,s}$ installable potentials:
+\begin{equation}
+\underline{G}_{n,s} \leq G_{n,s} \leq \bar{G}_{n,s} \quad \forall n, s
+\end{equation}
+Similarly, the power flow $f_{\ell,t}$ on each branch is constrained by its capacity $F_{\ell}$ and time-dependent per-unit availabilities, $\underline{f}_{\ell,t}$ and $\bar{f}_{\ell,t}$:
+\begin{equation}
+\underline{f}_{\ell,t} \cdot F_{\ell} \leq f_{\ell,t} \leq \bar{f}_{\ell,t} \cdot F_{\ell} \quad \forall \ell, t
+\end{equation}
+For bidirectional HVDC links, $\underline{f}_{\ell,t} = -1$ and $\bar{f}_{\ell,t} = 1$. For unidirectional branches, such as a resistive heater converting electricity to heat, the flow is constrained to be non-negative with $\underline{f}_{\ell,t} = 0$ and $\bar{f}_{\ell,t} = 1$.
+
+Finally, the total CO$_2$ emissions from the power and heat sectors are limited by a predefined cap, $CAP_{CO_2}$. This is enforced using the specific emission factors $\epsilon_s$ (in tCO$_2$/MWh$_{th}$) for each fuel type $s$, the efficiency $\eta_{n,s}$ of the generator, and its dispatch $g_{n,s,t}$:
+\begin{equation}
+\sum_{n,s,t} \frac{\epsilon_s g_{n,s,t}}{\eta_{n,s}} \leq CAP_{CO_2}
+\end{equation}
+Further details on the specific constraints and modelling framework can be found in the documentation for PyPSA~\citep{PyPSA}.
+
+\subsection{Provinces and Network}
+The model adopts a one-province, one-node network representation, including all thirty-one provincial administrative regions of mainland China. The existing transmission infrastructure (Figure \ref{fig:network}(a)), as of September 2022, consists of both High-Voltage Alternating Current (HVAC) and High-Voltage Direct Current (HVDC) interconnections between provinces. For future transmission expansion, we use a fully connected national grid (Figure \ref{fig:network}(b)) as the candidate network, which is a strategy strongly supported by the State Grid Corporation of China and connects regional grids via Ultra-High-Voltage Alternating Current (UHVAC) lines.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{./figures/transmission_network.png}
+  \caption{Chinese transmission networks. (a) Shows the included existing transmission lines. (b) Shows the transmission corridor candidates for extension
+  in the model referring to the fully connected national grid (FCG). The province name of each node is listed in Table \ref{tab:capacity_distribution}.}
+\label{fig:network}
+
+\end{figure}
+\subsection{Electricity and Heat Demand}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{./figures/demand.png}
+  \caption{Historical and projected demand for electricity and heat.}
+  \label{fig:demand}
+\end{figure}
+
+Historical and projected demand for electricity (Figure ~\ref{fig:demand}) and heat are used as exogenous inputs. The heat demand considered includes low-temperature space heating (SPH) and domestic hot water (DHW) for the residential and service sectors. Industrial heat demand is not included. Within each province, heat demand is split between decentralized heating for rural areas and district heating for urban areas, based on 2020 urban-rural population ratios.
+
+Historical heat demand is estimated to be 2,695 TWh in 2020, composed of district heating (1,402 TWh), decentralized SPH (777 TWh), and DHW (516 TWh). Electricity demand projections from 2020 to 2060 are based on China's economic development forecasts. We assume annual growth rates that decrease over time, from 2.7\% (2020--2030) to 1.3\% (2050--2060), leading to a projected electricity demand of approximately 16,000 TWh in 2060, consistent with IEA reports. Electrification of the heating and transport sectors is not explicitly considered in these demand forecasts.
+
+Hourly demand curves for SPH are derived from ERA5 reanalysis temperature data using a degree-day approximation, while DHW curves are constructed using daily heat needs and intra-day patterns. Hourly electricity demand curves are built from 2018 standard load profiles and scaled to match the annual total demand for each projection year.
+
+\subsection{Power and Heat Generation Technologies and Costs}\label{sec:power_heat_generation_technologies_and_costs}
+The model includes a diverse range of technologies to meet electricity and heat demands~(Table \ref{tab:power_heat_generation_technologies}). Retrofitted coal power plant represents the coal power plant retrofitted with
+carbon capture. The carbon capture rate is assumed as 90\%. The retrofitting of coal power plants reduces their efficiency to 90\% of the original value but does not reduce operational lifespan. Heat pumps include
+both air-sourced and ground-sourced heat pumps. The CHP, OCGT, and CC stand for
+combined heat and power, open cycle gas turbine, and carbon capture, respectively. The costs of power and heat generation technologies are based on the database used in PyPSA-Eur~\citep{PyPSAEur} and other studies (Table \ref{tab:technologies_cost}). All costs are given in 2020 EUR. Here, fixed Operation and Maintenance (FOM) costs are given as a percentage of the investment cost per year. The investment cost of solar photovoltaic (PV) systems is determined as the average of costs associated with the utility-scale solar installation and those of the rooftop solar installation. The efficiency of Combined Heat and Power (CHP) systems is the electricity generation efficiency. Refer to the supplementary material of Zhou et al.~\citep{zhou_multienergy_2024} for more details. 
+
+
+\subsubsection{Core scenario cost data}
+In the core (Mid) scenario, the techno-economic parameters for power and heat generation technologies follow the open-source technology database used in PyPSA-Eur\footnote{\url{https://pypsa-eur.readthedocs.io/en/latest/}}~\citep{PyPSAEur}. This database compiles investment costs, fixed and variable operation and maintenance costs, fuel prices, and efficiency assumptions from a consistent set of sources, primarily the Danish Energy Agency technology catalogues. For China-specific modeling, we adopt the PyPSA-China-PIK\footnote{\url{https://github.com/pik-piam/PyPSA-China-PIK}} dataset maintained by the PIK RD3-ETL team. This dataset adjusts several technology costs and performance parameters where there are substantial differences between Europe and China (for example, solar PV, onshore wind, and coal technologies), while retaining the same underlying data structure and methodology as PyPSA-Eur. The specific Chinese cost assumptions and their original sources are documented in Zhou et al.~\citep{zhou_multienergy_2024} and in the PyPSA-China-PIK documentation. In our model, all core-scenario technology costs and learning trajectories are consistent with these published datasets.
+
+\subsubsection{Low-, Mid-, and High-cost technology scenarios}
+Future technology costs, especially for flexibility-related technologies, are subject to considerable uncertainty. To reflect this, we construct three technology cost scenarios: Low, Mid (core), and High. The Mid scenario corresponds to the core case described above, using cost trajectories (including endogenous learning effects over time) directly from the PyPSA-China-PIK dataset. In the Low- and High-cost scenarios, we scale the investment costs of flexibility technologies (including battery storage, long-duration storage, hydrogen production and storage, methanation, and direct air capture) by --20\% and +50\%, respectively, relative to the Mid scenario. These multiplicative factors are consistent with recommended practice from the AACE International Cost Estimate Classification System~\citep{bates2005cost}, where Class~4 estimates typically have an expected accuracy range of approximately --15\% to --30\% on the low side and +20\% to +50\% on the high side. Other technology cost parameters (such as conventional coal and gas plants, as well as wind and solar power) remain unchanged across the three scenarios; for variable renewable technologies we assume that continued cost reductions are robust across a wide range of futures, and we therefore focus the uncertainty analysis on the relative cost competitiveness of emerging flexibility options.
+
+
+
+\begin{table}[htbp]
+  \centering
+  \caption{Power and heat generation technologies.}
+  \label{tab:power_heat_generation_technologies}
+  \footnotesize % Adjust font size to fit the page
+  \setlength{\tabcolsep}{3pt} % Reduce column separation
+  \begin{tabular}{lll}
+    \hline
+    Electricity                  & Central Heating  & Decentral Heating \\ \hline
+    Coal power plant             & Coal boiler      & Coal boiler       \\
+    Retrofitted coal power plant & CHP coal         & Gas boiler        \\
+    OCGT                         & CHP coal         & Biomass boiler    \\
+    Onshore wind                 & CHP gas          & Resistive heater  \\
+    Offshore wind                & CHP biomass      & Heat pump         \\
+    Hydroelectricity             & CHP biomass CC   & Solar thermal     \\
+    CHP coal                     & CHP hydrogen     & Short-term TES    \\
+    CHP gas                      & Resistive heater &                   \\
+    CHP biomass                  & Heat pump        &                   \\
+    CHP biomass CC               & Solar thermal    &                   \\
+    CHP hydrogen                 & Long-term TES    &                   \\ \hline
+    \end{tabular}
+\end{table}
+
+
+\begin{table}[htbp]
+  \centering
+  \caption{Costs of power and heat generation technologies (2020 EUR). Exchange rates (annual averages 2020): 1\,USD = 6.900\,CNY; 1\,EUR = 7.868\,CNY; 1\,USD = 0.877\,EUR. Data from PyPSA-China-PIK \texttt{costs\_2020.csv}; USD-denominated entries converted to EUR at 0.877\,EUR/USD.}
+  \label{tab:technologies_cost}
+  \footnotesize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{lrlrrr}
+    \hline
+    Technology                                & \multicolumn{1}{l}{\begin{tabular}[c]{@{}l@{}}Investment \\ Cost {[}EUR{]}\end{tabular}} & Unit      & \multicolumn{1}{l}{\begin{tabular}[c]{@{}l@{}}FOM \\ {[}\%/a{]}\end{tabular}} & \multicolumn{1}{l}{\begin{tabular}[c]{@{}l@{}}Lifetime \\ {[}a{]}\end{tabular}} & \multicolumn{1}{l}{Efficiency} \\ \hline
+    Wind onshore                              & 780                                                                                         & kW$_{el}$ & 1.25 & 27 & 1 \\
+    Wind offshore                             & 1805                                                                                        & kW$_{el}$ & 2.51 & 27 & 1 \\
+    Solar PV                                  & 432                                                                                         & kW$_{el}$ & 1.58 & 35 & 1 \\
+    Solar thermal collector decentral         & 270                                                                                         & m$^2$     & 1.3  & 20 & \multicolumn{1}{l}{Variable} \\
+    Solar thermal collector central          & 140                                                                                         & m$^2$     & 1.4  & 20 & \multicolumn{1}{l}{Variable} \\
+    Open cycle gas turbine (OCGT)             & 454                                                                                         & kW$_{el}$ & 1.78 & 25 & 0.4 \\
+    Gas boiler decentral                      & 312                                                                                         & kW$_{th}$ & 6.56 & 20 & 0.97 \\
+    Gas boiler central                        & 60                                                                                          & kW$_{th}$ & 3.25 & 25 & 1.03 \\
+    Combined heat and power (CHP) gas central & 590                                                                                         & kW$_{el}$ & 3.31 & 25 & 0.4 \\
+    Coal power plant                          & 505                                                                                         & kW$_{el}$ & 1.6  & 40 & 0.44 \\
+    Coal power plant retrofit                 & 158                                                                                         & kW$_{el}$ & 0    & 40 & 0.9 \\
+    CHP coal central                          & 1900                                                                                        & kW$_{el}$ & 1.63 & 25 & 0.44 \\
+    Coal boiler central                       & 276                                                                                         & kW$_{th}$ & 2.5  & 25 & 0.9 \\
+    Coal boiler decentral                     & 160                                                                                         & kW$_{th}$ & 3.49 & 20 & 0.9 \\
+    Hydro electricity                         & 2208                                                                                        & kW$_{el}$ & 1    & 80 & \multicolumn{1}{l}{See text} \\
+    Nuclear power plant                       & 2210                                                                                        & kW$_{el}$ & 1.4  & 40 & 0.33 \\
+    Methanation + DAC                         & 719                                                                                         & kW$_{CH_4}$ & 3 & 20 & 0.8 \\
+    Biomass boiler decentral                  & 683                                                                                         & kW$_{th}$ & 7.39 & 20 & 0.82 \\
+    CHP biomass central                       & 3381                                                                                        & kW$_{el}$ & 3.61 & 25 & 0.3 \\
+    CHP biomass carbon capture                & 3.3e6                                                                                       & tCO$_2$/h & 3 & 25 & 0.9 \\
+    Air-sourced heat pump decentral           & 940                                                                                         & kW$_{th}$ & 2.96 & 18 & \multicolumn{1}{l}{Variable} \\
+    Air-sourced heat pump central             & 951                                                                                         & kW$_{th}$ & 0.21 & 25 & \multicolumn{1}{l}{Variable} \\
+    Ground-sourced heat pump decentral        & 1500                                                                                        & kW$_{th}$ & 1.85 & 20 & \multicolumn{1}{l}{Variable} \\
+    Hydrogen electrolysis                    & 650                                                                                         & kW$_{el}$ & 2    & 25 & 0.66 \\
+    CHP hydrogen central                      & 1300                                                                                        & kW$_{el}$ & 5    & 10 & 0.5 \\
+    Hydrogen storage with tanks              & 12.2                                                                                        & kWh$_{H_2}$ & 2 & 20 & 1 \\
+    Hydrogen storage underground             & 3                                                                                           & kWh$_{H_2}$ & 0 & 100 & 1 \\
+    Hydrogen pipeline                         & 267                                                                                         & MW/km     & 3    & 40 & 1 \\
+    Resistive heater decentral                & 100                                                                                         & kW$_{th}$ & 2    & 20 & 0.9 \\
+    Resistive heater central                  & 70                                                                                          & kW$_{th}$ & 1.53 & 20 & 0.99 \\
+    Battery inverter                          & 270                                                                                         & kW$_{el}$ & 0.2  & 10 & \multicolumn{1}{l}{0.97$\times$0.97} \\
+    Battery storage                           & 232                                                                                         & kWh       & 0    & 20 & 1 \\
+    Hot water tank decentral                  & 18.4                                                                                        & kWh$_{th}$ & 1 & 20 & \multicolumn{1}{l}{$\tau$=3 days} \\
+    Hot water tank central                    & 0.58                                                                                        & kWh$_{th}$ & 0.52 & 20 & \multicolumn{1}{l}{$\tau$=180 days} \\
+    Hot water tank (dis)charging              & --                                                                                          & --        & 0    & -- & 0.84 \\ \hline
+  \end{tabular}
+\end{table}
+
+\noindent\textit{Notes to Table~\ref{tab:technologies_cost}:} $^a$Our technology classification may ignore the specific technology difference among each category. For example, for coal power plants, supercritical (SC) and ultra-supercritical (USC) coal power plants can achieve higher efficiencies than the values shown here. $^b$We assume a uniform 10\% efficiency penalty for all power generation technologies equipped with carbon capture. However, for coal and biomass power plants, the actual efficiency reduction could reach 15\%~\citep{osti_1893822}. Therefore, we adopt a best-case scenario for carbon capture/DAC that likely underestimates the costs of clean firm energy, which may lead to an underestimation of the value of aluminum load flexibility in our results.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Data sources for technology cost parameters (Table~\ref{tab:technologies_cost}). All entries from PyPSA-China-PIK \texttt{costs\_2020.csv}.}
+  \label{tab:technologies_cost_sources}
+  \footnotesize
+  \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{8cm}>{\raggedright\arraybackslash}X}
+    \hline
+    Technology & Source \\
+    \hline
+    Wind onshore & \cite{cctd_china_power2020,dea_tech_el_dh} \\
+    Wind offshore & \cite{dea_tech_el_dh} \\
+    Solar PV & \cite{sun_power_system_cost,dea_tech_el_dh} \\
+    Solar thermal (decentral, central) & \cite{pypsa_costs} \\
+    OCGT & \cite{dea_tech_el_dh} \\
+    Gas boiler (decentral, central) & \cite{dea_heating,dea_tech_el_dh} \\
+    CHP gas central & \cite{dea_tech_el_dh} \\
+    Coal power plant & \cite{cctd_china_power2020,lazard_lcoe13} \\
+    Coal power plant retrofit & \cite{fan2018ccs} (USD$\to$EUR) \\
+    CHP coal central & \cite{dea_tech_el_dh} \\
+    Coal boiler (central, decentral) & \cite{irena_remap2030} (USD$\to$EUR) \\
+    Hydro (ror) & \cite{diw_datadoc} \\
+    Nuclear & \cite{columbia_cgep2023,lazard_lcoe13} (USD$\to$EUR) \\
+    Methanation & \cite{agora2018synthetic} \\
+    DAC (in Methanation + DAC) & \cite{dea_ccs} \\
+    Biomass boiler & \cite{dea_heating} \\
+    CHP biomass (central, capture) & \cite{dea_tech_el_dh,dea_ccs} \\
+    Heat pumps (air, ground; decentral, central) & \cite{dea_heating,dea_tech_el_dh} \\
+    Hydrogen electrolysis & \cite{dea_renewable_fuels} \\
+    CHP hydrogen central & \cite{dea_tech_el_dh} \\
+    Hydrogen storage (tanks) & \cite{stockl2021hydrogen} \\
+    Hydrogen storage (underground) & \cite{dea_energy_storage} \\
+    Hydrogen pipeline & \cite{welder2018hydrogen} \\
+    Resistive heater (decentral) & \cite{pypsa_costs} \\
+    Resistive heater (central) & \cite{dea_tech_el_dh} \\
+    Battery (inverter, storage) & \cite{dea_energy_storage} \\
+    Hot water tank (decentral, central) & \cite{iwes_interaktion,pypsa_costs,dea_energy_storage} \\
+    Hot water tank (dis)charging & \cite{dea_energy_storage} \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+
+\subsubsection{Renewable Energy Generation}
+Hourly wind and solar generation time series are generated by combining ERA5 reanalysis weather data (wind speed, solar radiation, temperature) with technology specifications (Figure \ref{fig:capacity_factor}). The potential for onshore and utility-scale solar PV is constrained by eligible land use types and protected areas, as identified by the \textit{World Database on Protected Areas (WDPA)} (Figure \ref{fig:renewable_potential}). We assume specific installation densities for different technologies: 10 MW/km$^2$ for onshore wind, 10 MW/km$^2$ for offshore wind (in water depths up to 50 m), and 170 MW/km$^2$ for solar PV.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{./figures/renewable_potential.png}
+  \caption{Potential for onshore and utility-scale solar PV constrained by eligible land use types and protected areas. Yearly capacity factor represents the ratio of average energy output of a resource over a year to its rated/nameplate value, indicating the utilization rate of that resource. In this figure, renewable energy resources capacity factors are displayed in circular insets to save space.}
+  \label{fig:renewable_potential}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{./figures/capacity_factor.png}
+  \caption{Capacity factors of different technologies.}
+  \label{fig:capacity_factor}
+\end{figure}
+
+\subsubsection{Fossil Fuels with Carbon Capture}
+Existing coal-fired power plants can be retrofitted with carbon capture facilities, assuming a constant 90\% CO$_2$ capture rate from 2020 to 2060. The retrofit does not extend the operational life, and reduces the plant efficiency to 90\% of its original value.
+
+\subsubsection{Combined Heat and Power (CHP)}
+The CHP model is based on extraction condensing units, which define a feasible operational area for simultaneous power and heat production. When operating in condensing mode without heat extraction, the electrical efficiencies vary by plant type and vintage. Existing CHP coal power plants achieve 37\% electrical efficiency in this mode, while newly constructed CHP coal facilities demonstrate improved performance at 48\%. CHP gas power plants operate at 40\% electrical efficiency when functioning solely for electricity generation. The flexibility to extract steam for heat production allows these units to adapt their operational configuration based on demand requirements, creating a versatile dispatch capability within the energy system.
+
+\subsubsection{Hydropower}
+The model includes 41 large-scale hydropower plants, with their hourly inflow and potential generation calculated from gridded surface runoff data (Figure \ref{fig:hydropower}).
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{./figures/hydropower.png}
+  \caption{Averaged hydroelectricity time series of 41 large-scale hydro stations.}
+  \label{fig:hydropower}
+\end{figure}
+
+\subsubsection{Heat Pumps}
+The performance of heat pumps is modeled with a temperature-dependent Coefficient of Performance (COP). The COP decreases significantly when the temperature difference between the heat source and sink increases, which is particularly important since heating demand tends to peak during cold periods when the COP is lowest. For air-source heat pumps, the COP is calculated as a quadratic function of the temperature difference $\Delta T$ (in $^{\circ}$C) between the sink and source: COP = 6.81 - 0.121$\Delta T$ + 0.00063$\Delta T^2$. Ground-source heat pumps follow a similar relationship but with different coefficients: COP = 8.77 - 0.150$\Delta T$ + 0.00073$\Delta T^2$. The model assumes a constant sink water temperature of 55$^{\circ}$C.
+
+\subsubsection{Biomass}
+The model considers agricultural residues that are typically burned as waste (0.19 Gt/year) as a potential biomass source. Biomass technologies, including boilers and CHP, can be equipped with carbon capture, which results in negative net CO$_2$ emissions but reduce the efficiency of the plants to 90\% of the original value.
+
+\subsubsection{Thermal Storage}
+\label{sec:thermal_storage}
+Both long-term (LTES) and short-term (STES) hot water storage are available for district and decentralized heating, respectively. These storage systems are modeled with specific hourly energy losses.
+
+\subsubsection{Electricity Storage}
+Two scalable stationary storage options are included: batteries and hydrogen storage. For hydrogen, the capacity for electrolysis, storage (in steel tanks or underground salt caverns), and fuel cells can be optimized independently. The model assumes only provinces with salt caverns can invest in underground hydrogen storage.
+
+\subsubsection{Synthetic Methane and DAC}
+In certain scenarios, synthetic methane can be produced from hydrogen using the Sabatier process. The CO$_2$ required for this process is sourced from the atmosphere via \textit{Direct Air Capture (DAC)}. This captured CO$_2$ is distinct from the CO$_2$ sequestered from CHP or retrofitted coal plants.
+
+
+\subsection{Carbon Budget and Pathways}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{./figures/carbon_budget.png}
+  \caption{Carbon budget and emission reduction pathways.}
+  \label{fig:carbon_budget}
+\end{figure}
+
+The study explores China's power and heat sector decarbonization pathways within a total carbon budget of 79.9 GtCO$_2$, which corresponds to 27.3\% of the global remaining budget for a ``well below 2$^{\circ}$C'' target. This budget is based on the sector's 2020 emissions and is designed to achieve net-zero emissions by 2050.
+
+The CO$_2$ emission reduction pathway follows a linear trajectory from 2020 to 2050 (Figure \ref{fig:carbon_budget}). No emission constraints are imposed in 2025, as emissions are expected to peak around this time. Subsequently, emission reductions of 20\%, 60\%, and 100\% relative to 2020 levels are implemented in 2030, 2040, and 2050, respectively. Net CO$_2$ emissions are calculated based on the consumption of natural gas (0.2 tCO$_2$/MWh$_{th}$) and coal (0.34 tCO$_2$/MWh$_{th}$), with biomass assumed to be carbon-neutral. Our analysis focuses on fuel combustion emissions and excludes upstream emissions (e.g., coal mining, biomass growing, harvesting, and transportation).
+
+
+\subsection{Carbon Accounting Boundaries and System Carbon Prices}\label{sec:carbon_boundaries}
+
+To evaluate the climate and economic benefits of seasonal industrial flexibility, we first define the carbon accounting boundaries. Because total primary aluminum demand is fixed across scenarios, \textit{direct} process emissions from aluminum smelting remain constant. Our system-level model therefore focuses on \textit{indirect} emissions from the power and heating sectors across all 31 provinces.
+
+Under the strict DP-2050 scenario, the combined power and heating sectors must reach net-zero emissions. This balance is achieved by offsetting gross fossil emissions (coal and gas) with negative-emission technologies, specifically BECCS and DAC. As a result, \textit{net} indirect emissions are identical across all modeled 2050 scenarios (zero). Because net emissions are fixed by construction, reporting ``reduced carbon emissions'' between scenarios can be mathematically misleading.
+
+Instead, the main system value of aluminum seasonal flexibility is a reduction in \textit{gross} fossil generation during winter peaks. By shutting down smelters when renewable output is scarce, the system burns less coal and gas and correspondingly requires less DAC/BECCS deployment and spending to neutralize those gross emissions.
+
+The model's capacity-expansion optimization yields a marginal carbon price (the shadow price of the net-zero constraint) of about 101 EUR/ton CO$_2$ in 2050. This value is mainly determined by system-wide clean-energy deployment costs and the marginal abatement cost of DAC/BECCS. Although the primary aluminum sector is energy-intensive, it is still only part of the national energy system. Its transition to flexible operation reduces \textit{total} system decarbonization cost, but does not materially change the system-wide \textit{marginal} carbon price.
+
+To contextualize this future mitigation cost, we compare it with current market prices. As of early 2026, the trading price in China's national carbon market (CEA) was around 81--82 CNY/ton CO$_2$ (about 10--11 EUR/ton). The gap to the modeled 2050 shadow price (101 EUR/ton) reflects the high marginal cost of abating the last tons of CO$_2$ under a strict net-zero target. This contrast highlights the value of demand-side flexibility in reducing future mitigation costs.
+
+
+
+
+\newpage
+\section{Dimensionality Reduction and Tailored Iterative Solution}
+
+Our objective is to address the issue of computational intractability that arises when integrating aluminum smelter operation model 
+into the power system planning model. We adopt the D3R framework proposed by Lyu et al.~\citep{lyu_data-driven_2025}, which is 
+designed for the dimensionality reduction and linearization of industrial load constraints. Based on simulations of results, we 
+determine the parameters for a linear approximation model of the original precise model, which is then embedded into the linear 
+capacity expansion model, and its optimal solution serves as the initial value. After determining the local marginal price at each 
+province from the optimal solution of the linear capacity expansion model, all smelters run their detailed 8760-hour operational 
+models (which include integer variables) using the hourly electricity price as an exogenous input. This yields the optimal operating 
+results for each smelter. At this point, the operation of each plant is decoupled from the power system and other smelters, and the 
+problem can be solved in parallel. Then, we fix the smelter's operational decisions and optimize the remaining planning and 
+operational variables of the power system. This process is iterated until the objective function of the planning 
+model converges, which proves that we have simultaneously obtained the optimal planning and smelter operation results.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{./figures/iteration.png}
+  \caption{Framework of the iterative solution algorithm.}
+  \label{fig:iteration}
+\end{figure}
+
+\subsection{Data-Driven Dimension Reduction (D3R) Framework}
+
+The integration of detailed aluminum smelter operational models into power system planning models presents significant computational challenges due to the complex mixed-integer constraints inherent in industrial load modeling. Traditional analytical dimension reduction methods, which rely on pre-specified geometric templates (such as boxes, ellipses, or zonotopes) to approximate original constraints, face two key limitations: they lack adaptability across various industrial loads with different constraint structures, and they require convexity in the original constraints, making them incompatible with industrial load models containing integer variables.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1.0\textwidth]{./figures/framework.pdf}
+  \caption{Data-driven dimension reduction framework for industrial load modeling, illustrated with a steel plant example. $h$: high-dimensional constraints; $HD$: historical dataset; $A$: low-dimensional constraints.}
+  \label{fig:d3r}
+\end{figure}
+
+
+To address these limitations, we adopt the Data-Driven Dimension Reduction (D3R) framework (Figure \ref{fig:d3r}) proposed by Lyu et al.~\citep{lyu_data-driven_2025}. D3R leverages optimal energy consumption data from industrial loads to train a dimension-reduced model that best fits the original constraints through inverse optimization. The framework exhibits enhanced adaptability and is compatible with constraints involving integer variables, making it particularly suitable for aluminum smelter modeling.
+
+\subsubsection{Problem Formulation}
+
+The D3R approach works by replacing the original high-dimensional constraints $h(x, y^{\rm o}) \leq 0$ with simplified lower-dimensional linear constraints $A(x, y^{\rm r}) \leq b$, where $x$ represents hourly energy consumption, $y^{\rm o}$ represents variables in the original constraints (including integer variables for operating modes), and $y^{\rm r}$ represents variables in the reduced constraints (continuous only). Rather than requiring strict equivalence between the reduced and original constraints, D3R introduces a loss function $J(h(\cdot), A, b)$ to quantify the approximation error and determines appropriate parameters $A$ and $b$ to minimize this error.
+
+The training process uses historical energy usage data $HD = \{(Pr^{(n)}, x^{(n)})\}$, where $Pr^{(n)}$ and $x^{(n)}$ represent hourly electricity prices and energy consumption on day $n$, respectively. The optimization problem is formulated as:
+
+\begin{subequations}
+  \begin{equation}
+    \underset{A, b}{\rm min.} J = \frac{1}{N} \sum_{n = 1}^{N} ||x^{(n)} - x_n||^2
+  \end{equation}
+  \begin{equation}
+    {\rm s.t.} \quad x_n = {\rm argmin.}\{Pr^{(n)\intercal} x_n \ : \ A(x_n, y^{\rm r}) \leq b\}, \ \forall n
+  \end{equation}
+\end{subequations}
+
+where $x_n$ is the optimal energy consumption for day $n$ based on the reduced constraints. This inverse optimization approach has been validated across multiple industrial load datasets, demonstrating superior performance compared to analytical methods with normalized root mean square errors typically ranging from 4\% to 10\% in terms of hourly load profile and less than 0.2\% in terms of objective value (e.g., optimal electricity cost).
+
+\subsubsection{ALF-based Reduced Constraints}
+
+The D3R framework employs an adjustable load fleet (ALF) composed of multiple adjustable loads (ALs) as the form of the reduced constraints to be trained. The motivation for choosing ALF is that it can directly model the actual composition and behavior of industrial loads without requiring baseline load definitions or assuming bidirectional energy exchange capabilities as in virtual battery models. The ALF model captures three key physical characteristics of industrial loads through linear constraints:
+
+Equipment Composition: Multiple pieces of equipment in industrial facilities are represented by parallel ALs, where the total energy consumption is the sum of individual device consumption.
+
+Equipment Power Rating: Each device's power consumption is bounded by its rated capacity.
+
+Production Goals: Daily energy consumption limits reflect production targets, as they are typically proportional to energy usage through product energy intensity factors.
+
+The reduced constraints in the form of an ALF are then:
+\begin{subequations}
+  \begin{equation}
+    x_{t} = \sum_{i=1}^{I} p_{t, i} \Delta t, \quad \underline{P}_{i} \le p_{t, i} \le \overline{P}_{i} \ : \ \underline{\mu}^{\rm P}_{t, i}, \overline{\mu}^{\rm P}_{t, i}, \ \forall  t
+  \end{equation}
+  \begin{equation}
+    \underline{E}_{i} \le \sum_{t=1}^{T} p_{t, i} \Delta t \le \overline{E}_{i} \ : \ \underline{\mu}^{\rm E}_{i}, \overline{\mu}^{\rm E}_{i}
+  \end{equation}
+\end{subequations}
+where the subscript $n$ is omitted, $I$ is the number of ALs as a hyperparameter that balances model complexity and approximation accuracy. A larger $I$ allows reduced constraints to better approximate original constraints but increases computational costs, while limited training data may constrain the choice of $I$ to avoid overfitting. $x_{t}$ is the net energy consumption at time $t$, which is the summation of $p_{t, i} \Delta t$, representing the average consumption power of AL $i$ at time $t$ multiplied by the length of time interval $\Delta t$. $\theta = \{\underline{P}_{i}, \overline{P}_{i}, \underline{E}_{i}, \overline{E}_{i}\}$ include the power and energy limits of AL $i$, respectively, which are the parameters to be fitted. The Lagrange multipliers $\underline{\mu}^{\rm P}_{t, i}, \overline{\mu}^{\rm P}_{t, i}, \underline{\mu}^{\rm E}_{i}, \overline{\mu}^{\rm E}_{i}$ are the dual variables associated with the power and energy limits, respectively. The above linear constraints can be easily transformed into the form of $A(x, y^{\rm r}) \leq b$, where $x = [x_t]$ and $y^{\rm r} = [p_{t, i}]$.
+
+While this simplified model may overlook some temporal coupling between production processes and relax integer variables, it effectively balances computational complexity and approximation accuracy. Moreover, the D3R framework is not limited to the ALF model - other reduced constraint forms can be chosen based on specific needs while maintaining the framework's core methodology.
+
+\subsubsection{Training Algorithm for the ALF Model}
+
+Substituting the form of the ALF, the optimality conditions (Karush-Kuhn-Tucker conditions) for day $n$ include primal feasibility, stationarity condition derived from the Lagrangian function, dual feasibility, and complementary slackness:
+\begin{subequations}
+  \begin{equation}
+    Pr^{\rm E}_{t} - \underline{\mu}^{\rm P}_{t, i} + \overline{\mu}^{\rm P}_{t, i} - \underline{\mu}^{\rm E}_{i} + \overline{\mu}^{\rm E}_{i} = 0, \ \forall t, \forall i
+  \end{equation}
+  \begin{equation}
+    (\underline{\mu}^{\rm P}_{t, i}, \overline{\mu}^{\rm P}_{t, i}, \underline{\mu}^{\rm E}_{i}, \overline{\mu}^{\rm E}_{i}) \ge 0, \ \forall t, \forall i
+  \end{equation}
+  \begin{equation}
+    \underline{\mu}^{\rm P}_{t, i} (\underline{P}_{i} - p_{t, i}) = 0, \quad \overline{\mu}^{\rm P}_{t, i} (p_{t, i} - \overline{P}_{i}) = 0, \quad \forall t, i
+  \end{equation}
+  \begin{equation}
+    \underline{\mu}^{\rm E}_{i} (\underline{E}_{i} - \sum_{t=1}^{T} p_{t, i}) = 0, \quad \overline{\mu}^{\rm E}_{i} (\sum_{t=1}^{T} p_{t, i} - \overline{E}_{i}) = 0, \quad \forall i
+  \end{equation}
+\end{subequations}
+The complementary slackness conditions involve bilinear constraints, which can be transformed via the Fortuny-Amat transformation into a more easily solvable form. For example, the first term can be replaced by the following:
+\begin{equation}
+  \underline{\mu}^{\rm P}_{t, i} \le M(1 - z_{t, i}), \quad p_{t, i} - \underline{P}_{i} \le M z_{t, i}, \quad \forall t, i
+\end{equation}
+where $z_{t, i}$ is a binary variable and $M$ is a large positive number. The transformed conditions are used in inverse optimization, forming a mixed-integer linear programming (MILP) problem that can be solved by commercial solvers.
+
+Since the number of integer variables scales with dataset size $N$, direct solving becomes computationally intractable. We employ zeroth-order stochastic gradient descent (ZOSGD) for iterative solving, which is suitable because it: 1) avoids explicit gradient computation, 2) reduces computational burden through batch processing, and 3) maintains tractability via iterative optimization. In each iteration, certain days of data are randomly selected and parameters are updated using estimated gradients:
+
+Initialize $j = 0$ and $\theta^{(0)} = \{\underline{P}_{i}, \overline{P}_{i}, \underline{E}_{i}, \overline{E}_{i}\} = [0]$.
+
+Randomly select $B$ days from the dataset and solve the batch problem:
+$\underset{\theta}{\rm min.} J = \frac{1}{B} \sum_{n = 1}^{B} ||x^{(n)} - x_n||^2 \ {\rm s.t.}$ ALF constraints and optimality conditions to obtain $\theta^{*}$.
+
+Update $\theta^{(j+1)} = (1 - \alpha)\theta^{(j)} + \alpha \theta^{*}$; if $\theta^{(j+1)}$ converges, break; otherwise, set $j = j + 1$ and go to step 2.
+
+where $\alpha$ is the learning rate, which can be adaptively adjusted. The ZOSGD algorithm can be easily implemented by using commercial solvers, and the computational complexity is independent of the number of days in the dataset. For more detail about the D3R method, refer to the original paper with the open-sourced codes.
+
+\subsubsection{Implementation for Aluminum Smelting}\label{sec:potline_discrete}
+
+In the PyPSA-China framework, aluminum smelter operation is integrated through a multi-bus architecture that separates the electricity and aluminum-production systems while preserving their coupling. The model creates dedicated aluminum buses for provinces with significant production capacity, forming a parallel network that mirrors grid topology. This design allows aluminum production to be optimized independently while retaining the required electrical links for power supply.
+
+Aluminum smelters are represented as Link components that convert electrical energy into aluminum production, with each smelter connected between its provincial electricity bus and a dedicated aluminum bus. We use the first-order adjustable-load model (linearized) from D3R to approximate the original smelter flexibility model. All parameters are provided by the D3R framework. Operational constraints are implemented through configurable scenario parameters, with flexibility ranging from low (99\% minimum power output) to high (70\% minimum power output), and with corresponding startup costs.
+
+
+To better represent the modularity of aluminum production, we additionally implement a potline-level discrete formulation in the detailed smelter subproblems. For each province, the available smelting capacity is decomposed into a set of representative potline blocks (each potline has an annual production capacity of 250,000 tonne of aluminum). Each block has its own binary on/off and startup/shutdown variables, minimum stable operating level, and path-dependent restart cost. The provincial smelting load in each hour is then represented as the sum of potline-level decisions, while annual production balance and inventory consistency constraints are maintained.
+
+This refinement is implemented within the same D3R + iterative decomposition architecture: the planning layer remains a tractable linear approximation, and the detailed potline-level MILP is solved in Step 2 of Algorithm~\ref{alg:iterative} using exogenous nodal prices, then fed back to the planning model through updated load profiles. We re-ran the scenario set with this discrete formulation and found that the core conclusions are robust: while potline-level representation improves physical realism for partial-load operation, the system-optimal strategy in DP-2050 remains dominated by seasonal curtailment rather than frequent short-cycle modulation.
+
+\subsection{Iterative Solution Algorithm}
+
+\begin{algorithm}[H]
+  \caption{Iterative Optimization Algorithm for Aluminum Smelter Integration}
+  \label{alg:iterative}
+  \begin{algorithmic}[1]
+  \REQUIRE Initial aluminum production targets $Q_n^0$ for each province $n$
+  \REQUIRE Convergence tolerance $\epsilon = 1 \times 10^{-4}$, Maximum iterations $k_{max} = 10$, $k = 0$, $f^0 = \infty$
+  
+  \WHILE{$k < k_{max}$}
+      \STATE \textit{Step 1: Power System Optimization}
+      \STATE Solve linear power system capacity expansion model with D3R-approximated aluminum constraints
+      \STATE Extract nodal marginal electricity prices $\lambda_n^k$ for each province $n$
+      
+      \STATE \textit{Step 2: Aluminum Smelter Optimization (Parallel)}
+      \FOR{each province $n$ in parallel}
+          \STATE Solve detailed aluminum operational MILP model:
+          \STATE Extract optimal energy consumption pattern $x_n^k$
+      \ENDFOR
+      
+      \STATE \textit{Step 3: Update and Convergence Check}
+      \STATE Fix aluminum energy consumption patterns $x_n^k$ in power system model
+      \STATE Solve updated power system optimization to get objective $f^k$
+      \STATE Calculate relative change: $\delta = |f^k - f^{k-1}| / |f^{k-1}|$
+      
+      \IF{$\delta < \epsilon$}
+          \STATE \textit{Converged:} Return optimal solution
+          \STATE \textit{BREAK}
+      \ELSE
+          \STATE Update iteration counter: $k = k + 1$
+          \STATE Update objective value: $f^{k-1} = f^k$
+      \ENDIF
+  \ENDWHILE
+  
+  \STATE \textit{Return:} Optimal capacity expansion decisions and aluminum operational schedules
+  \end{algorithmic}
+  \end{algorithm}
+
+The iterative optimization algorithm (Algorithm \ref{alg:iterative}) addresses the computational intractability that arises when integrating aluminum smelter operation models into power system planning models. The algorithm employs a decomposition-based approach that alternates between solving the power system optimization problem and the aluminum smelter operational optimization problems until convergence is achieved (Figure \ref{fig:iteration}). This iterative process allows for the coordination of system-wide optimization with detailed industrial process optimization while maintaining computational tractability.
+
+The algorithm begins by solving the power system capacity expansion model with simplified linear constraints representing aluminum smelters, using the D3R framework to approximate the complex mixed-integer constraints. The solution provides nodal marginal electricity prices for each province, which serve as input parameters for the detailed aluminum smelter operational models. These detailed models include integer variables for startup/shutdown decisions and temperature constraints, and are solved in parallel for each province using the nodal electricity prices as exogenous inputs.
+
+The detailed aluminum optimization subproblems for each province are formulated as mixed-integer linear programming problems that minimize the total cost of aluminum production, including electricity costs and startup costs, subject to operational constraints such as minimum and maximum power limits, production targets, and temperature constraints. Within each provincial subproblem, capacity is represented by multiple discrete potline blocks, each with binary on/off and startup variables. This allows non-uniform intra-provincial operation (some potline blocks can be shut down while others remain near rated output), rather than enforcing perfectly synchronous ramping of all capacity. At this stage, provincial smelter subproblems are decoupled from the power system and from other provinces' smelter subproblems, while annual production targets by province remain fixed within each iteration in both the centralized and distributed steps. This decomposition enables rapid solution of the optimization problems; although the 8760-hour MILP problems still contain numerous integer variables, they can typically be solved within 10-30 minutes and in parallel across provinces, making the approach feasible for large-scale systems.
+
+After solving the detailed aluminum operational models, the resulting optimal energy consumption patterns are fixed in the power system model, and the remaining planning and operational variables are optimized. This process creates a feedback loop where the power system optimization provides electricity prices that influence aluminum production decisions, while the aluminum operational decisions affect the overall system load and generation requirements. The algorithm continues this iterative process until the objective function of the planning model converges, typically within 3-5 iterations, ensuring that both the power system and aluminum smelter operations are simultaneously optimized. The typical runtime for one iteration is approximately 2 hours, with the centralized capacity expansion model requiring about 100 minutes and the distributed smelter operational models taking 10-30 minutes to solve in parallel across all provinces. 
+
+The convergence criterion is based on the relative change in the objective function between consecutive iterations, with a typical threshold of 1e-4 indicating satisfactory convergence. The algorithm includes mechanisms to prevent infinite loops and ensure numerical stability, such as maximum iteration limits and convergence monitoring.
+
+The optimization problems are solved using the Gurobi solver (version 13.0.0) with carefully tuned parameters to ensure computational efficiency and numerical stability. For the linear programming problems in the power system optimization, we use the barrier method with 192 threads, crossover disabled, and a barrier convergence tolerance of 1e-5. For the mixed-integer linear programming problems in the aluminum smelter optimization, we employ automatic method selection (typically dual simplex for branch-and-bound), with a MIP gap of 0.01, moderate heuristic search intensity of 0.5, and minimal cut generation to balance solution quality and computational speed. The solver configuration includes 192 threads for parallel processing, feasibility tolerance of 1e-6, and disabled dual reductions to maintain numerical stability across the iterative optimization process.
+The computational experiments are conducted on a high-performance computing cluster using SLURM job scheduling system. Each simulation is allocated 1 node with 40 CPU cores and 1 TB of total memory (25 GB per core), with a maximum runtime of 72 hours. The simulations are executed using Snakemake workflow management system with 40 parallel cores.
+
+It is important to note that our model still uses a provincial planning interface, while detailed operation is represented by discrete potline blocks within each province. If full facility-level data were available, modeling individual plants and potline vintages explicitly would likely reveal even greater flexibility benefits than our current representation. Although the lower-level MILP already captures discrete intra-provincial operation (i.e., some potline blocks can be shut down while others continue operating), two conservative simplifications remain: (1) technological heterogeneity among plants within the same province is simplified into representative blocks, and (2) intra-provincial transmission constraints are not explicitly modeled. These simplifications may still understate the true operational flexibility potential of aluminum smelters. Therefore, the economic benefits of overcapacity-enabled flexibility identified in our analysis should be considered conservative estimates.
+
+
+
+
+\newpage
+\section{Additional Analysis on Labor/Employment Flexibility}
+
+This section assesses labor/employment flexibility under seasonal smelter operation. We evaluate whether cross-industry labor mobility between aluminum smelting and thermal power/heating is institutionally and geographically feasible, using evidence on captive power integration, industrial clustering, and the ``Shared Employee'' framework. We then compare role-level technical requirements across primary smelting, secondary recycling, and thermal power/heating to identify transferable auxiliary/maintenance tasks versus specialized core process roles. Next, we map the spatial distribution of smelters and coal-fired plants to test regional co-location for workforce redeployment. Finally, we compare these findings with current seasonal operation in thermal power, where workforce stability is mainly maintained through off-peak maintenance and capacity-price support. Overall, labor mobility appears to be a plausible co-benefit pathway, but it is not required for our main economic conclusions.
+
+\subsection{Feasibility of Cross-Industry Labor Mobility}
+
+Implementing seasonal production requires managing a fluctuating workforce. Our core analysis already shows that seasonal flexibility is economically robust under inflexible labor assumptions. Cross-industry labor mobility---especially between aluminum smelting and power generation---provides an additional option to reduce social and operational disruption. In China, this mobility is supported by corporate integration, spatial proximity, and relevant institutional frameworks.
+
+\subsubsection{Integrated Captive Power and Corporate Synergy}
+A significant share of China's aluminum industry operates under an integrated corporate model with on-site captive power generation. As of 2025, about 82--84~GW of coal-fired captive capacity is associated with primary aluminum smelting \citep{ember_aluminium_coal_2025, transitionasia_aluminium_2025}, and the share of production powered by these on-site sources reached nearly 50\% in 2021 \citep{tan_different_2025}. In provinces such as Shandong and Xinjiang, where captive shares reach 88\%--100\%, smelters and power plants are often owned by the same industrial group (e.g., Weiqiao, Xinfa, or JISCO) and located in the same compound. This on-site model enables personnel redeployment without requiring workers to change employers or relocate, reducing administrative and social barriers to labor mobility.
+
+\subsubsection{Spatial Proximity and Industrial Clustering}
+For smelting facilities that rely on the public grid (particularly in Southern hubs like Yunnan and Guangxi), labor mobility is enabled by the clustering of energy-intensive industries. Industrial development in these regions is characterized by specialized parks where multiple facilities share centralized infrastructure. For example, the Matang Industrial Park in Wenshan, Yunnan, integrates large-scale aluminum smelting projects with regional peak-shaving thermal plants to optimize energy and resource utilization \citep{chinadaily_weiqiao_2020, yieh_wenshan_2020}. Similarly, ``coal-power-aluminum integrated parks'' in Baise, Guangxi, group smelting potlines with large thermal units in compact layouts \citep{industrialinfo_guangxi_2024}. Such proximity allows workers to switch between roles within the same industrial community, maintaining local employment stability even without direct corporate integration.
+
+\subsubsection{Institutional Frameworks and Shared Employees}
+Beyond geographic proximity, China's institutional landscape provides robust support for flexible labor reassignment. The ``shared employee'' (\textit{gongxiang yonggong}) framework, while gaining public prominence as an emergency measure during the COVID-19 pandemic, has since been formalized by the Ministry of Human Resources and Social Security (MHRSS) as a standard regulatory tool for managing structural and seasonal labor imbalances \citep{mohrss2020_shared_employment}. Unlike informal secondment, this system provides a clear legal and insurance framework that allows enterprises to temporarily ``lend'' skilled workers to sectors with complementary demand peaks (e.g., thermal power in winter) while preserving the workers' underlying employment relationships, seniority, and social security benefits. This policy environment significantly lowers the administrative and legal barriers for energy-intensive firms to adopt seasonal operational paradigms.
+
+\subsubsection{Empirical Precedents and Internal Labor Markets}
+The feasibility of seasonal labor transfer is well-supported by established practices in China's industrial sectors. A notable example is the mature labor-sharing mechanism in Liuzhou, Guangxi, where hundreds of equipment operators and assembly workers rotate annually between sugar refineries (active during the October-April crushing season) and consumer-electronics manufacturing (which peaks from April to October) under formal agreements facilitated by local labor bureaus \citep{liuzhou2022_shared_employment}. 
+
+Furthermore, for high-skill heavy industries such as aluminum smelting and power generation, flexibility is frequently realized through internal labor markets within large state-owned enterprise (SOE) groups or industrial conglomerates. These mechanisms were extensively utilized during China's supply-side structural reforms (2016-2020), where skilled technicians from coal and steel units were successfully retrained and redeployed to power and renewable-equipment activities within the same parent groups \citep{mohrss2016_steel_coal_resettlement, undp2023_china_just_transition}. These precedents demonstrate that workers in energy-intensive sectors possess transferable industrial literacy in areas such as electrical safety and heavy machinery maintenance. For large conglomerates, the marginal cost of seasonal cross-training is often more economically viable than the costs associated with severance or maintaining an idle workforce during low-demand months.
+
+\subsection{Comparative Analysis of Technical Skills and Roles}\label{labor_skills}
+
+The feasibility of seasonal labor mobility is contingent upon the alignment of technical requirements and skill sets across different industrial sectors. Table \ref{tab:skill_comparison} provides a comparison of core technical tasks and their relevance in primary aluminum smelting, secondary aluminum recycling, and thermal power/heating facilities.
+
+\begin{table}[h]
+\centering
+\caption{Comparison of Core Technical Tasks and Skill Requirements across Sectors.}
+\begin{tabular}{@{}p{3.5cm}p{3cm}p{3cm}p{3cm}@{}}
+\toprule
+\textbf{Technical Category} & \textbf{Primary Aluminum (Smelting)} & \textbf{Secondary Aluminum (Recycling)} & \textbf{Thermal Power / Heating} \\ \midrule
+\textbf{Material Handling} & Alumina/anode transport, pneumatic conveying & Scrap sorting, furnace charging & Coal/ash handling, fuel conveying systems \\
+\textbf{Process Control} & Electrolytic cell thermal/MHD balance & Melting/refining temp., alloy chemistry & Boiler/turbine thermal cycle, steam control \\
+\textbf{Equipment Operation} & Potline cranes, tapping vehicles & Forklifts, charging machines & Yard cranes, auxiliary pump systems \\
+\textbf{Electrical Maintenance} & High-voltage DC rectifiers, busbars & Standard industrial AC systems & High-voltage AC generators, switchgear \\
+\textbf{Mechanical Maintenance} & Pump/valve repair, compressor units & Burner/refractory maintenance & Turbine/boiler pumps, piping systems \\ \bottomrule
+\end{tabular}
+\label{tab:skill_comparison}
+\end{table}
+
+\subsubsection{Technical Characteristics of Smelting and Recycling}
+Primary aluminum production is an electrochemical process that requires specialized knowledge in maintaining the stable operation of electrolytic cells (potlines). Key tasks include managing thermal equilibrium, current efficiency, and the periodic replacement of carbon anodes. In contrast, secondary aluminum production is a pyrometallurgical process centered on the melting and refining of scrap. The primary skills involved include scrap classification (spectroscopic or manual), furnace temperature management for diverse alloys, and casting operations \citep{primary_vs_secondary_2026, okon_scrap_melting_2026}. While both sectors handle aluminum, the overlap in core process control technologies remains limited.
+
+\subsubsection{Technical Overlap between Smelting and Thermal Power}
+The auxiliary operations in primary aluminum smelters share significant commonalities with those in large-scale thermal power and heating plants. Both sectors involve the large-scale movement of bulk materials (alumina and anodes vs. coal and ash) using similar pneumatic and mechanical conveying systems. Furthermore, the maintenance of high-voltage electrical infrastructure and large-scale mechanical systems (pumps, compressors, and hydraulic units) follows similar industrial standards. These auxiliary and maintenance roles typically constitute a significant portion of the industrial workforce in both sectors, providing a technical basis for seasonal role transitions for non-core personnel.
+
+\subsection{Spatial Distribution of Coal Power Plants and Aluminum Smelters in China}
+
+
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{./figures/smelter_map.png}
+  \caption{Spatial distribution and production capacity of primary aluminum smelters in China. Data source: BAIINFO, 2025.}
+  \label{fig:smelter_power_map}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{./figures/coal_power_map.png}
+  \caption{Spatial distribution of coal-fired power plants in China (bubble size: installed capacity). Data source: Global Energy Monitor, 2024.}
+  \label{fig:coal_power_map}
+\end{figure}
+
+To empirically evaluate the geographical prerequisites for potential inter-industry labor mobility, we mapped the spatial distribution of China's primary aluminum smelters and coal-fired power plants. Figure \ref{fig:smelter_power_map} illustrates the distribution and production capacity of aluminum smelters based on facility-level data, while Figure \ref{fig:coal_power_map} displays the installed capacity of coal-fired power plants across the country.
+
+A comparative analysis of these two geographical distributions reveals a substantial spatial overlap at the regional and city levels. This co-location is particularly pronounced in Northern and Northwestern China---most notably in provinces such as Shandong, Inner Mongolia, and Xinjiang. In these regions, the historical industrial development model heavily favored the construction of integrated ``coal-power-aluminum'' clusters. Consequently, energy-intensive smelting facilities were strategically sited in close proximity to abundant thermal generation to minimize transmission losses and secure baseload power.
+
+Although our macro-level capacity expansion model does not explicitly simulate detailed commuting constraints, the clustering in these maps provides clear evidence of regional proximity between the two sectors. This pattern suggests that labor transfer from smelters (during winter production lulls) to thermal power plants (during winter peak-shaving periods) does not necessarily require cross-provincial migration. In major production hubs, localized intra-city or intra-regional redeployment is geographically feasible. This spatial overlap supports the institutional and economic discussion in the main text.
+
+
+
+
+
+\subsection{Current Seasonal Operational Dynamics of China's Thermal Power Sector}
+
+To contextualize the labor and operational dynamics discussed in the main text, it is useful to distinguish current coal-power operation from the deeply decarbonized 2050 projection. The projected ``winter-on, summer-off'' pattern in 2050 reflects a highly electrified, renewable-dominant system with large winter heating loads. In the current system (around 2025), coal-fired plants in most provinces still maintain relatively high summer capacity factors to meet cooling demand \citep{rmi_sichuan_california_heat_2022}. However, a clear hydrology-driven seasonality already appears in hydro-dominant regions such as Sichuan and Yunnan, where thermal generation is often reduced during the wet summer season.
+
+Despite these regional summer lulls, we do not currently observe mass layoffs or widespread off-season labor outflows from thermal power plants. Workforce stability is maintained mainly through two mechanisms within the thermal-power sector. First, companies use low-load summer periods for major overhauls (Grade A/B/C maintenance), and redeploy operating personnel to maintenance supervision, safety management, and technical training.
+
+Second, this operational stability is reinforced by targeted institutional and policy support. Recognizing the necessity of keeping thermal plants operationally ready for winter energy security, China implemented a new ``Coal Power Capacity Price Mechanism'' in 2024. This policy allows thermal plants to recover fixed costs---explicitly including labor expenditures---through capacity payments, ensuring that a stable, specialized workforce is retained even during extended periods of low power generation \citep{hfzq_power_monthly_2024}.
+
+While internal redeployment and capacity payments can buffer current seasonal fluctuations, the deeper seasonal lulls projected for 2050 may exceed what these intra-plant mechanisms can absorb. This is why the broader cross-industry labor mobility pathways discussed in the main text become increasingly relevant, especially as energy-cost volatility challenges traditional year-round employment models in seasonal generation sectors.
+
+\newpage
+
+\section{Sensitivity Analysis}
+
+To systematically evaluate the robustness of our findings, we conducted a multi-dimensional sensitivity analysis across 72 distinct scenario combinations (3 Demand $\times$ 4 Smelter Flexibility $\times$ 3 Technology Costs $\times$ 2 Labor Flexibility). 
+
+Here we provide a clear interpretation of these results and the key assumptions behind them. The optimal retention of $\sim$30\% aluminum overcapacity is robust to changes in technical, market, and labor parameters, but it still depends on the broader trajectory of power-system decarbonization.
+
+\subsection{Robustness Across Operational and Economic Parameters}
+The following four dimensions represent factors that influence the absolute magnitude of system benefits, but \textit{do not} alter the fundamental conclusion regarding the optimality of seasonal overcapacity retention. We do not need to assume optimistic conditions for these parameters to believe our results.
+
+\vspace{0.3cm}
+\noindent\textbf{1. Smelter Operational Flexibility:} We tested four levels of physical constraints, ranging from ``Low Flexibility'' to ``Unconstrained.'' In our Core (Mid) scenario, smelters are restricted to a $\pm$10\% power modulation and are subject to historical, heavy restart costs. A comparison across these scenarios (e.g., SI Figure 7 and Main Text Figure 5a) demonstrates that the extreme seasonal price differentials always dominate daily price cycles. Even under strictly constrained flexibility, seasonal shutdowns remain the optimal economic response. Therefore, our conclusions do not rely on the assumption that advanced, deep-modulation technologies (such as EnPot) must be widely adopted.
+
+\vspace{0.3cm}
+\noindent\textbf{2. Primary Aluminum Demand:} We evaluated Low, Mid, and High projections for 2050 primary aluminum demand. Because China's aluminum sector already possesses structural overcapacity far exceeding 40\%, massive excess capacity exists across all future demand cases. 
+
+From a modeling perspective, the projections for available scrap aluminum and, thus, recycled aluminum production are a calculated result of China's historical aluminum production and are not significantly affected by model assumptions. For example, the model uses aluminum production data from 1990 to 2023 to calculate scrap aluminum availability, resulting in approximately 15 million tonnes (Mt) of available scrap aluminum in 2024. Then, the projected recycled aluminum production in 2024 is 10.5 Mt, which is the available scrap multiplied by the 70\% scrap aluminum recovery rate. The number is very close to the historical production of 10.6 Mt~\citep{ChinaNonferrous2025}. In contrast, total aluminum demand is more susceptible to uncertain factors such as China's economic development level, as well as the import and export amount of aluminum products. Nevertheless, even in the most optimistic scenario for total aluminum demand, the nationwide annual primary aluminum demand is projected to fall to 24 Mt by 2050, which is less than 54\% of the 2024 level. 
+
+Our model employs a top-down approach, projecting nationwide aluminum demand, which may differ from granular end-use forecasts~\citep{lennon_aluminium_2022}. However, our projected trends align with those of bottom-up studies~\citep{yang_supply_2024}. We also simplify the distinction between primary/recycled aluminum, as well as market/trade dynamics.
+
+Our results indicate that the optimal retention rate remains firmly anchored around 30\% regardless of the absolute sector size. Because the aluminum industry acts as a price taker in the broader energy market, the system value per unit of capacity remains nearly constant. Thus, our findings are robust against long-term demand forecasting uncertainties. 
+
+\vspace{0.3cm}
+\noindent\textbf{3. Competing Technology CAPEX:} The system value of demand-side flexibility is naturally contested by supply-side resources like batteries and hydrogen. We scaled the future capital costs (CAPEX) of these technologies by $-20$\% (optimistic) and $+50$\% (conservative) according to AACE guidelines. While higher competing CAPEX marginally increases the systemic value of aluminum flexibility, retaining overcapacity remains the optimal, least-cost strategy even when competing storage technologies experience aggressive cost declines. 
+
+\vspace{0.3cm}
+\noindent\textbf{4. Labor and Employment Flexibility:} We tested an \textit{Inflexible} baseline (where full maintenance and labor costs are treated as fixed, sunk costs even during seasonal shutdowns) against a \textit{Flexible} scenario (where labor can be transferred to complement other winter-peaking industries). As shown in Figure 4a and SI Figure 2, even under the most conservative, inflexible labor assumptions, retaining $\sim$30\% overcapacity is economically optimal. Perfect labor mobility simply amplifies this value; it is not a prerequisite for the strategy's success.
+
+\subsection{Key Assumption: The Net-Zero Constraint}
+Our analysis shows that the key assumption in this study is the \textbf{strict enforcement of a carbon-neutrality (net-zero) target for the power and heating sectors around 2050}.
+
+This policy constraint is a main driver of system economics. The net-zero mandate implies high carbon shadow prices, large-scale variable renewable deployment, and deep electrification of heating. Together, these factors create strong winter peaks in residual load and electricity scarcity, which increase the value of seasonal industrial flexibility.
+
+We did not treat this decarbonization trajectory as a sensitivity variable in the core 2050 matrix because it aligns with China's policy commitments. Its role can be seen from the time-path results: when the carbon constraint is relaxed (e.g., 2030 with 20\% reduction and 2040 with 60\% reduction), winter price spikes are moderated by available fossil generation. As shown in Main Text Figure 4b, the optimal overcapacity retention rate drops to about 6\% in 2030 and 20\% in 2040.
+
+Therefore, the conclusion that $\sim$30\% overcapacity is system-optimal is conditional on realizing a deeply decarbonized, highly electrified, and renewable-dominant energy system by 2050.
+
+
+
+%% For citations use: 
+%%       \citet{<label>} ==> Jones et al. [21]
+%%       \citep{<label>} ==> [21]
+%%
+
+
+
+% use section* for acknowledgment
+
+
+%% If you have bibdatabase file and want bibtex to generate the
+%% bibitems, please use
+%%
+\bibliographystyle{elsarticle-num-names}
+\bibliography{reference}
+
+%% else use the following coding to input the bibitems directly in the
+%% TeX file.
+
+% \begin{thebibliography}{00}
+
+% %% \bibitem[Author(year)]{label}
+% %% Text of bibliographic item
+
+% \bibitem[ ()]{}
+
+% \end{thebibliography}
+\end{document}
+
+\endinput
+%%
+%% End of file `elsarticle-template-num-names.tex'.

@@ -1,0 +1,21 @@
+case,metric,low,high,unit,interpretation
+steel,roof_area_for_scenario_pv_base,758,758,m2,150 kWp at 22% module efficiency and 90% usable roof
+steel,roof_area_for_scenario_pv_conservative,1172,1172,m2,150 kWp at 16% module efficiency and 80% usable roof
+office,roof_area_for_scenario_pv_base,3030,3030,m2,600 kWp at 22% module efficiency and 90% usable roof
+office,roof_area_for_scenario_pv_conservative,4688,4688,m2,600 kWp at 16% module efficiency and 80% usable roof
+steel,pv_for_annual_ai_energy,15,34,kWp,31 MWh per year AI inference matched using paper location range
+office,pv_for_annual_ai_energy,168,375,kWp,349 MWh per year AI inference matched using paper location range
+steel,scenario_pv,150,150,kWp,whole-site conditional scenario rather than AI-only sizing
+office,scenario_pv,600,600,kWp,whole-site conditional scenario rather than AI-only sizing
+steel,peak_base_plus_ai,634,634,kW,hourly representative day
+steel,peak_after_sunny_pv,554,554,kW,hourly representative sunny day
+steel,grid_capacity_stress_test,630,630,kW,power-equivalent threshold
+office,peak_base_plus_ai,1050,1050,kW,hourly representative day
+office,peak_after_sunny_pv,710,710,kW,hourly representative sunny day
+office,grid_capacity_stress_test,1000,1000,kW,power-equivalent threshold
+steel,bess_without_pv_power,4,4,kW,minimum hourly lower bound to avoid AI-induced exceedance
+steel,bess_without_pv_energy,5,5,kWh,nominal lower bound at 95% discharge efficiency and 90% DoD
+office,bess_without_pv_power,50,50,kW,minimum hourly lower bound to avoid AI-induced exceedance
+office,bess_without_pv_energy,117,117,kWh,nominal lower bound at 95% discharge efficiency and 90% DoD
+steel,bess_after_sunny_pv_power,0,0,kW,no battery needed solely for capacity threshold in sunny scenario
+office,bess_after_sunny_pv_power,0,0,kW,no battery needed solely for capacity threshold in sunny scenario

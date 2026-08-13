@@ -1,0 +1,25 @@
+cost_case_version: us_heterogeneous_cpu_v1.0.0
+us_cost_environment:
+  local_gpu_server_parameter_id: us_server_purchase_usd_per_dual_l20_server
+  local_cpu_server_parameter_id: us_cpu_server_purchase_usd_per_server
+  industrial_electricity_parameter_id: us_industrial_all_in_usd_per_kwh
+  cloud_gpu_reserved_parameter_id: us_cloud_reserved_usd_per_dual_l20_instance_year
+  cloud_cpu_reserved_parameter_id: us_cloud_reserved_usd_per_cpu_instance_year
+  local_cpu_server_price_basis: engineered_64core_256GB_three_year_complete_delivery_proxy
+  local_cpu_server_price_sensitivity_basis:
+    low: Exxact_dual_CPU_256GB_platform_plus_enterprise_storage_and_5pct_delivery_allowance
+    high: Exxact_dual_CPU_256GB_platform_plus_enterprise_storage_and_20pct_delivery_allowance
+  cloud_gpu_configuration: two_AWS_g6e.4xlarge_as_dual_48GB_Ada_GPU_capacity_proxy
+  cloud_cpu_configuration: AWS_c7i.8xlarge_32vCPU_64GiB_1yr_standard_all_upfront_us_east_1
+  cloud_cpu_service_capacity_relative_to_local_cpu_server: 0.25
+  local_cpu_physical_cores: 64
+  local_cpu_minimum_memory_gb: 256
+  local_cpu_support_term_years: 3
+  local_cpu_delivery_boundary: complete_enterprise_server_with_storage_rails_redundant_power_and_support
+  formal_api_providers: [OpenAI, Anthropic, Google]
+  shared_discount_rate: 0.08
+  shared_economic_life_years: 5
+  shared_facility_capex_fraction: 0.20
+  shared_annual_maintenance_fraction: 0.05
+  boundary: same_task_routing_US_native_demand_and_matched_local_CPU_spec_cost_environment
+  evidence_status: engineered_matched_spec_proxy_pending_64core_256GB_three_year_OEM_RFQ

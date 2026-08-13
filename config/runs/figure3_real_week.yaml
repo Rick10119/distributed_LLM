@@ -1,0 +1,26 @@
+run_config_path: config/runs/figure3_real_week.yaml
+model_version: v0.8.1
+
+paths:
+  results_root: 05_results/figure3_real_week
+  hourly_industry_profiles: 02_data/processed/core/figure3_eweld_representative_weeks.csv
+
+selected_industries: [C30, C38, C39]
+selected_scenarios: [IF, IG, II_1host]
+industry_parameter_case: base
+
+model:
+  horizon_hours: 168
+
+demand:
+  temporal_scenario: task_timed
+
+# Full-year extension: set horizon_hours to 8760 (or 8784 for a leap year),
+# point hourly_industry_profiles to matching measured annual profiles, and set
+# these dates to a complete year such as 2025-01-01 through 2025-12-31.
+energy:
+  spot_period:
+    province_code: GD
+    settlement_type: dayahead
+    start_date: '2026-05-28'
+    end_date: '2026-06-03'

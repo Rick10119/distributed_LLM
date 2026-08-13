@@ -1,0 +1,54 @@
+scenario_registry_version: v1.1.0
+
+# Country selection controls country-specific demand and cost post-processing.
+# China remains the active hourly physical optimization; the US branch reuses
+# the architecture physics and substitutes US-native demand and cost parameters.
+countries:
+  enabled: [china, us]
+  china:
+    role: active_hourly_physical_optimization
+    formal_country_name: China
+  us:
+    role: parameterized_country_postprocess_no_separate_hourly_core_rerun
+    demand_config: config/demand_cases/us_manufacturing_ai_demand_v0.1.yaml
+    owned_cost_config: config/cost_cases/us_core_cost_v1.yaml
+    full_cloud_cost_config: config/cost_cases/us_full_cloud_v1.yaml
+    heterogeneous_cpu_cost_config: config/cost_cases/us_heterogeneous_cpu_v1.yaml
+
+compute_hardware:
+  routing_config: config/compute_hardware/cpu_gpu_routing_v1.yaml
+  active_routing_case: practice_routed
+  local_cpu_price_case: base
+  china_cloud_capacity_price_case: base
+
+resource_footprint:
+  water:
+    case: harmonized_baseline
+    parameter_file: 02_data/processed/resource_footprint/small_china_us_water_baseline_comparison.csv
+    comparison_modes:
+      local: small_factory_site
+      china_cloud: china_hyperscaler_harmonized_baseline
+      us_cloud: us_hyperscaler_harmonized_baseline
+  space:
+    case: existing_campus_greenfield_range
+    parameter_file: 02_data/raw/curated/resource_footprint_space_scenarios.csv
+    selected_case_ids:
+      - SMALL_FACTORY_REUSE
+      - CN_LARGE_EXISTING
+      - CN_LARGE_CAMPUS
+      - CN_LARGE_GREENFIELD
+      - US_LARGE_EXISTING
+      - US_LARGE_CAMPUS
+      - US_LARGE_GREENFIELD
+  materials:
+    case: steel_to_rc_structural_range
+    parameter_file: 02_data/raw/curated/resource_footprint_material_archetypes.csv
+    selected_archetype_ids: [REUSE, STEEL_FRAME, RC_FRAME]
+    crosscheck_file: 02_data/raw/curated/resource_footprint_hyperscale_material_crosscheck.csv
+  spatial_water:
+    scarcity_case: aware20_nonagri_annual
+    scarcity_file: 02_data/processed/resource_footprint/china_province_aware20_nonagri_annual.csv
+    cloud_allocation_case: caict2025_in_use_fp16_capacity_proxy
+    cloud_allocation_file: 02_data/processed/resource_footprint/china_province_cloud_ai_capacity_share_caict2025.csv
+    province_allocation_file: 02_data/processed/resource_footprint/province_industry_ai_allocation.csv
+    china_map_file: 02_data/raw/province_shapes/CHN_full_adm/CHN_full_adm.shp

@@ -1,0 +1,8 @@
+case_id,architecture,groups,factories_per_group,regions,local_compute_nodes,shared_compute_nodes,industry_it_peak_MW,local_locked_share,group_locked_share,flexible_workload_share,task_cross_site_correlation,site_pue,grid_headroom_share,storage_hours,roof_area_proxy_id,roof_area_transfer_factor,roof_pv_technical_density_kWp_m2,pv_realization_ratio,n_minus_one,notes
+IF_BASE,factory_distributed,5,15,8,75,0,50,0.30,0.20,0.30,0.60,1.35,0.30,0,US_MECS_331110,1.00,0.198,0.00,yes,one compute node per factory and no new rooftop PV baseline
+IG_BASE,group_pool,5,15,8,75,5,50,0.30,0.20,0.30,0.60,1.25,0.15,0,US_MECS_331110,1.00,0.198,0.00,yes,local critical capacity and one primary pool per group
+IR2_BASE,regional_pool,5,15,8,75,2,50,0.30,0.20,0.30,0.60,1.22,0.10,0,US_MECS_331110,1.00,0.198,0.00,yes,local critical capacity and two industry regional nodes
+IR5_BASE,regional_pool,5,15,8,75,5,50,0.30,0.20,0.30,0.60,1.24,0.20,0,US_MECS_331110,1.00,0.198,0.00,yes,local critical capacity and five industry regional nodes
+IR5_FLEX,regional_pool_flexible,5,15,8,75,5,50,0.30,0.20,0.60,0.60,1.24,0.35,2,US_MECS_331110,1.00,0.198,0.20,yes,20 percent of estimated factory rooftop technical potential plus storage and flexible jobs
+IC_BASE,industry_central,5,15,8,75,1,50,0.30,0.20,0.30,0.60,1.20,0.05,0,US_MECS_331110,1.00,0.198,0.00,yes,local critical capacity and one industry data center
+IH_BASE,hierarchical_hybrid,5,15,8,75,3,50,0.30,0.20,0.50,0.60,1.23,0.25,2,US_MECS_331110,1.00,0.198,0.20,yes,20 percent of estimated factory rooftop technical potential and three shared regional nodes

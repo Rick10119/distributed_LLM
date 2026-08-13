@@ -1,0 +1,7 @@
+scope,metric,centralized,distributed_no_der,distributed_with_sunny_pv,unit,assumption
+normalized_100mw_it,facility_power,120,140,140,MW,centralized PUE 1.2 and distributed PUE 1.4
+normalized_100mw_it,incremental_grid_capacity_at_60pct_hosting,120,56,56,MW,distributed hosting share h=60 percent
+normalized_100mw_it,break_even_hosting_share,14.3,14.3,14.3,percent,distributed grid expansion below centralized above this value
+two_user_case,facility_peak,47.1,55,55,kW,same useful compute and illustrative PUE assumptions
+two_user_case,incremental_grid_capacity,47.1,54,0,kW,central dedicated connection; distributed stress capacities; sunny PV not firm
+two_user_case,annual_facility_energy,325.4,379.6,379.6,MWh,onsite PV changes grid purchases not total facility energy

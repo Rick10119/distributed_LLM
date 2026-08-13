@@ -1,0 +1,13 @@
+core_architecture: IF
+core_architecture_label_cn: 工厂侧分布式、集团专网协同
+architecture_labels:
+  IF: factory_side_distributed_group_network_coordinated
+  IG: group_centralized_compute_pool
+  II_1host: industry_single_large_node_upper_bound
+include_incremental_private_network_cost: false
+include_incremental_data_governance_cost: false
+interpretation: >-
+  Data-sensitive, high-bandwidth, and real-time tasks remain at factory sites;
+  the enterprise or group private network coordinates model management and
+  eligible workloads. Existing model cost components are retained without a
+  separate private-network, governance, or coordination-platform adder.

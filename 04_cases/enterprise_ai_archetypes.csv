@@ -1,0 +1,7 @@
+archetype,employees_or_users,prompts_per_user_day,operating_days,customer_prompts_day,annual_prompts,energy_per_prompt_low_Wh,energy_per_prompt_mid_Wh,energy_per_prompt_high_Wh,site_capacity_low_kW,site_capacity_high_kW,local_pretraining,finetune_pattern,request_shape
+single_manufacturing_plant,500,20,250,0,2500000,0.24,1,3,1,5,no,quarterly 4-24 hours,production-correlated and office-hour variants
+large_manufacturing_group,10000,20,250,0,50000000,0.24,1,3,10,50,no,monthly 8-48 hours,multi-shift production-correlated
+large_internet_internal,50000,30,250,0,375000000,0.24,1,3,50,300,optional,weekly or monthly 1-7 days,weekday office and coding-agent burst
+internet_customer_service,0,0,0,10000000,3650000000,0.24,1,3,200,2000,optional,continuous experimentation and periodic tuning,24x7 diurnal plus burst
+frontier_model_developer,0,0,0,0,0,0.24,1,3,10000,30000,yes,multi-week blocks,training block plus separate inference traffic
+

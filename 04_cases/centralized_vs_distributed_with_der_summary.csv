@@ -1,0 +1,4 @@
+weather_and_der_state,centralized_incremental_grid_kw,distributed_incremental_grid_kw,centralized_max_single_point_kw,distributed_max_single_point_increment_kw,interpretation
+representative_sunny_day_pv_bess_available,0,0,0,0,operational result for the selected sunny profile and initial/cyclic SOC
+24h_zero_pv_bess_cyclic,72.3,0,72.3,0,central must import daily AI energy while enterprises reuse off-peak existing connection capacity
+24h_zero_pv_no_bess_reference,176.4,76,176.4,70,reference only; fixed four-hour fine-tuning block and inference coincide in central case

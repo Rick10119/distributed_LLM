@@ -1,0 +1,189 @@
+sensitivity_version: single_industry_oat_v1.1.0
+model_version: v0.8.0
+industry: C38
+architectures: [IF, IG, II_1host]
+scope: single_industry_factor_screen_only
+cross_industry_sensitivity_expansion: false
+output_root: 05_results/sensitivity/v0.8.0/single_industry_oat
+common_overrides:
+  paths:
+    hourly_industry_profiles: 02_data/processed/core/manufacturing_31sector_real_weeks.csv
+
+# Re-solve a same-code, same-real-week reference inside the sensitivity
+# directory; do not splice architecture files from a partially rerun mainline.
+reference_case:
+  case_id: REF__baseline
+  display_value: central__reserve_0.10__continuous
+  overrides: {}
+
+# These smoke factors do not alter the no-AI factory baseline, so all cases
+# reuse the selected industry's validated v0.8.0 no-AI baseline. Future factors that change
+# base load, tariff, PV or battery assumptions must set baseline_invariant=false.
+baseline_invariant: true
+
+factors:
+  PHY01:
+    label_cn: AI服务需求规模
+    baseline_value: base
+    primary_claims: [C1, C2, C3, C4]
+    cases:
+      low:
+        display_value: low
+        overrides:
+          demand:
+            effective_service:
+              parameter_case: low
+      high:
+        display_value: high
+        overrides:
+          demand:
+            effective_service:
+              parameter_case: high
+  PHY02:
+    label_cn: 单位服务算力需求
+    baseline_value: conservative
+    primary_claims: [C1, C2, C3, C4]
+    cases:
+      efficient:
+        display_value: efficient
+        overrides:
+          demand:
+            effective_service:
+              compute_efficiency_case: efficient
+  PHY03:
+    label_cn: 任务柔性
+    baseline_value: central
+    primary_claims: [C2]
+    cases:
+      no_shift:
+        display_value: no_shift
+        overrides:
+          demand:
+            flexibility_scenario: no_shift
+  PHY04:
+    label_cn: GPU服务器满载功率
+    baseline_value: 1.50
+    primary_claims: [C1, C2, C3]
+    cases:
+      low:
+        display_value: 1.05
+        overrides:
+          server:
+            maximum_wall_power_kw: 1.05
+  PHY05:
+    label_cn: GPU服务器在线空闲功率
+    baseline_value: 0.36
+    primary_claims: [C1, C2, C3]
+    cases:
+      low:
+        display_value: 0.28
+        overrides:
+          server:
+            online_idle_wall_power_kw: 0.28
+      high:
+        display_value: 0.50
+        overrides:
+          server:
+            online_idle_wall_power_kw: 0.50
+  PHY06:
+    label_cn: 本地设施功率乘数
+    baseline_value: 1.30
+    primary_claims: [C1, C2, C3]
+    cases:
+      low:
+        display_value: 1.20
+        overrides:
+          server:
+            marginal_facility_multiplier: 1.20
+          compute_hardware:
+            cpu_server_overrides:
+              marginal_facility_multiplier: 1.20
+      high:
+        display_value: 1.60
+        overrides:
+          server:
+            marginal_facility_multiplier: 1.60
+          compute_hardware:
+            cpu_server_overrides:
+              marginal_facility_multiplier: 1.60
+  PHY07:
+    label_cn: CPU/GPU服务器装机裕量
+    baseline_value: 0.10
+    primary_claims: [C1, C2]
+    cases:
+      zero:
+        display_value: 0.00
+        overrides:
+          server:
+            installed_reserve_fraction: 0.0
+          compute_hardware:
+            cpu_server_overrides:
+              installed_reserve_fraction: 0.0
+      high:
+        display_value: 0.25
+        overrides:
+          server:
+            installed_reserve_fraction: 0.25
+          compute_hardware:
+            cpu_server_overrides:
+              installed_reserve_fraction: 0.25
+  PHY08:
+    label_cn: N+1备用服务器组
+    baseline_value: 1
+    primary_claims: [C1, C2]
+    cases:
+      zero:
+        display_value: 0
+        overrides:
+          server:
+            n_plus_spare_server_groups: 0
+  PHY09:
+    label_cn: 服务器组整数化
+    baseline_value: false
+    primary_claims: [C1, C2]
+    cases:
+      integer:
+        display_value: true
+        overrides:
+          model:
+            server_groups_integer: true
+  PHY11:
+    label_cn: 最大需量电价
+    baseline_value: 36.1
+    primary_claims: [C1, C2]
+    cases:
+      low:
+        display_value: 26.1
+        overrides:
+          energy:
+            maximum_demand_rmb_per_kw_month: 26.1
+  HW01:
+    label_cn: CPU/GPU任务路由
+    baseline_value: practice_routed
+    primary_claims: [C1, C2, C3]
+    cases:
+      gpu_only:
+        display_value: gpu_only
+        overrides:
+          compute_hardware:
+            routing_case: gpu_only
+      cpu_heavy:
+        display_value: cpu_heavy
+        overrides:
+          compute_hardware:
+            routing_case: cpu_heavy
+  HW02:
+    label_cn: CPU相对服务时间
+    baseline_value: 1.0
+    primary_claims: [C1, C2, C3]
+    cases:
+      low:
+        display_value: 0.5
+        overrides:
+          compute_hardware:
+            cpu_time_multiplier_factor: 0.5
+      high:
+        display_value: 4.0
+        overrides:
+          compute_hardware:
+            cpu_time_multiplier_factor: 4.0

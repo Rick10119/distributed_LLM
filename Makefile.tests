@@ -1,0 +1,23 @@
+ENV ?= pypsa
+CORES ?= 4
+CONFIG ?= config/runs/all_industries_core.yaml
+TEST_DIR ?= tests
+TEST_PATTERN ?= test_*.py
+WORKFLOW_TEST_TARGET ?= unit_tests
+TEST_ARGS ?=
+
+.PHONY: all unit workflow
+
+all: unit
+
+# Discover tests automatically; no individual test module is hard-coded.
+unit:
+	conda run -n $(ENV) python -m unittest discover \
+		-s $(TEST_DIR) -p '$(TEST_PATTERN)' $(TEST_ARGS)
+
+# Run the validation target declared by the Snakemake workflow.
+workflow:
+	conda run -n $(ENV) snakemake $(WORKFLOW_TEST_TARGET) --cores $(CORES) \
+		--configfile $(CONFIG) \
+		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_snakemake_tests.XXXXXX)" \
+		--rerun-incomplete

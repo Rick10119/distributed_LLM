@@ -1,0 +1,3 @@
+case,gross_roof_projected_area_m2,roof_usable_fraction,module_efficiency,practical_realization_ratio,roof_pv_technical_density_kwp_m2,pv_dc_cap_kwp,reference_pv_profile_kwp,battery_power_kw,battery_energy_kwh,battery_roundtrip_efficiency,parameter_status,notes
+steel,758,0.90,0.22,0.80,0.198,120.0672,150,100,200,0.90,synthetic prototype,"Roof area is inferred from the prior 150 kWp technical-maximum scenario; realization ratio is an additional practical correction and does not duplicate setback or module efficiency."
+office,3030,0.90,0.22,0.80,0.198,479.952,600,250,500,0.90,synthetic prototype,"Roof projection rather than total floor area; inferred from the prior 600 kWp technical-maximum scenario and corrected by an 80 percent practical realization ratio."

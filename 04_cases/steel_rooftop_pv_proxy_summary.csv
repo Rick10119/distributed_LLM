@@ -1,0 +1,8 @@
+roof_case_id,roof_area_transfer_factor,estimated_roof_area_per_factory_m2,technical_density_kWp_m2,pv_realization_ratio,pv_technical_potential_per_factory_MWp,pv_realizable_limit_per_factory_MWp,pv_realizable_limit_75_factories_MWp,interpretation
+R_LOW_C20,0.50,36628.8,0.128,0.20,4.688,0.938,70.3,low transferred roof proxy conservative density and 20 percent realization
+R_MID_C20,1.00,73257.5,0.128,0.20,9.377,1.875,140.7,MECS roof proxy conservative density and 20 percent realization
+R_MID_B20,1.00,73257.5,0.198,0.20,14.505,2.901,217.6,central proxy base density and 20 percent realization
+R_MID_B40,1.00,73257.5,0.198,0.40,14.505,5.802,435.2,central proxy base density and 40 percent realization
+R_HIGH_B20,1.50,109886.3,0.198,0.20,21.757,4.351,326.4,high transferred roof proxy base density and 20 percent realization
+R_TECH_MAX,1.00,73257.5,0.198,1.00,14.505,14.505,1087.9,technical upper bound before practical realization
+

@@ -1,0 +1,65 @@
+sensitivity_version: single_industry_grid_hybrid_v1.1.0
+model_version: v0.8.0
+industry: C38
+architectures: [IF, IG, II_1host]
+scope: single_industry_structural_grid_storage_cloud_substitution
+output_root: 05_results/sensitivity/v0.8.0/single_industry_grid_hybrid
+common_overrides:
+  paths:
+    hourly_industry_profiles: 02_data/processed/core/manufacturing_31sector_real_weeks.csv
+  energy:
+    pv_capacity_mode: none
+
+# All four cases allow storage and fix PV off. Each retains a separately
+# materialized no-AI solve so the incremental result is audited under exactly
+# the same configuration as its AI case.
+baseline_invariant: false
+reference_case:
+  case_id: REF__core_no_der
+  display_value: core_no_der
+  overrides: {}
+
+factors:
+  GRID_HYBRID:
+    label_cn: 电网扩容—储能—云订阅替代机制
+    baseline_value: core_no_der
+    primary_claims: [C1, C2]
+    cases:
+      grid_allowed_storage_no_cloud:
+        display_value: grid_allowed__storage_allowed__cloud_disabled
+        overrides:
+          energy:
+            battery_investment_enabled: true
+            grid_expansion_limit_mw: null
+            grid_expansion_objective_penalty_rmb_per_mw_year: 0.0
+          hybrid_cloud:
+            enabled: false
+      grid_allowed_storage_hybrid_cloud:
+        display_value: grid_allowed__storage_allowed__hybrid_cloud
+        overrides:
+          energy:
+            battery_investment_enabled: true
+            grid_expansion_limit_mw: null
+            grid_expansion_objective_penalty_rmb_per_mw_year: 0.0
+          hybrid_cloud:
+            enabled: true
+            maximum_cloud_service_share: 1.0
+      zero_grid_storage_hybrid_cloud:
+        display_value: zero_grid_expansion__storage_allowed__hybrid_cloud
+        overrides:
+          energy:
+            battery_investment_enabled: true
+            grid_expansion_limit_mw: 0.0
+            grid_expansion_objective_penalty_rmb_per_mw_year: 0.0
+          hybrid_cloud:
+            enabled: true
+            maximum_cloud_service_share: 1.0
+      zero_grid_storage_no_cloud:
+        display_value: zero_grid_expansion__storage_allowed__cloud_disabled
+        overrides:
+          energy:
+            battery_investment_enabled: true
+            grid_expansion_limit_mw: 0.0
+            grid_expansion_objective_penalty_rmb_per_mw_year: 0.0
+          hybrid_cloud:
+            enabled: false

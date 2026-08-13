@@ -1,0 +1,51 @@
+scenario_version: national_cloud_center_v1.0.0
+model_version: v0.8.0
+run_config_path: config/sensitivity/national_cloud_center_v1.yaml
+selected_scenarios: [IF, IG, II_1host]
+industry_parameter_case: base
+paths:
+  hourly_industry_profiles: 02_data/processed/core/manufacturing_31sector_real_weeks.csv
+selected_industries:
+  - C13
+  - C14
+  - C15
+  - C16
+  - C17
+  - C18
+  - C19
+  - C20
+  - C21
+  - C22
+  - C23
+  - C24
+  - C25
+  - C26
+  - C27
+  - C28
+  - C29
+  - C30
+  - C31
+  - C32
+  - C33
+  - C34
+  - C35
+  - C36
+  - C37
+  - C38
+  - C39
+  - C40
+  - C41
+  - C42
+  - C43
+
+national_cloud_center:
+  architecture: CLOUD_ALL_1HOST
+  existing_grid_capacity_mw: 0.0
+  base_load_mw: 0.0
+  pv_capacity_mode: none
+  battery_investment_enabled: false
+  gpu_facility_multiplier: 1.22
+  cpu_facility_multiplier: 1.22
+  installed_reserve_fraction: 0.10
+  n_plus_spare_server_groups: 1
+  interpretation: all_31_manufacturing_industry_AI_workloads_at_one_greenfield_cloud_node

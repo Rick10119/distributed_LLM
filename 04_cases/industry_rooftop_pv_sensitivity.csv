@@ -1,0 +1,14 @@
+pv_case_id,technical_density_case,roof_pv_technical_density_kWp_m2,pv_realization_ratio,interpretation
+PV_B00,base,0.198,0.00,no new factory rooftop PV baseline
+PV_B20,base,0.198,0.20,20 percent of rooftop technical potential is realizable
+PV_B40,base,0.198,0.40,40 percent of rooftop technical potential is realizable
+PV_B60,base,0.198,0.60,60 percent of rooftop technical potential is realizable
+PV_B80,base,0.198,0.80,80 percent of rooftop technical potential is realizable
+PV_B100,base,0.198,1.00,technical potential upper bound only
+PV_C00,conservative,0.128,0.00,no new factory rooftop PV baseline
+PV_C20,conservative,0.128,0.20,20 percent of conservative rooftop technical potential is realizable
+PV_C40,conservative,0.128,0.40,40 percent of conservative rooftop technical potential is realizable
+PV_C60,conservative,0.128,0.60,60 percent of conservative rooftop technical potential is realizable
+PV_C80,conservative,0.128,0.80,80 percent of conservative rooftop technical potential is realizable
+PV_C100,conservative,0.128,1.00,conservative technical potential upper bound only
+

@@ -1,0 +1,45 @@
+run_config_path: config/runs/all_industries_der_sensitivity.yaml
+model_version: v0.8.0
+
+# Keep DER results separate from the no-DER core baseline.
+paths:
+  results_root: 05_results/sensitivity/with_der
+
+selected_industries:
+  - C13
+  - C14
+  - C15
+  - C16
+  - C17
+  - C18
+  - C19
+  - C20
+  - C21
+  - C22
+  - C23
+  - C24
+  - C25
+  - C26
+  - C27
+  - C28
+  - C29
+  - C30
+  - C31
+  - C32
+  - C33
+  - C34
+  - C35
+  - C36
+  - C37
+  - C38
+  - C39
+  - C40
+  - C41
+  - C42
+  - C43
+selected_scenarios: [IF, IG, II_1host]
+industry_parameter_case: base
+
+energy:
+  pv_capacity_mode: existing_rooftop_at_model_limit
+  battery_investment_enabled: true

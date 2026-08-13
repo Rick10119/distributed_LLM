@@ -1,0 +1,13 @@
+name: distributed-llm-research
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - snakemake-minimal>=9.0
+  - pypsa=1.2.2
+  - linopy=0.7.0
+  - highspy=1.13.1
+  - numpy>=2.0
+  - pandas>=2.2
+  - scipy>=1.14
+  - pyyaml>=6.0
