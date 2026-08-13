@@ -83,7 +83,58 @@ conda run -n pypsa snakemake all --cores 1 --configfile config/runs/single_indus
 
 `materialize_sensitivity_case.py`、`summarize_single_industry_oat.py`与`workflow/rules/single_industry_sensitivity.smk`构成单行业单因素敏感性入口。对外代码名不包含行业编号，实际行业由`config/sensitivity/single_industry_oat_v1.yaml` 的`industry`字段选择，当前为C38。注册表只允许显式白名单参数覆盖，所有输出写入独立敏感性目录；无AI基准可复用，但IF、IG、II使用敏感性目录内的同代码参考运行。该流程继承核心模型求解器配置；当前为Gurobi。`make sensitivity-smoke`运行单行业敏感性，`make sensitivity-smoke-dry-run`只检查任务图。
 
-`config/sensitivity/single_industry_grid_hybrid_v1.yaml`另定义“接入扩容—储能—云订阅”结构测试。模型内生决定每项刚性或柔性任务由本地CPU/GPU服务器还是预留云容量完成，总服务量严格守恒；云端执行不占用企业接入容量，但计入年度GPU/CPU订阅成本。本地服务器、储能与云容量共同优化，允许在纯本地和纯云之间形成混合解。零扩容且允许订阅时不强制保留本地模型副本或最低在线服务器；只有实际选择本地执行时才由算力约束带出本地装机。四组均允许储能并关闭PV，形成“是否允许扩容×是否允许云订阅”的2×2结构对照；每组使用同配置重新求解的无AI基准。`make sensitivity-grid-hybrid`单独运行，默认`make results`不包含它。
+`config/sensitivity/single_industry_grid_hybrid_v1.yaml`另定义“接入扩容—储能—云订阅”结构测试。模型内生决定每项刚性或柔性任务由本地CPU/GPU服务器还是预留云容量完成，总服务量严格守恒；云端执行不占用企业接入容量，但计入年度GPU/CPU订阅成本。本地服务器、储能与云容量共同优化，允许在纯本地和纯云之间形成混合解。零扩容且允许订阅时不强制保留本地模型副本或最低在线服务器；只有实际选择本地执行时才由算力约束带出本地装机。四组均允许储能并关闭PV，分别比较正常扩容下纯本地与混合部署、严格零扩容下云订阅替代，以及高扩容惩罚下纯本地通过储能和错峰尽量减少但不硬性禁止扩容。高惩罚是稀缺性压力测试而非现实报价；每组使用同配置重新求解的无AI基准。`make sensitivity-grid-hybrid`单独运行，默认`make results`不包含它。
+
+## 集团单节点与跨节点灵活性测试
+
+`config/sensitivity/c36_group_multisite_continuous_v1.yaml`定义独立于全国核心场景的集团多工厂机制测试。当前使用C36汽车制造业、5个合成成员工厂和三种企业内部部署：
+
+- `IF`：每厂安装并仅服务本厂，GPU/CPU装机服务器组为整数；
+- `IG_1host`：集团在一个固定成员工厂建设共享池，装机采用连续等效容量；
+- `IG_multisite`：集团在多个成员工厂配置连续等效容量，可迁移任务在原截止窗口内联合选择执行时间和工厂。
+
+工厂曲线优先来自不同EWELD用户；若行业可用用户数不足，则从同一用户选择不同完整周，不复制完全相同的用户—周。所有曲线按星期—小时对齐，因此是合成机制输入，不表示真实同一集团的同步观测。
+
+测试只为核心`IG_1host`增加零基础负荷配对反事实。实际运行的四个汇总组合固定为：
+
+1. `IF + actual_load`；
+2. `IG_1host + actual_load`；
+3. `IG_1host + zero_load`；
+4. `IG_multisite + actual_load`。
+
+`zero_load`保持AI服务量、释放时刻、截止时间、CPU/GPU路由、价格和定容口径不变，并重新优化，不表示工厂停产。`IG_1host zero_load - actual_load`用于计算固定承载工厂的生产负荷匹配价值；实际负荷下`IG_multisite - IG_1host`用于分析跨节点调度价值。
+
+首次运行前建议先检查任务图，不求解：
+
+```bash
+make sensitivity-group-multisite-dry-run
+```
+
+正式运行：
+
+```bash
+make sensitivity-group-multisite CORES=5
+```
+
+等价的直接Snakemake命令为：
+
+```bash
+conda run -n pypsa snakemake single_industry_group_multisite_sensitivity \
+  --cores 5 \
+  --configfile config/runs/all_industries_core.yaml \
+  --runtime-source-cache-path "$(mktemp -d /private/tmp/dllm_group_multisite.XXXXXX)" \
+  --rerun-incomplete
+```
+
+该目标不会由默认`make results`或`snakemake core`触发。结果写入`05_results/sensitivity/v0.8.0/group_multisite/C36/`：
+
+- `summary.csv`：四个架构—基础负荷组合的汇总；
+- `hourly.csv`：逐工厂、逐小时AI执行、设施功率和购电；
+- `curve_lineage.csv`：每个合成工厂的EWELD用户和完整周血缘；
+- `load_alignment_value.csv`：仅IG_1host的零负荷—实际负荷配对差额；
+- `metadata.json`：配置边界、变量口径、服务守恒和限制说明。
+
+修改行业、工厂数、源ISIC、求解器或输出目录时，只编辑上述测试配置；Snakemake规则本身不保存这些实验参数。若要强制重跑，可追加`SNAKEMAKE_ARGS="--forceall"`，但这会覆盖同一`output_root`中的既有测试输出，运行前应先修改`output_root`保留旧版本。
 
 `analyze_core_industry_cost_differences.py`只读取31行业的IF、IG和II_1host核心结果，同时报告年成本总量与单位服务成本，并将行业差异拆分为服务器、电量、接入容量、PV/储能与模型固定费用。它另外计算需求规模、CPU路由、部署碎片化、定容冗余、能耗强度和接入容量强度与单位成本的描述性Spearman关联，不将其解释为因果归因。`make industry-cost-differences`可单独生成该表；默认核心流程也会在31行业核心结果完成后自动生成。
 

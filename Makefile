@@ -4,7 +4,7 @@ CONFIG ?= config/runs/all_industries_core.yaml
 TARGET ?= core
 SNAKEMAKE_ARGS ?=
 
-.PHONY: all results dry-run briefing extended-analysis sensitivity-smoke sensitivity-smoke-dry-run sensitivity-grid-hybrid sensitivity-grid-hybrid-dry-run industry-cost-differences national-cloud-center national-grid-comparison national-no-shift-sensitivity national-high-impact-sensitivity
+.PHONY: all results dry-run briefing extended-analysis sensitivity-smoke sensitivity-smoke-dry-run sensitivity-grid-hybrid sensitivity-grid-hybrid-dry-run sensitivity-group-multisite sensitivity-group-multisite-dry-run industry-cost-differences national-cloud-center national-grid-comparison national-no-shift-sensitivity national-high-impact-sensitivity
 
 all: results
 
@@ -64,6 +64,18 @@ sensitivity-grid-hybrid-dry-run:
 	conda run -n $(ENV) snakemake single_industry_grid_hybrid_sensitivity --cores $(CORES) \
 		--configfile config/runs/all_industries_core.yaml \
 		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_grid_hybrid_dryrun.XXXXXX)" \
+		--dry-run $(SNAKEMAKE_ARGS)
+
+sensitivity-group-multisite:
+	conda run -n $(ENV) snakemake single_industry_group_multisite_sensitivity --cores $(CORES) \
+		--configfile config/runs/all_industries_core.yaml \
+		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_group_multisite.XXXXXX)" \
+		--rerun-incomplete $(SNAKEMAKE_ARGS)
+
+sensitivity-group-multisite-dry-run:
+	conda run -n $(ENV) snakemake single_industry_group_multisite_sensitivity --cores $(CORES) \
+		--configfile config/runs/all_industries_core.yaml \
+		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_group_multisite_dryrun.XXXXXX)" \
 		--dry-run $(SNAKEMAKE_ARGS)
 
 # Descriptive 31-industry cost comparison using completed IF, IG and II core

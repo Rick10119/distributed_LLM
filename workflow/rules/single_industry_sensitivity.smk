@@ -59,6 +59,14 @@ GRID_HYBRID_VALIDATIONS = expand(
 GRID_HYBRID_COMPARISON = GRID_HYBRID_ROOT + "/result/comparison.csv"
 GRID_HYBRID_FINDINGS = GRID_HYBRID_ROOT + "/result/findings.md"
 GRID_HYBRID_DONE = GRID_HYBRID_ROOT + "/result/validated.done.json"
+GROUP_MULTISITE_REGISTRY = "config/sensitivity/c36_group_multisite_continuous_v1.yaml"
+GROUP_MULTISITE = yaml.safe_load(open(GROUP_MULTISITE_REGISTRY, encoding="utf-8"))
+GROUP_MULTISITE_ROOT = GROUP_MULTISITE["output_root"]
+GROUP_MULTISITE_SUMMARY = GROUP_MULTISITE_ROOT + "/summary.csv"
+GROUP_MULTISITE_HOURLY = GROUP_MULTISITE_ROOT + "/hourly.csv"
+GROUP_MULTISITE_LINEAGE = GROUP_MULTISITE_ROOT + "/curve_lineage.csv"
+GROUP_MULTISITE_ALIGNMENT = GROUP_MULTISITE_ROOT + "/load_alignment_value.csv"
+GROUP_MULTISITE_METADATA = GROUP_MULTISITE_ROOT + "/metadata.json"
 NATIONAL_CLOUD_CONFIG = "config/sensitivity/national_cloud_center_v1.yaml"
 NATIONAL_CLOUD_ROOT = "05_results/sensitivity/v0.8.0/national_cloud_center_v1"
 NATIONAL_CLOUD_SUMMARY = NATIONAL_CLOUD_ROOT + "/summary.csv"
@@ -97,6 +105,38 @@ rule single_industry_grid_hybrid_sensitivity:
         GRID_HYBRID_COMPARISON,
         GRID_HYBRID_FINDINGS,
         GRID_HYBRID_DONE,
+
+
+rule single_industry_group_multisite_sensitivity:
+    input:
+        GROUP_MULTISITE_SUMMARY,
+        GROUP_MULTISITE_HOURLY,
+        GROUP_MULTISITE_LINEAGE,
+        GROUP_MULTISITE_ALIGNMENT,
+        GROUP_MULTISITE_METADATA,
+
+
+rule run_single_industry_group_multisite_sensitivity:
+    input:
+        registry=GROUP_MULTISITE_REGISTRY,
+        defaults="config/defaults.yaml",
+        run_config="config/runs/all_industries_core.yaml",
+        archive="02_data/raw_load_profiles/eweld/EWELD.zip",
+        routing="config/compute_hardware/cpu_gpu_routing_v1.yaml",
+        groups=config["paths"]["representative_group_report"],
+        script="08_code/run_group_multisite_continuous_test.py",
+    output:
+        summary=GROUP_MULTISITE_SUMMARY,
+        hourly=GROUP_MULTISITE_HOURLY,
+        lineage=GROUP_MULTISITE_LINEAGE,
+        alignment=GROUP_MULTISITE_ALIGNMENT,
+        metadata=GROUP_MULTISITE_METADATA,
+    conda:
+        "../envs/core_model.yaml"
+    threads: 5
+    shell:
+        "python {input.script} --defaults {input.defaults} --config {input.run_config} "
+        "--experiment {input.registry} --output-dir " + GROUP_MULTISITE_ROOT
 
 
 rule national_cloud_center:

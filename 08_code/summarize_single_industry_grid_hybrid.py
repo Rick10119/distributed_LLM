@@ -30,14 +30,14 @@ def main() -> None:
     case_ids = [path.parts[-4] for path in args.inputs]
     data["case_id"] = case_ids
     case_design = {
-        "GRID_HYBRID__grid_allowed_storage_no_cloud": (True, False),
-        "GRID_HYBRID__grid_allowed_storage_hybrid_cloud": (True, True),
-        "GRID_HYBRID__zero_grid_storage_hybrid_cloud": (False, True),
-        "GRID_HYBRID__zero_grid_storage_no_cloud": (False, False),
+        "GRID_HYBRID__grid_allowed_storage_no_cloud": ("unpriced", False),
+        "GRID_HYBRID__grid_allowed_storage_hybrid_cloud": ("unpriced", True),
+        "GRID_HYBRID__zero_grid_storage_hybrid_cloud": ("hard_zero", True),
+        "GRID_HYBRID__high_grid_penalty_storage_no_cloud": ("high_penalty", False),
     }
     if set(data["case_id"]) != set(case_design):
-        raise ValueError("Structural cases must form the configured 2x2 design")
-    data["grid_expansion_allowed"] = data["case_id"].map(
+        raise ValueError("Structural cases do not match the configured design")
+    data["grid_expansion_regime"] = data["case_id"].map(
         lambda case_id: case_design[case_id][0]
     )
     data["cloud_subscription_allowed"] = data["case_id"].map(
@@ -46,7 +46,7 @@ def main() -> None:
     data["storage_allowed"] = True
     keep = [
         "case_id", "industry_code", "industry_name", "scenario",
-        "grid_expansion_allowed", "cloud_subscription_allowed", "storage_allowed",
+        "grid_expansion_regime", "cloud_subscription_allowed", "storage_allowed",
         "per_host_grid_expansion_mw", "per_host_battery_power_mw",
         "per_host_battery_energy_mwh", "per_host_rooftop_pv_capacity_mw",
         "per_host_cloud_service_share", "per_host_cloud_reserved_gpu_groups",
@@ -63,7 +63,7 @@ def main() -> None:
         "# Single-industry grid constraint, storage, and hybrid-cloud test",
         "",
         "All cases preserve total AI service. Cloud subscription is an endogenous alternative to local execution; it is not unmet demand.",
-        "All four cases allow storage and fix rooftop PV off. The design changes only grid-expansion and cloud-subscription availability.",
+        "All four cases allow storage and fix rooftop PV off. Grid expansion is either unpriced, fixed at zero, or allowed with a deliberately high scarcity penalty.",
         "",
     ]
     for architecture in registry["architectures"]:
@@ -84,7 +84,8 @@ def main() -> None:
         "architectures": registry["architectures"],
         "case_count": expected_cases,
         "total_service_preserved": True,
-        "design": "2x2_grid_expansion_allowed_by_cloud_subscription_allowed__storage_allowed_in_all_cases",
+        "design": "grid_expansion_regime_and_cloud_subscription_controls__storage_allowed_in_all_cases",
+        "high_grid_penalty_interpretation": "scarcity_stress_test_not_observed_connection_quote",
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 

@@ -318,10 +318,10 @@
 
 \subsection{当前比较架构}
 
-\implemented 当前全国主流程的架构集合为
+\implemented 主文企业内部部署比较的架构集合为
 
 \begin{equation}
- a\in\Aset=\{\mathrm{IF},\mathrm{IG},\mathrm{II}_{1\mathrm{host}}\}.
+ a\in\Aset=\{\mathrm{IF},\mathrm{IG}_{1\mathrm{host}},\mathrm{IG}_{\mathrm{multisite}}\}.
  \label{eq:architectures}
 \end{equation}
 
@@ -334,13 +334,23 @@
   架构 & 名称 & 物理含义 & 解释边界 \\
   \midrule
   IF & 工厂侧分布式 & 每个代表工厂分别配置CPU/GPU服务器，并与本厂基础负荷和DER共同运行。 & 工厂独立装机的分散边界；不额外计入专网和治理成本。 \\
-  IG & 集团算力池 & 同一集团的工厂需求在一个代表集团节点池化。 & 表示集团集中配置，不表示全行业共享。 \\
-  II\_1host & 行业单节点 & 全行业服务器级需求集中到一个代表节点。 & 单点集中上界，不等同真实公有云多区域系统。 \\
+  IG-1host & 集团单节点算力池 & 同一集团的工厂需求在一个代表成员工厂池化。 & 主文核心代表场景；表示集团集中配置，不表示全行业共享。 \\
+  IG-multisite & 集团多节点协调 & 集团在多个成员工厂安装算力，可迁移任务联合选择执行时刻和工厂。 & 跨节点灵活性扩展；受数据、网络和时延边界约束。 \\
   \bottomrule
  \end{tabularx}
 \end{table}
 
-区域多节点和物理节点之间的分层迁移仍属于后续扩展，但“同一企业同时使用自建设备和云端预留容量”的采购混合已经进入单行业结构敏感性。两者不能混称：前者改变计算节点网络，后者是在给定IF、IG或II\_1host代表尺度内分配本地与云端服务。
+原II\_1host行业单节点退出Figure~2的企业内部三方案比较，仅保留为大型集中上界或云端资源足迹反事实。集团多节点协调与“同一企业同时使用自建设备和云端预留容量”的采购混合不能混称：前者改变集团内部计算节点网络，后者是在给定部署架构内分配本地与云端服务。
+
+\boundary 当前Figure~2结构情景只对IF启用逐厂GPU/CPU整数装机；IG-1host与IG-multisite采用连续等效装机，三者逐时在线容量均连续。因此IF与IG-1host的差额同时反映逐厂离散采购和集团池化，不能全部归因于组织集中；IG-multisite与IG-1host采用相同定容口径，二者差额才用于识别跨节点调度价值。对只有一个直接EWELD用户的行业，成员工厂曲线由同一用户的不同完整周按星期--小时对齐构造，并明确标记为多周代理而非真实跨厂观测。
+
+为识别AI与原生产负荷错峰的价值，只对核心IG-1host配对运行保留固定承载工厂负荷的`actual-load`和将该负荷设为零的`zero-load`。两个边界保持AI服务量、释放时刻、截止时间、CPU/GPU路由、价格和连续等效定容规则不变，并各自重新优化执行时间。定义
+
+\begin{equation}
+ V^{\mathrm{align}}_{\mathrm{IG-1host}}=C_{\mathrm{IG-1host}}^{\mathrm{zero,reopt}}-C_{\mathrm{IG-1host}}^{\mathrm{actual,reopt}}.
+\end{equation}
+
+$V^{\mathrm{align}}_{\mathrm{IG-1host}}>0$表示在当前模型边界下，固定承载工厂的既有生产负荷形状降低了AI增量成本。该值分解为服务器、AI电量、最大需量和新增接入容量差额。IF和IG-multisite不运行零负荷；跨节点价值另由实际负荷下IG-multisite相对IG-1host的差额识别。\boundary `zero-load`是AI独立负荷反事实，不是停产工厂场景；因两组均重新优化，该指标包含允许的调度和定容响应，不能解释为既有容量的无条件免费价值。
 
 \subsection{代表节点缩放}
 

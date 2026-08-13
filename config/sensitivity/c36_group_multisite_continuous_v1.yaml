@@ -1,0 +1,42 @@
+experiment_id: c36_group_multisite_installed_integer_v1
+output_root: 05_results/sensitivity/v0.8.0/group_multisite/C36
+solver: highs
+industry: C36
+factory_count: 5
+architectures: [IF, IG_1host, IG_multisite]
+base_load_cases_by_architecture:
+  IF: [actual_load]
+  IG_1host: [actual_load, zero_load]
+  IG_multisite: [actual_load]
+base_load_counterfactual:
+  actual_load: preserve_selected_factory_load_curves
+  zero_load: set_all_factory_base_loads_to_zero_and_reoptimize_AI_time_and_site_assignment
+  paired_difference_definition: IG_1host_zero_load_AI_cost_minus_IG_1host_actual_load_incremental_AI_cost
+  interpretation: value_of_cooptimizing_AI_with_the_fixed_group_host_factory_load_shape
+integer_boundary:
+  IF_installed_server_groups_integer: true
+  IG_1host_installed_server_groups_integer: false
+  IG_multisite_installed_server_groups_integer: false
+  online_server_groups_integer: false
+  planning_reserve_fraction: 0.10
+  n_plus_spare_server_groups: 0
+  model_state_minimum_groups_enabled: false
+task_boundary:
+  same_group_total_service: true
+  all_six_core_tasks_group_routable: true
+  intertemporal_shifting_enabled: true
+  flexible_jobs_keep_original_deadlines: true
+  execution_rule: preserve_release_hours_and_original_deadlines_then_jointly_optimize_execution_hour_and_factory
+energy_boundary:
+  pv_capacity_mode: none
+  battery_investment_enabled: false
+  same_provincial_hourly_price_at_all_factories: true
+  zero_load_keeps_same_grid_energy_price: true
+load_curve_selection:
+  source: EWELD_ISIC_29
+  source_isic: 29
+  rule: distinct_users_first_then_distinct_complete_weeks_until_factory_count
+  single_user_industry_rule: use_distinct_complete_weeks_from_the_same_user_aligned_by_weekday_hour
+  scaling: equal_factory_mean_preserve_total_group_activity_share
+  simultaneity: align_by_weekday_and_hour_not_same_calendar_week
+interpretation: IF_integer_installed_capacity_IG_continuous_equivalent_capacity_structural_scenario
