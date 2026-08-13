@@ -561,6 +561,7 @@ rule validate_compute_efficiency_cases:
     input:
         table=MODEL_READY_COMPUTE_EFFICIENCY,
         service=MODEL_READY_SERVICE,
+        hourly=MODEL_READY_HOURLY_PROFILES,
         defaults="config/defaults.yaml",
         run_config="config/runs/all_industries_core.yaml",
         script="08_code/validate_compute_efficiency_cases.py",
@@ -599,6 +600,7 @@ rule validate_model_lifecycle_results:
 rule validate_effective_service_data:
     input:
         service=MODEL_READY_SERVICE,
+        hourly=MODEL_READY_HOURLY_PROFILES,
         defaults="config/defaults.yaml",
         run_config="config/runs/all_industries_core.yaml",
         script="08_code/validate_effective_service_data.py",

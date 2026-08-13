@@ -32,6 +32,8 @@
 
 以下命令均在项目根目录执行。主流程默认运行31个制造业行业的无AI基准，以及IF、IG和II_1host三个架构，并完成行业与全国结果校验。基础负荷使用31行业各自的连续168小时EWELD实测代表周；不会把24小时典型日重复7次。
 
+macOS / Linux 可用 `make`（Makefile 只是对 Snakemake 的封装）。Windows 请直接调用 Snakemake，见下文「Windows：直接使用 Snakemake」。
+
 ### 1. 创建运行环境
 
 需要先安装Conda（Miniconda、Miniforge或Anaconda均可），然后创建名为`pypsa`的环境：
@@ -47,7 +49,7 @@ conda env create -n pypsa -f environment.yml
 conda env update -n pypsa -f environment.yml --prune
 ```
 
-无需手动激活环境；Makefile会通过`conda run -n pypsa`调用它。可用以下命令检查关键程序：
+无需手动激活环境；`make` 和下面的 Snakemake 命令都通过 `conda run -n pypsa` 调用它。可用以下命令检查关键程序：
 
 ```bash
 conda run -n pypsa python --version
@@ -58,17 +60,27 @@ conda run -n pypsa snakemake --version
 
 完整项目副本应至少包含以下三个大体积或模型就绪输入：
 
+macOS / Linux：
+
 ```bash
 test -f 02_data/raw_load_profiles/eweld/EWELD.zip
 test -f 02_data/raw/curated/gd_province_avg_node_price_dayahead_actual_20211101_20260603.csv
 test -f 02_data/processed/core/manufacturing_31sector_real_weeks.csv
 ```
 
-三条命令均无输出即表示文件存在。若是通过不包含数据的代码包获得项目，需要先恢复这些输入；不要用24小时典型日替代真实周。各行业代表周的来源和代理关系记录在`02_data/processed/core/manufacturing_31sector_real_weeks.lineage.json`。
+三条命令均无输出即表示文件存在。Windows PowerShell 用 `Test-Path`，返回 `True` 即表示文件存在：
+
+```powershell
+Test-Path 02_data/raw_load_profiles/eweld/EWELD.zip
+Test-Path 02_data/raw/curated/gd_province_avg_node_price_dayahead_actual_20211101_20260603.csv
+Test-Path 02_data/processed/core/manufacturing_31sector_real_weeks.csv
+```
+
+若是通过不包含数据的代码包获得项目，需要先恢复这些输入；不要用24小时典型日替代真实周。各行业代表周的来源和代理关系记录在`02_data/processed/core/manufacturing_31sector_real_weeks.lineage.json`。
 
 ### 3. 先做任务预演
 
-预演只构建依赖图，不运行模型或改写结果：
+Windows 请跳到「Windows：直接使用 Snakemake」。macOS / Linux 可用 `make`。预演只构建依赖图，不运行模型或改写结果：
 
 ```bash
 make dry-run
@@ -121,6 +133,52 @@ make sensitivity-smoke-dry-run
 make sensitivity-grid-hybrid-dry-run
 ```
 
+### Windows：直接使用 Snakemake
+
+当前 Makefile 依赖 GNU Make，并把临时目录写死为 macOS 的 `/private/tmp`，因此不要在 Windows 上使用 `make`。Windows 也不必传入 `--runtime-source-cache-path`。
+
+先激活环境，再直接调用 `snakemake`。提示符出现 `(pypsa)` 后，不要再套一层 `conda run`：Windows 上 `conda run` 启动很慢，看起来像卡住。
+
+```powershell
+conda activate pypsa
+```
+
+工作流没有内存上限；每个优化任务占用 5 个线程。`--cores 5` 因此同一时刻只跑 1 个求解。31 行业核心流程约有 31 个基准加上 93 个情景求解，本身就会很久。第一次请先跑 C36 单行业：
+
+```powershell
+snakemake core --cores 5 --configfile config/runs/single_industry_core.yaml --dry-run
+snakemake core --cores 5 --configfile config/runs/single_industry_core.yaml --rerun-incomplete
+```
+
+确认单行业能跑通后，再跑全国核心流程。机器核数更多时可加大 `--cores`（例如 10 可同时跑 2 个求解）：
+
+```powershell
+snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run
+snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete
+```
+
+运行中断后再次执行同一条命令即可续跑。`--rerun-incomplete` 会保留已经完成且仍然有效的任务，并重新运行不完整或上游代码发生变化的任务。运行期间不要修改模型代码或配置，否则同一结果目录可能混入不同输出结构。
+
+`make` 目标与 Snakemake 命令的对应关系（均假设已 `conda activate pypsa`）：
+
+| `make` 目标 | Snakemake 命令 |
+|---|---|
+| `make dry-run` | `snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run` |
+| `make` | `snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make extended-analysis` | `snakemake extended_analysis --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make briefing` | `snakemake build_bolun_progress_briefing --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make sensitivity-smoke-dry-run` | `snakemake single_industry_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run` |
+| `make sensitivity-grid-hybrid-dry-run` | `snakemake single_industry_grid_hybrid_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run` |
+| `make sensitivity-smoke` | `snakemake single_industry_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make sensitivity-grid-hybrid` | `snakemake single_industry_grid_hybrid_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make industry-cost-differences` | `snakemake core_industry_cost_differences --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make national-cloud-center` | `snakemake national_cloud_center --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make national-grid-comparison` | `snakemake national_grid_capacity_comparison --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make national-no-shift-sensitivity` | `snakemake national_no_shift_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make national-high-impact-sensitivity` | `snakemake national_high_impact_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+
+默认环境名为 `pypsa`，默认目标为 `core`，默认配置为 `config/runs/all_industries_core.yaml`，默认使用 5 个核心。
+
 ### 6. 查找结果
 
 活动版本由`config/defaults.yaml`中的`model_version`决定。目录结构为：
@@ -136,7 +194,7 @@ make sensitivity-grid-hybrid-dry-run
 
 ### 常见问题
 
-- `IndentationError`、`SyntaxError`或`KeyError`通常表示代码与已有输出结构不一致。停止编辑代码后重新运行`make`，让Snakemake重建受影响结果。
+- `IndentationError`、`SyntaxError`或`KeyError`通常表示代码与已有输出结构不一致。停止编辑代码后重新运行同一条`make`或`snakemake`命令，让Snakemake重建受影响结果。
 - `Directory cannot be locked`表示另一个Snakemake进程正在运行，或上一次进程异常退出。先确认没有其他Snakemake进程；只有确认不存在运行中的任务后，才执行：
 
   ```bash
