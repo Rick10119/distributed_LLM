@@ -67,6 +67,29 @@ GROUP_MULTISITE_HOURLY = GROUP_MULTISITE_ROOT + "/hourly.csv"
 GROUP_MULTISITE_LINEAGE = GROUP_MULTISITE_ROOT + "/curve_lineage.csv"
 GROUP_MULTISITE_ALIGNMENT = GROUP_MULTISITE_ROOT + "/load_alignment_value.csv"
 GROUP_MULTISITE_METADATA = GROUP_MULTISITE_ROOT + "/metadata.json"
+C33_TYPICAL_DAY_REGISTRY = "config/sensitivity/c33_typical_day_horizon_v1.yaml"
+C33_TYPICAL_DAY = yaml.safe_load(open(C33_TYPICAL_DAY_REGISTRY, encoding="utf-8"))
+C33_TYPICAL_DAY_ROOT = C33_TYPICAL_DAY["output_root"]
+C33_MEASURED_WEEK_REGISTRY = "config/sensitivity/c33_measured_week_horizon_v1.yaml"
+C33_MEASURED_WEEK = yaml.safe_load(open(C33_MEASURED_WEEK_REGISTRY, encoding="utf-8"))
+C33_MEASURED_WEEK_ROOT = C33_MEASURED_WEEK["output_root"]
+C33_MEASURED_WEEK_OUTPUTS = [
+    C33_MEASURED_WEEK_ROOT + "/summary.csv",
+    C33_MEASURED_WEEK_ROOT + "/hourly.csv",
+    C33_MEASURED_WEEK_ROOT + "/curve_lineage.csv",
+    C33_MEASURED_WEEK_ROOT + "/load_alignment_value.csv",
+    C33_MEASURED_WEEK_ROOT + "/metadata.json",
+]
+C33_TYPICAL_DAY_OUTPUTS = [
+    C33_TYPICAL_DAY_ROOT + "/summary.csv",
+    C33_TYPICAL_DAY_ROOT + "/hourly.csv",
+    C33_TYPICAL_DAY_ROOT + "/curve_lineage.csv",
+    C33_TYPICAL_DAY_ROOT + "/load_alignment_value.csv",
+    C33_TYPICAL_DAY_ROOT + "/metadata.json",
+]
+C33_HORIZON_COMPARISON = C33_TYPICAL_DAY_ROOT + "/horizon_comparison.csv"
+C33_HORIZON_FINDINGS = C33_TYPICAL_DAY_ROOT + "/findings.md"
+C33_HORIZON_DONE = C33_TYPICAL_DAY_ROOT + "/validated.done.json"
 NATIONAL_CLOUD_CONFIG = "config/sensitivity/national_cloud_center_v1.yaml"
 NATIONAL_CLOUD_ROOT = "05_results/sensitivity/v0.8.0/national_cloud_center_v1"
 NATIONAL_CLOUD_SUMMARY = NATIONAL_CLOUD_ROOT + "/summary.csv"
@@ -114,6 +137,73 @@ rule single_industry_group_multisite_sensitivity:
         GROUP_MULTISITE_LINEAGE,
         GROUP_MULTISITE_ALIGNMENT,
         GROUP_MULTISITE_METADATA,
+
+
+rule c33_typical_day_horizon_test:
+    input:
+        C33_MEASURED_WEEK_OUTPUTS,
+        C33_TYPICAL_DAY_OUTPUTS,
+        C33_HORIZON_COMPARISON,
+        C33_HORIZON_FINDINGS,
+        C33_HORIZON_DONE,
+
+
+rule run_c33_typical_day_horizon_test:
+    input:
+        registry=C33_TYPICAL_DAY_REGISTRY,
+        defaults="config/defaults.yaml",
+        run_config="config/runs/c33_typical_day_group_test.yaml",
+        archive=config["paths"]["eweld_archive"],
+        script="08_code/run_group_multisite_continuous_test.py",
+    output:
+        summary=C33_TYPICAL_DAY_ROOT + "/summary.csv",
+        hourly=C33_TYPICAL_DAY_ROOT + "/hourly.csv",
+        lineage=C33_TYPICAL_DAY_ROOT + "/curve_lineage.csv",
+        alignment=C33_TYPICAL_DAY_ROOT + "/load_alignment_value.csv",
+        metadata=C33_TYPICAL_DAY_ROOT + "/metadata.json",
+    conda:
+        "../envs/core_model.yaml"
+    threads: 5
+    shell:
+        "python {input.script} --defaults {input.defaults} --config {input.run_config} "
+        "--experiment {input.registry} --output-dir " + C33_TYPICAL_DAY_ROOT
+
+
+rule run_c33_measured_week_horizon_reference:
+    input:
+        registry=C33_MEASURED_WEEK_REGISTRY,
+        defaults="config/defaults.yaml",
+        run_config="config/runs/all_industries_core.yaml",
+        archive=config["paths"]["eweld_archive"],
+        script="08_code/run_group_multisite_continuous_test.py",
+    output:
+        summary=C33_MEASURED_WEEK_ROOT + "/summary.csv",
+        hourly=C33_MEASURED_WEEK_ROOT + "/hourly.csv",
+        lineage=C33_MEASURED_WEEK_ROOT + "/curve_lineage.csv",
+        alignment=C33_MEASURED_WEEK_ROOT + "/load_alignment_value.csv",
+        metadata=C33_MEASURED_WEEK_ROOT + "/metadata.json",
+    conda:
+        "../envs/core_model.yaml"
+    threads: 5
+    shell:
+        "python {input.script} --defaults {input.defaults} --config {input.run_config} "
+        "--experiment {input.registry} --output-dir " + C33_MEASURED_WEEK_ROOT
+
+
+rule summarize_c33_horizon_comparison:
+    input:
+        week=C33_MEASURED_WEEK_ROOT + "/summary.csv",
+        day=C33_TYPICAL_DAY_ROOT + "/summary.csv",
+        script="08_code/summarize_c33_horizon_comparison.py",
+    output:
+        comparison=C33_HORIZON_COMPARISON,
+        findings=C33_HORIZON_FINDINGS,
+        done=C33_HORIZON_DONE,
+    conda:
+        "../envs/core_model.yaml"
+    shell:
+        "python {input.script} --week {input.week} --day {input.day} --output {output.comparison} "
+        "--findings {output.findings} --done {output.done}"
 
 
 rule run_single_industry_group_multisite_sensitivity:

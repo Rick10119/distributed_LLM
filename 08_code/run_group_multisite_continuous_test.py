@@ -111,6 +111,18 @@ def hardware_parameters(config: dict) -> tuple[dict, dict, dict, dict]:
     return {"gpu": deepcopy(config["server"]), "cpu": cpu}, cpu_fraction, cpu_multiplier, {"routing_case": case, "cpu_price_case": price_case}
 
 
+def balanced_factory_weights(physical_factory_count: int, modeled_node_count: int) -> np.ndarray:
+    """Assign every physical factory to one representative node with near-equal integer weights."""
+    if not 1 <= modeled_node_count <= physical_factory_count:
+        raise ValueError("modeled_node_count must be between one and physical_factory_count")
+    quotient, remainder = divmod(physical_factory_count, modeled_node_count)
+    weights = np.full(modeled_node_count, quotient, dtype=int)
+    weights[:remainder] += 1
+    if int(weights.sum()) != physical_factory_count or (weights <= 0).any():
+        raise AssertionError("Invalid representative factory weights")
+    return weights
+
+
 def solve_architecture(
     *,
     architecture: str,
@@ -303,8 +315,23 @@ def main() -> None:
     group = read_representative_groups(ROOT / config["paths"]["representative_group_report"])[industry]
     count_setting = experiment.get("factory_count", "representative_group_case")
     count = group.factories(config["industry_parameter_case"]) if count_setting == "representative_group_case" else int(count_setting)
+    requested_node_count = experiment.get("modeled_routing_node_count")
+    if requested_node_count is not None:
+        modeled_node_count = int(requested_node_count)
+        if modeled_node_count < 1 or modeled_node_count > count:
+            raise ValueError(
+                "modeled_routing_node_count must be between 1 and physical factory_count"
+            )
+        node_selection_mode = "explicit"
+    else:
+        node_cap = int(experiment.get("max_modeled_routing_nodes", count))
+        if node_cap < 1:
+            raise ValueError("max_modeled_routing_nodes must be positive")
+        modeled_node_count = min(count, node_cap)
+        node_selection_mode = "capped"
+    factory_weights = balanced_factory_weights(count, modeled_node_count)
     share = group.share(config["industry_parameter_case"])
-    target = inputs.base_load_mw.reshape(7, 24)
+    target = inputs.base_load_mw.reshape(-1, 24)
     target = np.median(target / target.mean(axis=1, keepdims=True), axis=0)
     source_setting = experiment["load_curve_selection"].get("source_isic", "auto_from_core_lineage")
     if source_setting == "auto_from_core_lineage":
@@ -319,31 +346,47 @@ def main() -> None:
     lineage, normalized_curves = select_factory_weeks(
         ROOT / config["paths"]["eweld_archive"],
         target,
-        count,
+        modeled_node_count,
         source_isic,
     )
+    for row, weight in zip(lineage, factory_weights):
+        row["modeled_routing_node_id"] = row.pop("factory_id").replace("F", "R", 1)
+        row["represented_factory_count"] = int(weight)
     print(f"selected {industry} factory weeks from EWELD ISIC {source_isic}", flush=True)
     mean_per_factory = float(inputs.base_load_mw.mean()) * share / count
-    five_factory_loads = normalized_curves * mean_per_factory
-    host_index = int(np.argsort(five_factory_loads.max(axis=1))[count // 2])
+    representative_factory_loads = normalized_curves * mean_per_factory
+    routing_node_loads = representative_factory_loads * factory_weights[:, None]
+    host_index = int(np.argsort(representative_factory_loads.max(axis=1))[modeled_node_count // 2])
     servers, cpu_fraction, cpu_multiplier, hardware_meta = hardware_parameters(config)
     rigid_group, jobs_group = scale_task_workload(inputs, share)
     grid_prices = read_core_grid_energy_prices(config)
+    horizon_hours = int(config["model"]["horizon_hours"])
+    if horizon_hours == 24:
+        representative_factory_loads = normalized_curves.reshape(modeled_node_count, 7, 24).mean(axis=1) * mean_per_factory
+        routing_node_loads = representative_factory_loads * factory_weights[:, None]
+    elif horizon_hours != 168:
+        raise ValueError("The group-multisite curve selector currently supports 24 or 168 hours")
 
     admissible_per_site = sum(
-        len({(job.release_hour + offset) % int(config["model"]["horizon_hours"]) for offset in range(job.deadline_hours + 1)})
+        len({(job.release_hour + offset) % horizon_hours for offset in range(job.deadline_hours + 1)})
         for job in jobs_group
     )
     variable_counts = {
-        "IF_installed_server_integer_variables": count * 2,
+        "physical_factory_count": count,
+        "modeled_routing_node_count": modeled_node_count,
+        "routing_node_selection_mode": node_selection_mode,
+        "IF_installed_server_integer_variables_solved": modeled_node_count * 2,
+        "IF_installed_server_integer_variables_physical_equivalent": count * 2,
         "IG_1host_installed_server_integer_variables": 0,
         "IG_multisite_installed_server_integer_variables": 0,
-        "online_server_variables": count * 2 * int(config["model"]["horizon_hours"]),
-        "rigid_route_variables": count * len(rigid_group) * int(config["model"]["horizon_hours"]),
-        "flexible_time_site_route_variables": count * admissible_per_site,
-        "grid_peak_variables": count,
-        "primary_continuous_variables_IG_multisite": count * 2 * int(config["model"]["horizon_hours"]) + count * len(rigid_group) * int(config["model"]["horizon_hours"]) + count * admissible_per_site + count,
-        "integer_variables_IF_total": count * 2,
+        "load_profile_mode": str(config["model"]["load_profile_mode"]),
+        "horizon_hours": horizon_hours,
+        "online_server_variables": modeled_node_count * 2 * horizon_hours,
+        "rigid_route_variables": modeled_node_count * len(rigid_group) * horizon_hours,
+        "flexible_time_site_route_variables": modeled_node_count * admissible_per_site,
+        "grid_peak_variables": modeled_node_count,
+        "primary_continuous_variables_IG_multisite": modeled_node_count * 2 * horizon_hours + modeled_node_count * len(rigid_group) * horizon_hours + modeled_node_count * admissible_per_site + modeled_node_count,
+        "integer_variables_IF_solved": modeled_node_count * 2,
     }
     if args.describe_only:
         print(json.dumps(variable_counts, ensure_ascii=False, indent=2))
@@ -359,28 +402,37 @@ def main() -> None:
     ]
     if_site_summaries = []
     if_site_hourly = []
-    for site in range(count):
+    for site in range(modeled_node_count):
         rigid_site = {task: values / count for task, values in rigid_group.items()}
         jobs_site = tuple(
             job.__class__(job.release_hour, job.deadline_hours, job.amount_service_units / count, job.task_id, job.flexibility_class)
             for job in jobs_group
         )
         summary, hourly = solve_architecture(
-            architecture=f"IF_F{site + 1}", config=config, base_loads=five_factory_loads[[site]],
+            architecture=f"IF_F{site + 1}", config=config, base_loads=representative_factory_loads[[site]],
             rigid_by_task=rigid_site, jobs=jobs_site, grid_prices=grid_prices,
             servers=servers, cpu_fraction=cpu_fraction, cpu_multiplier=cpu_multiplier,
             solver_name=str(experiment["solver"]), installed_integer=True,
             base_load_case="actual_load",
         )
+        weight = int(factory_weights[site])
+        for field in additive_fields:
+            summary[field] = float(summary[field]) * weight
+        summary["representative_factory_weight"] = weight
         if_site_summaries.append(summary)
-        hourly["factory_id"] = f"F{site + 1}"
+        for field in ["base_load_mw", "ai_service_units", "gpu_compute_h", "cpu_compute_h", "ai_facility_power_mw", "grid_import_mw"]:
+            hourly[field] = hourly[field].astype(float) * weight
+        hourly["factory_id"] = f"R{site + 1}"
+        hourly["represented_factory_count"] = weight
         if_site_hourly.append(hourly)
     if_rows = pd.DataFrame(if_site_summaries)
     if_summary = {key: if_rows[key].sum() for key in additive_fields}
     if_summary.update({
         "architecture": "IF", "base_load_case": "actual_load",
-        "solver_status": "ok", "solver_condition": "aggregated_five_independent_models",
+        "solver_status": "ok", "solver_condition": "weighted_representative_independent_factory_models",
         "physical_factory_count": count, "installed_server_groups_integer": True,
+        "modeled_routing_node_count": modeled_node_count,
+        "active_compute_node_count": count,
         "online_server_groups_integer": False, "n_plus_spare_server_groups": 0,
         "model_state_minimum_groups_enabled": False, "planning_reserve_fraction": 0.10,
         "maximum_single_site_ai_facility_power_mw": float(max(row["maximum_single_site_ai_facility_power_mw"] for row in if_site_summaries)),
@@ -390,9 +442,9 @@ def main() -> None:
 
     for base_load_case in experiment["base_load_cases_by_architecture"]["IG_1host"]:
         host_load = (
-            five_factory_loads[[host_index]]
+            representative_factory_loads[[host_index]]
             if base_load_case == "actual_load"
-            else np.zeros_like(five_factory_loads[[host_index]])
+            else np.zeros_like(representative_factory_loads[[host_index]])
         )
         if base_load_case not in {"actual_load", "zero_load"}:
             raise ValueError(f"Unsupported IG_1host base-load case: {base_load_case}")
@@ -403,16 +455,27 @@ def main() -> None:
             solver_name=str(experiment["solver"]), installed_integer=False,
             base_load_case=base_load_case,
         )
-        hourly["factory_id"] = f"F{host_index + 1}"
+        summary["physical_factory_count"] = count
+        summary["modeled_routing_node_count"] = 1
+        summary["active_compute_node_count"] = 1
+        hourly["factory_id"] = f"R{host_index + 1}"
+        hourly["represented_factory_count"] = 1
         final_summaries.append(summary)
         final_hourly.append(hourly)
 
     summary, hourly = solve_architecture(
-        architecture="IG_multisite", config=config, base_loads=five_factory_loads,
+        architecture="IG_multisite", config=config, base_loads=routing_node_loads,
         rigid_by_task=rigid_group, jobs=jobs_group, grid_prices=grid_prices,
         servers=servers, cpu_fraction=cpu_fraction, cpu_multiplier=cpu_multiplier,
         solver_name=str(experiment["solver"]), installed_integer=False,
         base_load_case="actual_load",
+    )
+    summary["physical_factory_count"] = count
+    summary["modeled_routing_node_count"] = modeled_node_count
+    summary["active_compute_node_count"] = modeled_node_count
+    hourly["factory_id"] = hourly["factory_id"].str.replace("F", "R", n=1, regex=False)
+    hourly["represented_factory_count"] = hourly["factory_id"].str[1:].astype(int).map(
+        {index + 1: int(weight) for index, weight in enumerate(factory_weights)}
     )
     final_summaries.append(summary)
     final_hourly.append(hourly)
@@ -459,10 +522,15 @@ def main() -> None:
         "source_isic": source_isic,
         "group_share": share,
         "synthetic_factory_count": count,
-        "IG_1host_factory_id": f"F{host_index + 1}",
+        "physical_factory_count": count,
+        "modeled_routing_node_count": modeled_node_count,
+        "routing_node_selection_mode": node_selection_mode,
+        "representative_factory_weights": factory_weights.tolist(),
+        "IG_1host_factory_id": f"R{host_index + 1}",
         "hardware": hardware_meta,
         "variable_counts": variable_counts,
         "base_load_cases_by_architecture": experiment["base_load_cases_by_architecture"],
+        "load_profile_mode": str(config["model"]["load_profile_mode"]),
         "validated_architecture_base_load_pairs": sorted(f"{architecture}__{case}" for architecture, case in observed_pairs),
         "service_conservation_relative_error": {
             f"{row['architecture']}__{row['base_load_case']}": abs(float(row["weekly_service_units"]) - float(summary_frame.iloc[0]["weekly_service_units"])) / max(float(summary_frame.iloc[0]["weekly_service_units"]), 1e-12)
@@ -477,6 +545,9 @@ def main() -> None:
             "only IF installed GPU/CPU server groups are integer; IG_1host and IG_multisite installed capacity is continuous equivalent",
             "hourly online server groups remain continuous in all three architectures",
             "same-user distinct weeks are factory-shape proxies when an industry has too few distinct EWELD users",
+            f"routing nodes are selected by {node_selection_mode} mode; balanced integer weights preserve the registered physical factory count",
+            "IF solves one integer-capacity factory per representative curve and weights its cost and capacity to reconstruct physical-factory fragmentation",
+            "IG_multisite aggregates production load by representative-node factory weight, so within-cluster factory noncoincidence is not modeled",
             "zero_load is a reoptimized AI-only counterfactual, not a factory operating condition",
             "only IG_1host receives the zero_load paired counterfactual",
             "IG_1host load-alignment value includes endogenous changes in AI timing and installed capacity permitted by that architecture",

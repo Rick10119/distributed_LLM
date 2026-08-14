@@ -87,11 +87,31 @@ conda run -n pypsa snakemake all --cores 1 --configfile config/runs/single_indus
 
 ## 集团单节点与跨节点灵活性测试
 
-`config/scenarios/group_multisite_core_v1.yaml`定义31行业核心集团架构比较；每个行业使用代表性集团参数表中的基础工厂数，并沿用活动核心负荷血缘登记的EWELD源ISIC。没有直接样本的C16、C25、C37和C42继续使用已有生产原型代理。`config/sensitivity/c36_group_multisite_continuous_v1.yaml`另保留C36、5个合成成员工厂的快速机制测试。两者均比较：
+集团架构测试不另建典型日模型。`run_group_multisite_continuous_test.py`统一读取运行配置中的`model.horizon_hours`；当前代表工厂曲线入口支持24或168小时。敏感性注册表可用`modeled_routing_node_count`显式指定建模节点数，例如C33取6；若不指定，则用`max_modeled_routing_nodes`设置上限，并取“物理工厂数与上限中的较小者”。前者适合单行业节点数测试，后者适合31行业批量运行。
+
+C33时域比较的168小时、6节点参照注册表是`config/sensitivity/c33_measured_week_horizon_v1.yaml`；24小时运行配置与6节点注册表分别是`config/runs/c33_typical_day_group_test.yaml`和`config/sensitivity/c33_typical_day_horizon_v1.yaml`。两组均调用同一个集团架构程序和同一组`IF`、`IG_1host`、`IG_multisite`求解函数，只通过配置改变时段长度和输入时段，并都显式选择6个建模节点。
+
+检查任务图而不求解：
+
+```bash
+conda run -n pypsa snakemake c33_typical_day_horizon_test --cores 5 --dry-run
+```
+
+正式运行：
+
+```bash
+conda run -n pypsa snakemake c33_typical_day_horizon_test --cores 5
+```
+
+若要测试其他组合，只需复制这两个小配置：在运行配置中修改`model.horizon_hours`及相应长度的负荷、电价时段，在敏感性注册表中修改`modeled_routing_node_count`；不需要修改优化模型。
+
+`config/scenarios/group_multisite_core_v1.yaml`定义31行业核心集团架构比较；每个行业保留代表性集团参数表中的基础工厂数，但为控制“柔性作业×执行小时×节点”形成的模型规模，最多使用5个代表调度节点。代表节点采用尽可能均衡的整数工厂权重，权重之和严格等于登记的集团工厂数。没有直接样本的C16、C25、C37和C42继续使用已有生产原型代理。`config/sensitivity/c36_group_multisite_continuous_v1.yaml`另保留C36、5个合成成员工厂的快速机制测试。两者均比较：
 
 - `IF`：每厂安装并仅服务本厂，GPU/CPU装机服务器组为整数；
 - `IG_1host`：集团在一个固定成员工厂建设共享池，装机采用连续等效容量；
 - `IG_multisite`：集团在多个成员工厂配置连续等效容量，可迁移任务在原截止窗口内联合选择执行时间和工厂。
+
+聚合不把大型集团改写为只有5家工厂。`physical_factory_count`仍保存原集团工厂数；`modeled_routing_node_count`最多为5。IF对每条代表曲线求解一个真实单厂整数定容模型，再按该曲线代表的整数工厂数放大成本、装机和接入量，因此保留逐厂取整与碎片化；IG_multisite把同一代表节点所含工厂的生产负荷聚合后进行跨节点调度，因此不识别节点内部各厂之间的非同时性。该近似偏向低估大型集团全部跨厂灵活性的价值，必须与完整工厂网络区分。
 
 工厂曲线优先来自不同EWELD用户；若行业可用用户数不足，则从同一用户选择不同完整周，不复制完全相同的用户—周。所有曲线按星期—小时对齐，因此是合成机制输入，不表示真实同一集团的同步观测。
 

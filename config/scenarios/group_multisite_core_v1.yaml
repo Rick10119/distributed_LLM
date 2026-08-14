@@ -2,6 +2,7 @@ experiment_id: group_multisite_31industry_core_v1
 solver: highs
 industry: null
 factory_count: representative_group_case
+max_modeled_routing_nodes: 5
 architectures: [IF, IG_1host, IG_multisite]
 base_load_cases_by_architecture:
   IF: [actual_load]
@@ -30,6 +31,7 @@ load_curve_selection:
   rule: distinct_users_first_then_distinct_complete_weeks_until_representative_group_factory_count
   proxy_rule: reuse_the_active_core_profile_source_isic_for_industries_without_direct_EWELD_samples
   scaling: equal_factory_mean_preserve_total_group_activity_share
+  aggregation_rule: balanced_integer_factory_weights_over_at_most_five_representative_routing_nodes
   simultaneity: align_by_weekday_and_hour_not_same_calendar_week
 counterfactual:
   architecture: IG_1host

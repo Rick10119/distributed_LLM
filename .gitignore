@@ -50,6 +50,7 @@ gurobi.log
 02_data/*
 03_models/*
 05_results/*
+06_manuscript/*
 07_figures/*
 09_meetings/*
 output/*

@@ -108,15 +108,16 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ValueError("industry_parameter_case must be low, base, or high")
     model = config.get("model", {})
     horizon = int(model.get("horizon_hours", 0))
-    if horizon < 168 or horizon > 8784 or horizon % 24 != 0:
+    if horizon < 24 or horizon > 8784 or horizon % 24 != 0:
         raise ValueError(
-            "The core model requires 168 to 8784 continuous hours in whole days"
+            "The model requires 24 to 8784 hours in whole days"
         )
-    if model.get("load_profile_mode") != "measured_continuous":
+    if model.get("load_profile_mode") not in {"measured_continuous", "typical_day"}:
         raise ValueError(
-            "The active core model requires measured_continuous load profiles; "
-            "repeated typical-day fallback is not allowed"
+            "load_profile_mode must be measured_continuous or typical_day"
         )
+    if model.get("load_profile_mode") == "typical_day" and horizon != 24:
+        raise ValueError("typical_day load_profile_mode requires model.horizon_hours = 24")
     if model.get("grid_capacity_upgrade_boundary") != "no_ai_optimized_net_peak_zero_headroom_credit":
         raise ValueError(
             "The active core model must use the optimized no-AI net grid peak with zero existing-headroom credit"

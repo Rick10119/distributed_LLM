@@ -75,9 +75,12 @@ def main() -> None:
         lineage = pd.read_csv(folder / "curve_lineage.csv", encoding="utf-8-sig")
         lineage.insert(0, "industry", industry)
         metadata = json.loads((folder / "metadata.json").read_text(encoding="utf-8"))
-        expected_factories = int(metadata["synthetic_factory_count"])
-        if len(lineage) != expected_factories:
-            raise ValueError(f"{industry}: curve lineage does not match its representative factory count")
+        expected_factories = int(metadata["physical_factory_count"])
+        expected_nodes = int(metadata["modeled_routing_node_count"])
+        if len(lineage) != expected_nodes:
+            raise ValueError(f"{industry}: curve lineage does not match its modeled routing-node count")
+        if int(lineage["represented_factory_count"].sum()) != expected_factories:
+            raise ValueError(f"{industry}: representative-node weights do not reconstruct physical factories")
         factory_counts[industry] = expected_factories
         group_share = float(metadata["group_share"])
         if not 0 < group_share <= 1:

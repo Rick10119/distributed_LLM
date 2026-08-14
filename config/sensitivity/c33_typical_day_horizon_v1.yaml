@@ -1,0 +1,23 @@
+experiment_id: c33_typical_day_horizon_v1
+output_root: 05_results/sensitivity/v0.8.0/group_multisite/C33_typical_day
+solver: highs
+industry: C33
+factory_count: 6
+modeled_routing_node_count: 6
+architectures: [IF, IG_1host, IG_multisite]
+base_load_cases_by_architecture:
+  IF: [actual_load]
+  IG_1host: [actual_load, zero_load]
+  IG_multisite: [actual_load]
+load_curve_selection:
+  source: EWELD
+  source_isic: 25
+  rule: same_six_users_or_weeks_as_the_registered_selection_algorithm
+  scaling: equal_factory_mean_preserve_total_group_activity_share
+typical_day:
+  industry_target_rule: use_existing_24_hour_task_timed_profile_through_the_common_data_loader
+  representative_factory_rule: average_each_selected_EWELD_factory_week_by_hour_of_day
+  rigid_and_flexible_service: generated_by_common_24_hour_task_templates
+  price: first_registered_day_of_the_common_Guangdong_price_period
+  comparison_reference: config/sensitivity/c33_measured_week_horizon_v1.yaml
+interpretation: use_the_common_model_with_configurable_24_hour_horizon_and_six_routing_nodes

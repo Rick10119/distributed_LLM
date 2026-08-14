@@ -1,0 +1,17 @@
+experiment_id: c33_measured_week_horizon_v1
+output_root: 05_results/sensitivity/v0.8.0/group_multisite/C33_measured_week
+solver: highs
+industry: C33
+factory_count: 6
+modeled_routing_node_count: 6
+architectures: [IF, IG_1host, IG_multisite]
+base_load_cases_by_architecture:
+  IF: [actual_load]
+  IG_1host: [actual_load, zero_load]
+  IG_multisite: [actual_load]
+load_curve_selection:
+  source: EWELD
+  source_isic: 25
+  rule: same_six_users_or_weeks_as_the_registered_selection_algorithm
+  scaling: equal_factory_mean_preserve_total_group_activity_share
+interpretation: common_model_168_hour_reference_with_six_explicit_routing_nodes
