@@ -1,7 +1,7 @@
-sensitivity_version: single_industry_grid_hybrid_v1.2.0
+sensitivity_version: single_industry_grid_hybrid_v1.3.0
 model_version: v0.8.0
 industry: C38
-architectures: [IF, IG, II_1host]
+architectures: [IG_1host]
 scope: single_industry_structural_grid_storage_cloud_substitution
 output_root: 05_results/sensitivity/v0.8.0/single_industry_grid_hybrid
 common_overrides:

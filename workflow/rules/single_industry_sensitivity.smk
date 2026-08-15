@@ -101,7 +101,7 @@ NATIONAL_OAT_REGISTRY = "config/sensitivity/national_oat_extension_v1.yaml"
 NATIONAL_OAT = yaml.safe_load(open(NATIONAL_OAT_REGISTRY, encoding="utf-8"))
 NATIONAL_OAT_ROOT = NATIONAL_OAT["output_root"]
 NATIONAL_OAT_INDUSTRIES = NATIONAL_OAT["selected_industries"]
-NATIONAL_OAT_ARCHITECTURES = NATIONAL_OAT["architectures"]
+NATIONAL_OAT_ARCHITECTURES = NATIONAL_OAT.get("solve_architectures", NATIONAL_OAT["architectures"])
 NATIONAL_OAT_CASES = [
     factor_id + "__" + case_name
     for factor_id, factor in NATIONAL_OAT["factors"].items()
@@ -320,6 +320,7 @@ rule run_national_oat_industry:
     shell:
         "python {input.script} --defaults config/defaults.yaml --config {input.case_config} "
         "--experiment {input.experiment} --industry {wildcards.industry} "
+        "--architectures " + " ".join(NATIONAL_OAT_ARCHITECTURES) + " "
         "--output-dir " + NATIONAL_OAT_ROOT + "/model/{wildcards.case_id}/{wildcards.industry}"
 
 
@@ -358,6 +359,7 @@ rule combine_national_oat_case:
     shell:
         "python {input.script} --root " + NATIONAL_OAT_ROOT + "/model/{wildcards.case_id} "
         "--industries " + " ".join(NATIONAL_OAT_INDUSTRIES) + " "
+        "--architectures " + " ".join(NATIONAL_OAT_ARCHITECTURES) + " "
         "--summary-output {output.summary} --alignment-output {output.alignment} "
         "--lineage-output {output.lineage} --done-output {output.done}"
 

@@ -90,7 +90,7 @@ def scenario_scale(
         ai_scale = factory_activity_share
         multiplier = factories / share
         physical_hosts = factories
-    elif scenario == "IG":
+    elif scenario in {"IG", "IG_1host"}:
         ai_scale = share
         multiplier = 1.0 / share
         physical_hosts = 1

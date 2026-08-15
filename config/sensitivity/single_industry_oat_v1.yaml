@@ -1,7 +1,7 @@
-sensitivity_version: single_industry_oat_v1.1.0
+sensitivity_version: single_industry_oat_v1.2.0
 model_version: v0.8.0
 industry: C38
-architectures: [IF, IG, II_1host]
+architectures: [IG_1host]
 scope: single_industry_factor_screen_only
 cross_industry_sensitivity_expansion: false
 output_root: 05_results/sensitivity/v0.8.0/single_industry_oat

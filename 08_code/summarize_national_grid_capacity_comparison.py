@@ -44,9 +44,10 @@ def main() -> None:
     national = load_national(args.national_summary)
     cloud = pd.read_csv(args.cloud_summary, encoding="utf-8-sig")
     present = set(national["scenario"])
-    if present not in (GROUP_ARCHITECTURES, LEGACY_ARCHITECTURES):
+    allowed = (GROUP_ARCHITECTURES, LEGACY_ARCHITECTURES, {"IG_1host"})
+    if present not in allowed:
         raise AssertionError(
-            "national summary must contain IF, IG_1host and IG_multisite, "
+            "national summary must contain IG_1host, the full IF / IG_1host / IG_multisite set, "
             "or the legacy IF, IG and II_1host set"
         )
     if national["industry_code"].nunique() != 31:

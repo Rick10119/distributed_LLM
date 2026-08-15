@@ -12,9 +12,6 @@ import pandas as pd
 import yaml
 
 
-ARCHITECTURES = ["IF", "IG", "II_1host"]
-
-
 def read_one(path: Path) -> pd.Series:
     frame = pd.read_csv(path, encoding="utf-8-sig")
     if len(frame) != 1:
@@ -35,25 +32,23 @@ def metrics(rows: dict[str, pd.Series]) -> dict[str, float]:
         key: float(row["industry_equivalent_annual_ai_facility_energy_twh"])
         for key, row in rows.items()
     }
-    ii = grid["II_1host"]
-    grid_margin = (ii - grid["IF"]) / ii if ii > 0 else np.nan
-    return {
-        "if_grid_expansion_mw": grid["IF"],
-        "ig_grid_expansion_mw": grid["IG"],
-        "ii_grid_expansion_mw": ii,
-        "screening_margin_if_vs_industry_node": grid_margin,
-        "if_owned_cost_rmb": costs["IF"],
-        "ig_owned_cost_rmb": costs["IG"],
-        "ii_owned_cost_rmb": costs["II_1host"],
-        "if_energy_twh": energy["IF"],
-        "ii_energy_twh": energy["II_1host"],
-    }
+    result: dict[str, float] = {}
+    for architecture in rows:
+        prefix = architecture.lower()
+        result[f"{prefix}_grid_expansion_mw"] = grid[architecture]
+        result[f"{prefix}_owned_cost_rmb"] = costs[architecture]
+        result[f"{prefix}_energy_twh"] = energy[architecture]
+    if "IF" in grid and "II_1host" in grid and grid["II_1host"] > 0:
+        result["screening_margin_if_vs_industry_node"] = (grid["II_1host"] - grid["IF"]) / grid["II_1host"]
+    else:
+        result["screening_margin_if_vs_industry_node"] = float("nan")
+    return result
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--registry", type=Path, required=True)
-    parser.add_argument("--reference-summaries", type=Path, nargs=3, required=True)
+    parser.add_argument("--reference-summaries", type=Path, nargs="+", required=True)
     parser.add_argument("--case-summaries", type=Path, nargs="+", required=True)
     parser.add_argument("--case-configs", type=Path, nargs="+", required=True)
     parser.add_argument("--case-output", type=Path, required=True)
@@ -62,18 +57,21 @@ def main() -> None:
     args = parser.parse_args()
 
     registry = yaml.safe_load(args.registry.read_text(encoding="utf-8"))
+    architectures = list(registry["architectures"])
     case_ids = [
         f"{factor_id}__{case_name}"
         for factor_id, factor in registry["factors"].items()
         for case_name in factor["cases"]
     ]
-    expected = len(case_ids) * len(ARCHITECTURES)
+    expected = len(case_ids) * len(architectures)
     if len(args.case_summaries) != expected or len(args.case_configs) != len(case_ids):
         raise ValueError("Sensitivity inputs do not match the registry case count")
+    if len(args.reference_summaries) != len(architectures):
+        raise ValueError("Reference summaries do not match the registry architectures")
 
     reference_rows = {
         architecture: read_one(path)
-        for architecture, path in zip(ARCHITECTURES, args.reference_summaries)
+        for architecture, path in zip(architectures, args.reference_summaries)
     }
     base = metrics(reference_rows)
     configs = {
@@ -92,14 +90,13 @@ def main() -> None:
 
     case_rows: list[dict[str, object]] = []
     for case_id in case_ids:
-        rows = {architecture: summary_map[(case_id, architecture)] for architecture in ARCHITECTURES}
+        rows = {architecture: summary_map[(case_id, architecture)] for architecture in architectures}
         value = metrics(rows)
         metadata = configs[case_id]
         swings = []
-        for field in (
-            "if_grid_expansion_mw", "ii_grid_expansion_mw", "if_owned_cost_rmb",
-            "ii_owned_cost_rmb", "if_energy_twh", "ii_energy_twh",
-        ):
+        for field in value:
+            if field == "screening_margin_if_vs_industry_node":
+                continue
             if value[field] > 0 and base[field] > 0:
                 swings.append(abs(np.log(value[field] / base[field])))
         case_rows.append({
@@ -114,7 +111,11 @@ def main() -> None:
             "primary_claims": ";".join(metadata["primary_claims"]),
             **value,
             "max_abs_log_output_swing": max(swings, default=0.0),
-            "industry_screen_direction_pass": bool(value["screening_margin_if_vs_industry_node"] > 0),
+            "industry_screen_direction_pass": (
+                bool(value["screening_margin_if_vs_industry_node"] > 0)
+                if np.isfinite(value["screening_margin_if_vs_industry_node"])
+                else True
+            ),
             "formal_c2_evaluated": False,
             "cost_claim_evaluated": False,
             "water_claim_evaluated": False,
