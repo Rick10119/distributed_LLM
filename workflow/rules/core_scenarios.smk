@@ -585,11 +585,9 @@ rule validate_compute_efficiency_cases:
 
 rule validate_model_lifecycle_results:
     input:
-        summaries=expand(
-            MODEL_OUTPUT_ROOT + "/{industry}/{scenario}/summary.csv",
-            industry=INDUSTRIES,
-            scenario=SCENARIOS,
-        ),
+        summaries=GROUP_CORE_SUMMARIES,
+        lifecycle=MODEL_READY_MODEL_LIFECYCLE,
+        defaults="config/defaults.yaml",
         script="08_code/validate_model_lifecycle_results.py",
     output:
         table=MODEL_LIFECYCLE_VALIDATION,
@@ -598,7 +596,8 @@ rule validate_model_lifecycle_results:
     conda:
         "../envs/core_model.yaml"
     shell:
-        "python {input.script} --inputs {input.summaries} --model-version {MODEL_VERSION} "
+        "python {input.script} --inputs {input.summaries} --lifecycle {input.lifecycle} "
+        "--defaults {input.defaults} --model-version {MODEL_VERSION} "
         "--output {output.table} --findings-output {output.findings} "
         "--done-output {output.done}"
 
@@ -636,8 +635,16 @@ rule unit_tests:
         RESULT_OUTPUT_ROOT + "/tests/unit_tests.done",
     conda:
         "../envs/core_model.yaml"
-    shell:
-        "python -m unittest discover -s tests -p 'test_core_*.py' && touch {output}"
+    run:
+        import subprocess
+        from pathlib import Path
+
+        subprocess.check_call(
+            ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_core_*.py"]
+        )
+        done = Path(output[0])
+        done.parent.mkdir(parents=True, exist_ok=True)
+        done.write_text("ok\n", encoding="utf-8")
 
 
 rule core_baseline:
@@ -780,8 +787,8 @@ rule analyze_national_core_results:
 
 rule analyze_core_industry_cost_differences:
     input:
-        national=NATIONAL_SUMMARY,
-        validation=NATIONAL_VALIDATION,
+        national=GROUP_CORE_NATIONAL_SUMMARY,
+        validation=GROUP_CORE_NATIONAL_DONE,
         service=MODEL_READY_SERVICE,
         routing_config=HARDWARE_CASE["routing_config"],
         script="08_code/analyze_core_industry_cost_differences.py",
@@ -1291,7 +1298,10 @@ rule analyze_load_alignment:
 
 rule analyze_national_local_flexibility_ablation:
     input:
-        national=NATIONAL_SUMMARY,
+        summaries=expand(
+            MODEL_OUTPUT_ROOT + "/{industry}/IF/summary.csv",
+            industry=INDUSTRIES,
+        ),
         hourly=expand(
             MODEL_OUTPUT_ROOT + "/{industry}/IF/hourly.csv",
             industry=INDUSTRIES,
@@ -1310,9 +1320,8 @@ rule analyze_national_local_flexibility_ablation:
     conda:
         "../envs/core_model.yaml"
     shell:
-        "MPLCONFIGDIR=/private/tmp/dllm_mpl_cache XDG_CACHE_HOME=/private/tmp/dllm_xdg_cache "
         "python {input.script} --defaults {input.defaults} --config {input.run_config} "
-        "--national-summary {input.national} --flex-hourly-inputs {input.hourly} "
+        "--if-summaries {input.summaries} --flex-hourly-inputs {input.hourly} "
         "--baseline-summaries {input.baselines} --output {output.comparison} "
         "--findings-output {output.findings} --done-output {output.done}"
 
@@ -1335,7 +1344,6 @@ rule analyze_typical_industry_load_stacking:
     conda:
         "../envs/core_model.yaml"
     shell:
-        "MPLCONFIGDIR=/private/tmp/dllm_mpl_cache XDG_CACHE_HOME=/private/tmp/dllm_xdg_cache "
         "python {input.script} --hourly-inputs {input.hourly} --model-version {MODEL_VERSION} "
         "--profiles-output {output.profiles} --summary-output {output.summary} "
         "--stacked-figure-output {output.stacked} --ai-figure-output {output.ai_only} "
@@ -1356,7 +1364,6 @@ rule analyze_industry_spot_price_pv_test:
     conda:
         "../envs/core_model.yaml"
     shell:
-        "MPLCONFIGDIR=/private/tmp/dllm_mpl_cache XDG_CACHE_HOME=/private/tmp/dllm_xdg_cache "
         "python {input.script} --defaults config/defaults.yaml --config {RUN_CONFIG} "
         "--price-input {input.price} --industry {wildcards.industry} "
         "--hourly-output {output.hourly} "

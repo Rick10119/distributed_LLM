@@ -40,7 +40,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--defaults", type=Path, required=True)
     parser.add_argument("--config", type=Path, required=True)
-    parser.add_argument("--national-summary", type=Path, required=True)
+    parser.add_argument("--if-summaries", type=Path, nargs="+", required=True)
     parser.add_argument("--flex-hourly-inputs", type=Path, nargs="+", required=True)
     parser.add_argument("--baseline-summaries", type=Path, nargs="+", required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -52,10 +52,14 @@ def main() -> None:
     industries = sorted(config["selected_industries"])
     if len(industries) != 31:
         raise ValueError("National flexibility ablation requires all 31 industries")
-    national = pd.read_csv(args.national_summary, encoding="utf-8-sig")
-    flexible = national[national["scenario"] == "IF"]
+    flexible = pd.concat(
+        [pd.read_csv(path, encoding="utf-8-sig") for path in args.if_summaries],
+        ignore_index=True,
+    )
+    if "scenario" in flexible.columns:
+        flexible = flexible.loc[flexible["scenario"].eq("IF")].copy()
     if len(flexible) != 31:
-        raise ValueError("National summary must contain 31 IF rows")
+        raise ValueError("Flexibility ablation requires 31 IF industry summaries")
 
     baseline_lookup: dict[str, dict[str, float]] = {}
     for path in args.baseline_summaries:

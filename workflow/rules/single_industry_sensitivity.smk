@@ -110,7 +110,16 @@ NATIONAL_OAT_CASES = [
 NATIONAL_OAT_NO_SHIFT_CASES = ["PHY03__no_shift"]
 NATIONAL_OAT_HIGH_CASES = ["PHY01__low", "PHY01__high", "PHY02__efficient"]
 NATIONAL_OAT_CONFIG = NATIONAL_OAT_ROOT + "/configs/{case_id}.yaml"
+NATIONAL_OAT_INDUSTRY_ROOT = NATIONAL_OAT_ROOT + "/model/{case_id}/{industry}"
+NATIONAL_OAT_INDUSTRY_SUMMARY = NATIONAL_OAT_INDUSTRY_ROOT + "/summary.csv"
+NATIONAL_OAT_INDUSTRY_HOURLY = NATIONAL_OAT_INDUSTRY_ROOT + "/hourly.csv"
+NATIONAL_OAT_INDUSTRY_LINEAGE = NATIONAL_OAT_INDUSTRY_ROOT + "/curve_lineage.csv"
+NATIONAL_OAT_INDUSTRY_ALIGNMENT = NATIONAL_OAT_INDUSTRY_ROOT + "/load_alignment_value.csv"
+NATIONAL_OAT_INDUSTRY_METADATA = NATIONAL_OAT_INDUSTRY_ROOT + "/metadata.json"
 NATIONAL_OAT_SUMMARY = NATIONAL_OAT_ROOT + "/result/{case_id}/core_scenarios.csv"
+NATIONAL_OAT_ALIGNMENT = NATIONAL_OAT_ROOT + "/result/{case_id}/ig_1host_load_alignment.csv"
+NATIONAL_OAT_LINEAGE = NATIONAL_OAT_ROOT + "/result/{case_id}/curve_lineage.csv"
+NATIONAL_OAT_NATIONAL_DONE = NATIONAL_OAT_ROOT + "/result/{case_id}/validated.done.json"
 NATIONAL_OAT_CLOUD = NATIONAL_OAT_ROOT + "/cloud/{case_id}/summary.csv"
 NATIONAL_OAT_COMPARISON = NATIONAL_OAT_ROOT + "/result/{case_id}/grid_capacity_comparison.csv"
 NATIONAL_OAT_COMPARISON_DONE = NATIONAL_OAT_ROOT + "/result/{case_id}/grid_capacity_comparison.validated.done.json"
@@ -251,8 +260,8 @@ rule national_cloud_center:
 
 rule national_grid_capacity_comparison:
     input:
-        national=NATIONAL_SUMMARY,
-        national_validation=NATIONAL_VALIDATION,
+        national=GROUP_CORE_NATIONAL_SUMMARY,
+        national_validation=GROUP_CORE_NATIONAL_DONE,
         cloud=NATIONAL_CLOUD_SUMMARY,
         script="08_code/summarize_national_grid_capacity_comparison.py",
     output:
@@ -289,70 +298,68 @@ rule materialize_national_oat_case:
         "python {input.script} --registry {input.registry} --case-id {wildcards.case_id} --output {output}"
 
 
-rule run_national_oat_case:
+rule run_national_oat_industry:
     input:
-        common=SINGLE_INDUSTRY_COMMON_INPUTS,
+        common=COMMON_INPUTS,
         case_config=NATIONAL_OAT_CONFIG,
-        baseline=MODEL_OUTPUT_ROOT + "/{industry}/baseline/summary.json",
-        script="08_code/run_core_scenario.py",
+        experiment=GROUP_CORE_REGISTRY,
+        archive=config["paths"]["eweld_archive"],
+        script="08_code/run_group_multisite_continuous_test.py",
     output:
-        summary=NATIONAL_OAT_ROOT + "/model/{case_id}/{industry}/{scenario}/summary.csv",
-        hourly=NATIONAL_OAT_ROOT + "/model/{case_id}/{industry}/{scenario}/hourly.csv",
-        resolved=NATIONAL_OAT_ROOT + "/model/{case_id}/{industry}/{scenario}/resolved_config.yaml",
+        summary=NATIONAL_OAT_INDUSTRY_SUMMARY,
+        hourly=NATIONAL_OAT_INDUSTRY_HOURLY,
+        lineage=NATIONAL_OAT_INDUSTRY_LINEAGE,
+        alignment=NATIONAL_OAT_INDUSTRY_ALIGNMENT,
+        metadata=NATIONAL_OAT_INDUSTRY_METADATA,
     wildcard_constraints:
         case_id="|".join(NATIONAL_OAT_CASES),
         industry="|".join(NATIONAL_OAT_INDUSTRIES),
-        scenario="|".join(NATIONAL_OAT_ARCHITECTURES),
     conda:
         "../envs/core_model.yaml"
     threads: 5
     shell:
         "python {input.script} --defaults config/defaults.yaml --config {input.case_config} "
-        "--industry {wildcards.industry} --scenario {wildcards.scenario} "
-        "--baseline-summary {input.baseline} --summary-output {output.summary} "
-        "--hourly-output {output.hourly} --resolved-config-output {output.resolved}"
-
-
-rule validate_national_oat_case:
-    input:
-        config=NATIONAL_OAT_CONFIG,
-        summary=NATIONAL_OAT_ROOT + "/model/{case_id}/{industry}/{scenario}/summary.csv",
-        hourly=NATIONAL_OAT_ROOT + "/model/{case_id}/{industry}/{scenario}/hourly.csv",
-        baseline=MODEL_OUTPUT_ROOT + "/{industry}/baseline/summary.json",
-        script="08_code/validate_core_scenario.py",
-    output:
-        NATIONAL_OAT_ROOT + "/validation/{case_id}/{industry}/{scenario}/validated.done.json",
-    wildcard_constraints:
-        case_id="|".join(NATIONAL_OAT_CASES),
-        industry="|".join(NATIONAL_OAT_INDUSTRIES),
-        scenario="|".join(NATIONAL_OAT_ARCHITECTURES),
-    conda:
-        "../envs/core_model.yaml"
-    shell:
-        "python {input.script} --defaults config/defaults.yaml --config {input.config} "
-        "--industry {wildcards.industry} --scenario {wildcards.scenario} "
-        "--summary {input.summary} --hourly {input.hourly} --baseline-summary {input.baseline} --output {output}"
+        "--experiment {input.experiment} --industry {wildcards.industry} "
+        "--output-dir " + NATIONAL_OAT_ROOT + "/model/{wildcards.case_id}/{wildcards.industry}"
 
 
 rule combine_national_oat_case:
     input:
         summaries=lambda wildcards: expand(
-            NATIONAL_OAT_ROOT + "/model/{case_id}/{industry}/{scenario}/summary.csv",
-            case_id=[wildcards.case_id], industry=NATIONAL_OAT_INDUSTRIES,
-            scenario=NATIONAL_OAT_ARCHITECTURES,
+            NATIONAL_OAT_INDUSTRY_SUMMARY,
+            case_id=[wildcards.case_id],
+            industry=NATIONAL_OAT_INDUSTRIES,
         ),
-        validations=lambda wildcards: expand(
-            NATIONAL_OAT_ROOT + "/validation/{case_id}/{industry}/{scenario}/validated.done.json",
-            case_id=[wildcards.case_id], industry=NATIONAL_OAT_INDUSTRIES,
-            scenario=NATIONAL_OAT_ARCHITECTURES,
+        alignments=lambda wildcards: expand(
+            NATIONAL_OAT_INDUSTRY_ALIGNMENT,
+            case_id=[wildcards.case_id],
+            industry=NATIONAL_OAT_INDUSTRIES,
         ),
-        script="08_code/combine_core_summaries.py",
+        lineages=lambda wildcards: expand(
+            NATIONAL_OAT_INDUSTRY_LINEAGE,
+            case_id=[wildcards.case_id],
+            industry=NATIONAL_OAT_INDUSTRIES,
+        ),
+        metadata=lambda wildcards: expand(
+            NATIONAL_OAT_INDUSTRY_METADATA,
+            case_id=[wildcards.case_id],
+            industry=NATIONAL_OAT_INDUSTRIES,
+        ),
+        script="08_code/summarize_group_multisite_core.py",
     output:
-        NATIONAL_OAT_SUMMARY,
+        summary=NATIONAL_OAT_SUMMARY,
+        alignment=NATIONAL_OAT_ALIGNMENT,
+        lineage=NATIONAL_OAT_LINEAGE,
+        done=NATIONAL_OAT_NATIONAL_DONE,
+    wildcard_constraints:
+        case_id="|".join(NATIONAL_OAT_CASES),
     conda:
         "../envs/core_model.yaml"
     shell:
-        "python {input.script} --inputs {input.summaries} --output {output}"
+        "python {input.script} --root " + NATIONAL_OAT_ROOT + "/model/{wildcards.case_id} "
+        "--industries " + " ".join(NATIONAL_OAT_INDUSTRIES) + " "
+        "--summary-output {output.summary} --alignment-output {output.alignment} "
+        "--lineage-output {output.lineage} --done-output {output.done}"
 
 
 rule run_national_oat_cloud_case:
@@ -379,6 +386,7 @@ rule run_national_oat_cloud_case:
 rule compare_national_oat_grid_capacity:
     input:
         national=NATIONAL_OAT_SUMMARY,
+        national_validation=NATIONAL_OAT_NATIONAL_DONE,
         cloud=NATIONAL_OAT_CLOUD,
         script="08_code/summarize_national_grid_capacity_comparison.py",
     output:

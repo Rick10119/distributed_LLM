@@ -1,13 +1,13 @@
-sensitivity_version: national_oat_extension_v1.0.0
+sensitivity_version: national_oat_extension_v1.1.0
 model_version: v0.8.0
-status: historical_completed_diagnostic_not_default_future_workflow
+status: group_architecture_oat_extension
 default_enabled: false
 # `industry` is retained for compatibility with the common materializer;
 # selected_industries controls this national extension.
 industry: C38
 selected_industries: [C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43]
-architectures: [IF, IG, II_1host]
-output_root: 05_results/sensitivity/v0.8.0/national_oat_extension
+architectures: [IF, IG_1host, IG_multisite]
+output_root: 05_results/sensitivity/v0.8.0/national_oat_group_architecture
 common_overrides:
   paths:
     hourly_industry_profiles: 02_data/processed/core/manufacturing_31sector_real_weeks.csv
