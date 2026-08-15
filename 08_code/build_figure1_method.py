@@ -15,11 +15,14 @@ os.environ.setdefault("MPLCONFIGDIR", str(_cache))
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+FIGURE_ROOT = PROJECT_ROOT / "05_results/v0.8.0/result/manuscript_figures"
+
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--png-output", type=Path, required=True)
-    parser.add_argument("--svg-output", type=Path, required=True)
+    parser = argparse.ArgumentParser(description="Build Figure 1 method panel; no arguments use the v0.8.0 mainline paths.")
+    parser.add_argument("--png-output", type=Path, default=FIGURE_ROOT / "figure1_method.png")
+    parser.add_argument("--svg-output", type=Path, default=FIGURE_ROOT / "figure1_method.svg")
     args = parser.parse_args()
     plt.rcParams.update({"font.family": "sans-serif", "font.sans-serif": ["Arial Unicode MS", "PingFang SC", "DejaVu Sans"], "svg.fonttype": "none"})
     steps = [
@@ -49,6 +52,7 @@ def main() -> None:
     for output in [args.png_output,args.svg_output]:
         output.parent.mkdir(parents=True,exist_ok=True); fig.savefig(output,bbox_inches="tight",dpi=220)
     plt.close(fig)
+    print(f"Figure 1 method diagram written to {args.svg_output}")
 
 
 if __name__ == "__main__":

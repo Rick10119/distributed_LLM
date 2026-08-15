@@ -192,6 +192,12 @@ snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --rer
 
 `model/`保存逐时结果、汇总表和解析后的配置；`result/`保存校验、全国汇总、分析和图表。只有对应的`validated.done.json`存在且状态通过时，情景结果才视为完成。
 
+### 7. 直接运行单幅主线图
+
+`08_code/build_figure1_method.py`、`build_figure1_demand_architecture.py`以及`build_figure2_...`至`build_figure5_...`均可在编辑器中直接点击运行，无需填写命令行参数。默认读取 v0.8.0 主线结果，并把图片和配套数据写入`05_results/v0.8.0/result/manuscript_figures/`。Snakemake仍可显式传入其他路径并覆盖这些默认值。
+
+除Figure 1方法图外，直接绘图只重建图表，不替代上游优化求解；应先确保`group_architecture_core/national/`中的全国核心汇总已经生成。
+
 ### 常见问题
 
 - `IndentationError`、`SyntaxError`或`KeyError`通常表示代码与已有输出结构不一致。停止编辑代码后重新运行同一条`make`或`snakemake`命令，让Snakemake重建受影响结果。

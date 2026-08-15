@@ -193,6 +193,7 @@ rule run_c33_measured_week_horizon_reference:
 rule summarize_c33_horizon_comparison:
     input:
         week=C33_MEASURED_WEEK_ROOT + "/summary.csv",
+        week_metadata=C33_MEASURED_WEEK_ROOT + "/metadata.json",
         day=C33_TYPICAL_DAY_ROOT + "/summary.csv",
         script="08_code/summarize_c33_horizon_comparison.py",
     output:
@@ -202,7 +203,8 @@ rule summarize_c33_horizon_comparison:
     conda:
         "../envs/core_model.yaml"
     shell:
-        "python {input.script} --week {input.week} --day {input.day} --output {output.comparison} "
+        "python {input.script} --week {input.week} --week-metadata {input.week_metadata} "
+        "--day {input.day} --output {output.comparison} "
         "--findings {output.findings} --done {output.done}"
 
 

@@ -7,6 +7,10 @@ os.environ.setdefault("MPLCONFIGDIR",str(Path(tempfile.gettempdir())/"distribute
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+PROJECT_ROOT=Path(__file__).resolve().parents[1]
+FIGURE_ROOT=PROJECT_ROOT/"05_results/v0.8.0/result/manuscript_figures"
+CORE_ROOT=PROJECT_ROOT/"05_results/v0.8.0/result/group_architecture_core"
+DEFAULT_INDUSTRIES=[f"C{i}" for i in range(13,44)]
 
 def prepare(root:Path,industries:list[str],version:str)->pd.DataFrame:
     rows=[]
@@ -37,5 +41,6 @@ def plot(d,svg,png):
     fig.suptitle("集团单节点负荷匹配与跨工厂算力调度价值",fontsize=15,fontweight="bold");fig.text(.5,.012,"注：上排以C36为示例；下排为31行业实际负荷下的重新优化差额。负值表示多节点协调降低对应指标。",ha="center",fontsize=8,color="#555");fig.tight_layout(rect=[0,.04,1,.95]);svg.parent.mkdir(parents=True,exist_ok=True);fig.savefig(svg,bbox_inches="tight");fig.savefig(png,bbox_inches="tight");plt.close(fig)
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument("--core-root",type=Path,required=True);p.add_argument("--industries",nargs="+",required=True);p.add_argument("--model-version",required=True);p.add_argument("--data-output",type=Path,required=True);p.add_argument("--svg-output",type=Path,required=True);p.add_argument("--png-output",type=Path,required=True);p.add_argument("--validation-output",type=Path,required=True);a=p.parse_args();d=prepare(a.core_root,a.industries,a.model_version);a.data_output.parent.mkdir(parents=True,exist_ok=True);d.to_csv(a.data_output,index=False,encoding="utf-8-sig");plot(d,a.svg_output,a.png_output);a.validation_output.write_text(json.dumps({"status":"validated","industry_count":31,"architectures":["IG_1host","IG_multisite"],"II_1host_in_figure":False},ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+    p=argparse.ArgumentParser(description="Build Figure 3; no arguments use the v0.8.0 mainline paths.");p.add_argument("--core-root",type=Path,default=CORE_ROOT);p.add_argument("--industries",nargs="+",default=DEFAULT_INDUSTRIES);p.add_argument("--model-version",default="v0.8.0");p.add_argument("--data-output",type=Path,default=FIGURE_ROOT/"figure3_grid_capacity_data.csv");p.add_argument("--svg-output",type=Path,default=FIGURE_ROOT/"figure3_grid_capacity.svg");p.add_argument("--png-output",type=Path,default=FIGURE_ROOT/"figure3_grid_capacity.png");p.add_argument("--validation-output",type=Path,default=FIGURE_ROOT/"figure3_grid_capacity.validated.done.json");a=p.parse_args();d=prepare(a.core_root,a.industries,a.model_version);a.data_output.parent.mkdir(parents=True,exist_ok=True);d.to_csv(a.data_output,index=False,encoding="utf-8-sig");plot(d,a.svg_output,a.png_output);a.validation_output.write_text(json.dumps({"status":"validated","industry_count":31,"architectures":["IG_1host","IG_multisite"],"II_1host_in_figure":False},ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+    print(f"Figure 3 written to {a.svg_output}")
 if __name__=="__main__":main()

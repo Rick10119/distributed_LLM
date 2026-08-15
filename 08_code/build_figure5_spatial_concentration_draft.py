@@ -19,6 +19,9 @@ import pandas as pd
 import yaml
 from matplotlib.colors import BoundaryNorm, ListedColormap
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+FIGURE_ROOT = PROJECT_ROOT / "05_results/v0.8.0/result/manuscript_figures"
+GROUP_NATIONAL_ROOT = PROJECT_ROOT / "05_results/v0.8.0/result/group_architecture_core/national"
 
 TILES = {
     "xinjiang": (0, 2), "gansu": (1, 2), "inner mongolia": (2, 1), "heilongjiang": (5, 0),
@@ -240,10 +243,11 @@ def plot(province: pd.DataFrame, cloud: pd.DataFrame, map_path: Path, svg: Path,
 
 
 def main() -> None:
-    p=argparse.ArgumentParser(); p.add_argument("--scenario-registry",type=Path,required=True); p.add_argument("--routing-config",type=Path,required=True); p.add_argument("--allocation",type=Path,required=True); p.add_argument("--core-input",type=Path,required=True); p.add_argument("--scarcity",type=Path,required=True); p.add_argument("--cloud-share",type=Path,required=True); p.add_argument("--map",type=Path,required=True); p.add_argument("--data-output",type=Path,required=True); p.add_argument("--cloud-data-output",type=Path,required=True); p.add_argument("--svg-output",type=Path,required=True); p.add_argument("--png-output",type=Path,required=True); a=p.parse_args()
+    p=argparse.ArgumentParser(description="Build Figure 5; no arguments use the v0.8.0 mainline paths."); p.add_argument("--scenario-registry",type=Path,default=PROJECT_ROOT/"config/scenarios/mainline.yaml"); p.add_argument("--routing-config",type=Path,default=PROJECT_ROOT/"config/compute_hardware/cpu_gpu_routing_v1.yaml"); p.add_argument("--allocation",type=Path,default=PROJECT_ROOT/"02_data/processed/resource_footprint/province_industry_ai_allocation.csv"); p.add_argument("--core-input",type=Path,default=GROUP_NATIONAL_ROOT/"core_scenarios.csv"); p.add_argument("--scarcity",type=Path,default=PROJECT_ROOT/"02_data/processed/resource_footprint/china_province_aware20_nonagri_annual.csv"); p.add_argument("--cloud-share",type=Path,default=PROJECT_ROOT/"02_data/processed/resource_footprint/china_province_cloud_ai_capacity_share_caict2025.csv"); p.add_argument("--map",type=Path,default=PROJECT_ROOT/"02_data/raw/province_shapes/CHN_full_adm/CHN_full_adm.shp"); p.add_argument("--data-output",type=Path,default=FIGURE_ROOT/"figure5_spatial_concentration_data.csv"); p.add_argument("--cloud-data-output",type=Path,default=FIGURE_ROOT/"figure5_cloud_spatial_scenario_data.csv"); p.add_argument("--svg-output",type=Path,default=FIGURE_ROOT/"figure5_spatial_concentration.svg"); p.add_argument("--png-output",type=Path,default=FIGURE_ROOT/"figure5_spatial_concentration.png"); a=p.parse_args()
     registry=yaml.safe_load(a.scenario_registry.read_text(encoding="utf-8")); routing=yaml.safe_load(a.routing_config.read_text(encoding="utf-8")); routing_case=registry["compute_hardware"]["active_routing_case"]
     if routing.get("active_core_routing_case") != routing_case: raise ValueError("Scenario registry and routing config disagree")
-    water_case=registry["resource_footprint"]["water"]; water=pd.read_csv(Path(water_case["parameter_file"]),encoding="utf-8-sig").set_index("comparison_mode"); modes=water_case["comparison_modes"]
+    water_case=registry["resource_footprint"]["water"]; water_path=Path(water_case["parameter_file"]); water_path=water_path if water_path.is_absolute() else PROJECT_ROOT/water_path; water=pd.read_csv(water_path,encoding="utf-8-sig").set_index("comparison_mode"); modes=water_case["comparison_modes"]
     province,cloud=prepare(a.allocation,a.core_input,a.scarcity,a.cloud_share,routing_case,float(water.loc[modes["local"],"site_water_use_l_per_kwh_it"]),float(water.loc[modes["china_cloud"],"site_water_use_l_per_kwh_it"])); a.data_output.parent.mkdir(parents=True,exist_ok=True); province.to_csv(a.data_output,index=False,encoding="utf-8-sig"); cloud.to_csv(a.cloud_data_output,index=False,encoding="utf-8-sig"); plot(province,cloud,a.map,a.svg_output,a.png_output)
+    print(f"Figure 5 written to {a.svg_output}")
 
 if __name__ == "__main__": main()
