@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Explain cross-industry cost differences using core scenarios only."""
+"""Explain cross-industry cost differences using group-architecture core results."""
 
 from __future__ import annotations
 
@@ -12,17 +12,11 @@ import pandas as pd
 import yaml
 
 
-ARCHITECTURES = ["IF", "IG", "II_1host"]
+ARCHITECTURES = ["IF", "IG_1host", "IG_multisite"]
 COMPONENTS = {
-    "gpu_server": "industry_equivalent_incremental_annual_gpu_server_cost_rmb",
-    "cpu_server": "industry_equivalent_incremental_annual_cpu_server_cost_rmb",
-    "pv": "industry_equivalent_incremental_annual_pv_cost_rmb",
-    "battery": "industry_equivalent_incremental_annual_battery_cost_rmb",
-    "grid_energy": "industry_equivalent_incremental_annual_flat_energy_cost_rmb",
-    "maximum_demand": "industry_equivalent_incremental_annual_maximum_demand_cost_rmb",
-    "model_initialization": "industry_equivalent_incremental_annual_model_initialization_cost_rmb",
-    "model_storage": "industry_equivalent_incremental_annual_model_storage_cost_rmb",
-    "model_operations": "industry_equivalent_incremental_annual_model_operations_cost_rmb",
+    "server": "industry_equivalent_annual_server_cost_rmb",
+    "grid_energy": "industry_equivalent_annual_ai_energy_cost_rmb",
+    "maximum_demand": "industry_equivalent_annual_incremental_maximum_demand_cost_rmb",
 }
 
 
@@ -84,16 +78,37 @@ def finite_ratio(numerator: pd.Series, denominator: pd.Series) -> pd.Series:
     return numerator.astype(float).div(denominator.astype(float).replace(0.0, np.nan))
 
 
+def load_group_national(path: Path) -> pd.DataFrame:
+    core = pd.read_csv(path, encoding="utf-8-sig")
+    if "architecture" not in core.columns or "base_load_case" not in core.columns:
+        raise ValueError("Cost-difference analysis now requires the group-architecture national summary")
+    core = core.loc[core["base_load_case"].eq("actual_load")].copy()
+    core["industry_code"] = core["industry"].astype(str)
+    core["scenario"] = core["architecture"].astype(str)
+    core["industry_equivalent_incremental_total_cost_rmb"] = core[
+        "industry_equivalent_annual_incremental_total_cost_rmb"
+    ]
+    core["industry_daily_effective_service_units"] = (
+        core["industry_equivalent_weekly_service_units"] / 7.0
+    )
+    core["equivalent_host_multiplier"] = core["industry_equivalent_multiplier"]
+    core["industry_equivalent_incremental_grid_expansion_mw"] = core[
+        "industry_equivalent_sum_incremental_grid_peak_mw"
+    ]
+    return core
+
+
 def build_detail(core: pd.DataFrame, drivers: pd.DataFrame) -> pd.DataFrame:
     required = {
-        "industry_code", "industry_name", "scenario", "industry_daily_effective_service_units",
-        "industry_equivalent_incremental_total_cost_rmb", "equivalent_host_multiplier",
+        "industry_code",
+        "scenario",
+        "industry_daily_effective_service_units",
+        "industry_equivalent_incremental_total_cost_rmb",
+        "equivalent_host_multiplier",
         "industry_equivalent_annual_ai_facility_energy_twh",
         "industry_equivalent_incremental_grid_expansion_mw",
         "industry_equivalent_installed_gpu_server_groups",
         "industry_equivalent_installed_cpu_server_groups",
-        "capacity_reference_gpu_server_groups_unshifted_arrival_peak",
-        "capacity_reference_cpu_server_groups_unshifted_arrival_peak",
         *COMPONENTS.values(),
     }
     missing = sorted(required - set(core.columns))
@@ -103,9 +118,10 @@ def build_detail(core: pd.DataFrame, drivers: pd.DataFrame) -> pd.DataFrame:
     if len(core) != 31 * len(ARCHITECTURES):
         raise ValueError(f"Expected 93 core rows (31 industries x 3 architectures), got {len(core)}")
     if core.groupby("industry_code")["scenario"].nunique().ne(3).any():
-        raise ValueError("Each industry must contain IF, IG and II_1host")
+        raise ValueError("Each industry must contain IF, IG_1host and IG_multisite")
 
     detail = core.merge(drivers, on="industry_code", how="left", validate="many_to_one")
+    detail["industry_name"] = detail["industry_name_cn"]
     service_relative_error = (
         detail["task_service_units_day"] - detail["industry_daily_effective_service_units"]
     ).abs() / detail["industry_daily_effective_service_units"].replace(0.0, np.nan)
@@ -143,20 +159,6 @@ def build_detail(core: pd.DataFrame, drivers: pd.DataFrame) -> pd.DataFrame:
         detail["equivalent_host_multiplier"],
         detail["industry_daily_effective_service_units"] / 1e6,
     )
-    gpu_reference = (
-        detail["capacity_reference_gpu_server_groups_unshifted_arrival_peak"]
-        * detail["equivalent_host_multiplier"]
-    )
-    cpu_reference = (
-        detail["capacity_reference_cpu_server_groups_unshifted_arrival_peak"]
-        * detail["equivalent_host_multiplier"]
-    )
-    detail["gpu_installed_to_reference_ratio"] = finite_ratio(
-        detail["industry_equivalent_installed_gpu_server_groups"], gpu_reference
-    )
-    detail["cpu_installed_to_reference_ratio"] = finite_ratio(
-        detail["industry_equivalent_installed_cpu_server_groups"], cpu_reference
-    )
     detail["absolute_cost_rank_within_architecture"] = detail.groupby("scenario")[
         "industry_equivalent_incremental_total_cost_rmb"
     ].rank(method="min", ascending=False)
@@ -174,12 +176,6 @@ def build_associations(detail: pd.DataFrame) -> pd.DataFrame:
         "task_mix_hhi": ("task_mix_hhi", "structural_input"),
         "deployment_fragmentation_intensity": (
             "equivalent_hosts_per_million_daily_service_units", "architecture_mechanism"
-        ),
-        "gpu_installed_capacity_overhead": (
-            "gpu_installed_to_reference_ratio", "architecture_mechanism"
-        ),
-        "cpu_installed_capacity_overhead": (
-            "cpu_installed_to_reference_ratio", "architecture_mechanism"
         ),
         "energy_intensity": ("energy_kwh_per_service_unit", "accounting_channel"),
         "grid_capacity_intensity": (
@@ -229,7 +225,7 @@ def build_extreme_decomposition(detail: pd.DataFrame) -> pd.DataFrame:
 
 def main() -> None:
     args = parse_args()
-    core = pd.read_csv(args.national_input, encoding="utf-8-sig")
+    core = load_group_national(args.national_input)
     detail = build_detail(core, workload_drivers(args.service_input, args.routing_config))
     associations = build_associations(detail)
     decomposition = build_extreme_decomposition(detail)
@@ -246,7 +242,7 @@ def main() -> None:
     lines = [
         "# Core-scenario cross-industry cost differences",
         "",
-        "This analysis changes no sensitivity parameter. It compares the 31 industries only under IF, IG and II_1host core scenarios.",
+        "This analysis changes no sensitivity parameter. It compares the 31 industries only under IF, IG_1host and IG_multisite group-architecture core results.",
         "Absolute annual cost and cost per annual service unit are reported separately. Component differences are accounting identities; Spearman coefficients are descriptive associations and are not causal attribution.",
         "",
     ]
@@ -266,6 +262,7 @@ def main() -> None:
         "architectures": ARCHITECTURES,
         "row_count": len(detail),
         "sensitivity_parameters_changed": False,
+        "II_1host_in_core": False,
         "outputs": {
             "detail": str(args.detail_output),
             "associations": str(args.association_output),

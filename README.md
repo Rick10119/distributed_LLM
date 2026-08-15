@@ -145,21 +145,23 @@ conda activate pypsa
 
 工作流没有内存上限；每个优化任务占用 5 个线程。`--cores 5` 因此同一时刻只跑 1 个求解。31 行业核心流程约有 31 个基准加上 93 个情景求解，本身就会很久。第一次请先跑 C36 单行业：
 
+Windows 默认完整路径上限约 260 字符。Snakemake 默认把完成记录写成 `.snakemake/metadata/` 下的超长文件名，敏感性等深层输出很容易超限，报 `Error recording metadata`（提示权限，实际是路径太长；模型输出通常已经写好）。Windows 上请始终加上 `--persistence-backend db`，把记录改存到 SQLite。
+
 ```powershell
-snakemake core --cores 5 --configfile config/runs/single_industry_core.yaml --dry-run
-snakemake core --cores 5 --configfile config/runs/single_industry_core.yaml --rerun-incomplete
+snakemake core --cores 5 --configfile config/runs/single_industry_core.yaml --persistence-backend db --dry-run
+snakemake core --cores 5 --configfile config/runs/single_industry_core.yaml --rerun-incomplete --persistence-backend db
 ```
 
 确认单行业能跑通后，再跑全国核心流程。机器核数更多时可加大 `--cores`（例如 10 可同时跑 2 个求解）：
 
 ```powershell
-snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run
-snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete
+snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --persistence-backend db --dry-run
+snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete --persistence-backend db
 ```
 
 运行中断后再次执行同一条命令即可续跑。`--rerun-incomplete` 会保留已经完成且仍然有效的任务，并重新运行不完整或上游代码发生变化的任务。运行期间不要修改模型代码或配置，否则同一结果目录可能混入不同输出结构。
 
-`make` 目标与 Snakemake 命令的对应关系（均假设已 `conda activate pypsa`）：
+`make` 目标与 Snakemake 命令的对应关系（均假设已 `conda activate pypsa`；Windows 请在每条命令末尾加上 `--persistence-backend db`）：
 
 | `make` 目标 | Snakemake 命令 |
 |---|---|
@@ -195,6 +197,7 @@ snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --rer
 ### 常见问题
 
 - `IndentationError`、`SyntaxError`或`KeyError`通常表示代码与已有输出结构不一致。停止编辑代码后重新运行同一条`make`或`snakemake`命令，让Snakemake重建受影响结果。
+- `Error recording metadata` / `No such file or directory` 指向 `.snakemake` 时，在 Windows 上通常不是权限问题，而是完成记录的文件名超过路径上限。对应输出文件往往已经生成。加上 `--persistence-backend db` 后重新运行同一条命令即可。
 - `Directory cannot be locked`表示另一个Snakemake进程正在运行，或上一次进程异常退出。先确认没有其他Snakemake进程；只有确认不存在运行中的任务后，才执行：
 
   ```bash

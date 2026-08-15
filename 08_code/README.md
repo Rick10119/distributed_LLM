@@ -197,7 +197,7 @@ make results
 make extended-analysis
 ```
 
-旧的`analyze_core_industry_cost_differences.py`仍读取历史IF、IG和II_1host输出，只用于历史结果复核，不再由默认核心流程触发。新的31行业核心汇总直接比较IF、IG_1host和IG_multisite，并另存IG_1host零原始负荷配对结果。
+`analyze_core_industry_cost_differences.py`读取集团架构全国汇总，只比较IF、IG_1host和IG_multisite的实际负荷结果。成本分解限于服务器、AI电费和最大需量三项；不再使用已退役的II_1host，也不再依赖GPU/CPU相对到达峰值的历史参考列。
 
 旧的`analyze_land_material_footprint.py`仍依赖历史II_1host结果，因此不属于当前核心架构链条；若后续恢复大型云资源足迹，应改为读取独立云情景。
 

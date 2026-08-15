@@ -13,8 +13,24 @@ import pandas as pd
 ARCHITECTURE_LABELS = {
     "IF": "factory_distributed",
     "IG": "group_deployment",
+    "IG_1host": "group_single_host",
+    "IG_multisite": "group_multisite",
     "II_1host": "industry_deployment",
 }
+GROUP_ARCHITECTURES = {"IF", "IG_1host", "IG_multisite"}
+LEGACY_ARCHITECTURES = {"IF", "IG", "II_1host"}
+
+
+def load_national(path: Path) -> pd.DataFrame:
+    national = pd.read_csv(path, encoding="utf-8-sig")
+    if {"architecture", "base_load_case", "industry"}.issubset(national.columns):
+        national = national.loc[national["base_load_case"].eq("actual_load")].copy()
+        national["scenario"] = national["architecture"].astype(str)
+        national["industry_code"] = national["industry"].astype(str)
+        national["industry_equivalent_incremental_grid_expansion_mw"] = national[
+            "industry_equivalent_sum_incremental_grid_peak_mw"
+        ]
+    return national
 
 
 def main() -> None:
@@ -25,10 +41,14 @@ def main() -> None:
     parser.add_argument("--done-output", type=Path, required=True)
     args = parser.parse_args()
 
-    national = pd.read_csv(args.national_summary, encoding="utf-8-sig")
+    national = load_national(args.national_summary)
     cloud = pd.read_csv(args.cloud_summary, encoding="utf-8-sig")
-    if set(national["scenario"]) != set(ARCHITECTURE_LABELS):
-        raise AssertionError("national summary must contain IF, IG and II_1host")
+    present = set(national["scenario"])
+    if present not in (GROUP_ARCHITECTURES, LEGACY_ARCHITECTURES):
+        raise AssertionError(
+            "national summary must contain IF, IG_1host and IG_multisite, "
+            "or the legacy IF, IG and II_1host set"
+        )
     if national["industry_code"].nunique() != 31:
         raise AssertionError("national summary must contain all 31 industries")
     if len(cloud) != 1 or int(cloud.iloc[0]["industry_count"]) != 31:
