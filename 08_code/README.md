@@ -81,7 +81,7 @@ conda run -n pypsa snakemake all --cores 1 --configfile config/runs/single_indus
 
 `run_single_industry_heterogeneous_hardware_screen.py`与`run_single_industry_heterogeneous_hardware_us_cost.py`已纳入扩展主流程。中国脚本不再自行估算本地硬件和电力后回填差额，而是读取核心联合物理求解已经输出的GPU/CPU装机、设施能耗、服务器成本、电网成本和总成本；它只补充同服务边界下的云端CPU/GPU/API付款比较。美国脚本仍只替换美国需求与价格环境。美国CPU整机核心值采用16,000美元的标准2U企业服务器公开配置代理，10,786美元与27,263.50美元分别作为低值和GPU-ready超配高值敏感性。
 
-`materialize_sensitivity_case.py`、`summarize_single_industry_oat.py`与`workflow/rules/single_industry_sensitivity.smk`构成单行业单因素敏感性入口。对外代码名不包含行业编号，实际行业由`config/sensitivity/single_industry_oat_v1.yaml` 的`industry`字段选择，当前为C38。注册表只允许显式白名单参数覆盖，所有输出写入独立敏感性目录；无AI基准可复用，但IF、IG、II使用敏感性目录内的同代码参考运行。该流程继承核心模型求解器配置；当前为Gurobi。`make sensitivity-smoke`运行单行业敏感性，`make sensitivity-smoke-dry-run`只检查任务图。
+`materialize_sensitivity_case.py`、`summarize_single_industry_oat.py`与`workflow/rules/single_industry_sensitivity.smk`构成单行业单因素敏感性入口。对外代码名不包含行业编号，实际行业由`config/sensitivity/single_industry_oat_v1.yaml` 的`industry`字段选择，当前为C38。参数类敏感性默认只求解`IG_1host`；全国OAT同样只跑`IG_1host`及其零负荷配对。核心31行业比较和C33/C36机制测试仍保留`IF`、`IG_1host`、`IG_multisite`。注册表只允许显式白名单参数覆盖，所有输出写入独立敏感性目录。该流程继承核心模型求解器配置；当前为Gurobi。`make sensitivity-smoke`运行单行业敏感性，`make sensitivity-smoke-dry-run`只检查任务图。
 
 `config/sensitivity/single_industry_grid_hybrid_v1.yaml`另定义“接入扩容—储能—云订阅”结构测试。模型内生决定每项刚性或柔性任务由本地CPU/GPU服务器还是预留云容量完成，总服务量严格守恒；云端执行不占用企业接入容量，但计入年度GPU/CPU订阅成本。本地服务器、储能与云容量共同优化，允许在纯本地和纯云之间形成混合解。零扩容且允许订阅时不强制保留本地模型副本或最低在线服务器；只有实际选择本地执行时才由算力约束带出本地装机。四组均允许储能并关闭PV，分别比较正常扩容下纯本地与混合部署、严格零扩容下云订阅替代，以及高扩容惩罚下纯本地通过储能和错峰尽量减少但不硬性禁止扩容。高惩罚是稀缺性压力测试而非现实报价；每组使用同配置重新求解的无AI基准。`make sensitivity-grid-hybrid`单独运行，默认`make results`不包含它。
 

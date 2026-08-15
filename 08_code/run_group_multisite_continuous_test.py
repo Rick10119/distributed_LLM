@@ -34,6 +34,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--experiment", type=Path, default=Path("config/sensitivity/c36_group_multisite_continuous_v1.yaml"))
     parser.add_argument("--output-dir", type=Path, default=Path("05_results/sensitivity/v0.8.0/group_multisite_continuous/C36"))
     parser.add_argument("--industry", help="Override experiment.industry; used by the 31-industry core workflow.")
+    parser.add_argument(
+        "--architectures",
+        nargs="+",
+        help="Override experiment/run-config architectures; used by IG_1host-only sensitivity screens.",
+    )
     parser.add_argument("--describe-only", action="store_true", help="Report continuous variable counts without solving.")
     return parser.parse_args()
 
@@ -392,6 +397,20 @@ def main() -> None:
         print(json.dumps(variable_counts, ensure_ascii=False, indent=2))
         return
 
+    selected_architectures = [
+        str(name)
+        for name in (args.architectures or config.get("selected_scenarios") or experiment.get("architectures") or [])
+    ]
+    allowed_architectures = {"IF", "IG_1host", "IG_multisite"}
+    if not selected_architectures or set(selected_architectures) - allowed_architectures:
+        raise ValueError(f"Unsupported group architectures: {selected_architectures}")
+    cases_by_architecture = experiment["base_load_cases_by_architecture"]
+    expected_pairs = {
+        (architecture, case)
+        for architecture in selected_architectures
+        for case in cases_by_architecture[architecture]
+    }
+
     final_summaries = []
     final_hourly = []
     additive_fields = [
@@ -402,119 +421,125 @@ def main() -> None:
     ]
     if_site_summaries = []
     if_site_hourly = []
-    for site in range(modeled_node_count):
-        rigid_site = {task: values / count for task, values in rigid_group.items()}
-        jobs_site = tuple(
-            job.__class__(job.release_hour, job.deadline_hours, job.amount_service_units / count, job.task_id, job.flexibility_class)
-            for job in jobs_group
-        )
-        summary, hourly = solve_architecture(
-            architecture=f"IF_F{site + 1}", config=config, base_loads=representative_factory_loads[[site]],
-            rigid_by_task=rigid_site, jobs=jobs_site, grid_prices=grid_prices,
-            servers=servers, cpu_fraction=cpu_fraction, cpu_multiplier=cpu_multiplier,
-            solver_name=str(experiment["solver"]), installed_integer=True,
-            base_load_case="actual_load",
-        )
-        weight = int(factory_weights[site])
-        for field in additive_fields:
-            summary[field] = float(summary[field]) * weight
-        summary["representative_factory_weight"] = weight
-        if_site_summaries.append(summary)
-        for field in ["base_load_mw", "ai_service_units", "gpu_compute_h", "cpu_compute_h", "ai_facility_power_mw", "grid_import_mw"]:
-            hourly[field] = hourly[field].astype(float) * weight
-        hourly["factory_id"] = f"R{site + 1}"
-        hourly["represented_factory_count"] = weight
-        if_site_hourly.append(hourly)
-    if_rows = pd.DataFrame(if_site_summaries)
-    if_summary = {key: if_rows[key].sum() for key in additive_fields}
-    if_summary.update({
-        "architecture": "IF", "base_load_case": "actual_load",
-        "solver_status": "ok", "solver_condition": "weighted_representative_independent_factory_models",
-        "physical_factory_count": count, "installed_server_groups_integer": True,
-        "modeled_routing_node_count": modeled_node_count,
-        "active_compute_node_count": count,
-        "online_server_groups_integer": False, "n_plus_spare_server_groups": 0,
-        "model_state_minimum_groups_enabled": False, "planning_reserve_fraction": 0.10,
-        "maximum_single_site_ai_facility_power_mw": float(max(row["maximum_single_site_ai_facility_power_mw"] for row in if_site_summaries)),
-    })
-    final_summaries.append(if_summary)
-    final_hourly.append(pd.concat(if_site_hourly, ignore_index=True).assign(architecture="IF"))
+    if "IF" in selected_architectures:
+        for site in range(modeled_node_count):
+            rigid_site = {task: values / count for task, values in rigid_group.items()}
+            jobs_site = tuple(
+                job.__class__(job.release_hour, job.deadline_hours, job.amount_service_units / count, job.task_id, job.flexibility_class)
+                for job in jobs_group
+            )
+            summary, hourly = solve_architecture(
+                architecture=f"IF_F{site + 1}", config=config, base_loads=representative_factory_loads[[site]],
+                rigid_by_task=rigid_site, jobs=jobs_site, grid_prices=grid_prices,
+                servers=servers, cpu_fraction=cpu_fraction, cpu_multiplier=cpu_multiplier,
+                solver_name=str(experiment["solver"]), installed_integer=True,
+                base_load_case="actual_load",
+            )
+            weight = int(factory_weights[site])
+            for field in additive_fields:
+                summary[field] = float(summary[field]) * weight
+            summary["representative_factory_weight"] = weight
+            if_site_summaries.append(summary)
+            for field in ["base_load_mw", "ai_service_units", "gpu_compute_h", "cpu_compute_h", "ai_facility_power_mw", "grid_import_mw"]:
+                hourly[field] = hourly[field].astype(float) * weight
+            hourly["factory_id"] = f"R{site + 1}"
+            hourly["represented_factory_count"] = weight
+            if_site_hourly.append(hourly)
+        if_rows = pd.DataFrame(if_site_summaries)
+        if_summary = {key: if_rows[key].sum() for key in additive_fields}
+        if_summary.update({
+            "architecture": "IF", "base_load_case": "actual_load",
+            "solver_status": "ok", "solver_condition": "weighted_representative_independent_factory_models",
+            "physical_factory_count": count, "installed_server_groups_integer": True,
+            "modeled_routing_node_count": modeled_node_count,
+            "active_compute_node_count": count,
+            "online_server_groups_integer": False, "n_plus_spare_server_groups": 0,
+            "model_state_minimum_groups_enabled": False, "planning_reserve_fraction": 0.10,
+            "maximum_single_site_ai_facility_power_mw": float(max(row["maximum_single_site_ai_facility_power_mw"] for row in if_site_summaries)),
+        })
+        final_summaries.append(if_summary)
+        final_hourly.append(pd.concat(if_site_hourly, ignore_index=True).assign(architecture="IF"))
 
-    for base_load_case in experiment["base_load_cases_by_architecture"]["IG_1host"]:
-        host_load = (
-            representative_factory_loads[[host_index]]
-            if base_load_case == "actual_load"
-            else np.zeros_like(representative_factory_loads[[host_index]])
-        )
-        if base_load_case not in {"actual_load", "zero_load"}:
-            raise ValueError(f"Unsupported IG_1host base-load case: {base_load_case}")
+    if "IG_1host" in selected_architectures:
+        for base_load_case in cases_by_architecture["IG_1host"]:
+            host_load = (
+                representative_factory_loads[[host_index]]
+                if base_load_case == "actual_load"
+                else np.zeros_like(representative_factory_loads[[host_index]])
+            )
+            if base_load_case not in {"actual_load", "zero_load"}:
+                raise ValueError(f"Unsupported IG_1host base-load case: {base_load_case}")
+            summary, hourly = solve_architecture(
+                architecture="IG_1host", config=config, base_loads=host_load,
+                rigid_by_task=rigid_group, jobs=jobs_group, grid_prices=grid_prices,
+                servers=servers, cpu_fraction=cpu_fraction, cpu_multiplier=cpu_multiplier,
+                solver_name=str(experiment["solver"]), installed_integer=False,
+                base_load_case=base_load_case,
+            )
+            summary["physical_factory_count"] = count
+            summary["modeled_routing_node_count"] = 1
+            summary["active_compute_node_count"] = 1
+            hourly["factory_id"] = f"R{host_index + 1}"
+            hourly["represented_factory_count"] = 1
+            final_summaries.append(summary)
+            final_hourly.append(hourly)
+
+    if "IG_multisite" in selected_architectures:
         summary, hourly = solve_architecture(
-            architecture="IG_1host", config=config, base_loads=host_load,
+            architecture="IG_multisite", config=config, base_loads=routing_node_loads,
             rigid_by_task=rigid_group, jobs=jobs_group, grid_prices=grid_prices,
             servers=servers, cpu_fraction=cpu_fraction, cpu_multiplier=cpu_multiplier,
             solver_name=str(experiment["solver"]), installed_integer=False,
-            base_load_case=base_load_case,
+            base_load_case="actual_load",
         )
         summary["physical_factory_count"] = count
-        summary["modeled_routing_node_count"] = 1
-        summary["active_compute_node_count"] = 1
-        hourly["factory_id"] = f"R{host_index + 1}"
-        hourly["represented_factory_count"] = 1
+        summary["modeled_routing_node_count"] = modeled_node_count
+        summary["active_compute_node_count"] = modeled_node_count
+        hourly["factory_id"] = hourly["factory_id"].str.replace("F", "R", n=1, regex=False)
+        hourly["represented_factory_count"] = hourly["factory_id"].str[1:].astype(int).map(
+            {index + 1: int(weight) for index, weight in enumerate(factory_weights)}
+        )
         final_summaries.append(summary)
         final_hourly.append(hourly)
-
-    summary, hourly = solve_architecture(
-        architecture="IG_multisite", config=config, base_loads=routing_node_loads,
-        rigid_by_task=rigid_group, jobs=jobs_group, grid_prices=grid_prices,
-        servers=servers, cpu_fraction=cpu_fraction, cpu_multiplier=cpu_multiplier,
-        solver_name=str(experiment["solver"]), installed_integer=False,
-        base_load_case="actual_load",
-    )
-    summary["physical_factory_count"] = count
-    summary["modeled_routing_node_count"] = modeled_node_count
-    summary["active_compute_node_count"] = modeled_node_count
-    hourly["factory_id"] = hourly["factory_id"].str.replace("F", "R", n=1, regex=False)
-    hourly["represented_factory_count"] = hourly["factory_id"].str[1:].astype(int).map(
-        {index + 1: int(weight) for index, weight in enumerate(factory_weights)}
-    )
-    final_summaries.append(summary)
-    final_hourly.append(hourly)
 
     output = ROOT / args.output_dir
     output.mkdir(parents=True, exist_ok=True)
     summary_frame = pd.DataFrame(final_summaries)
     summary_frame.insert(0, "industry", industry)
-    expected_pairs = {
-        ("IF", "actual_load"),
-        ("IG_1host", "actual_load"),
-        ("IG_1host", "zero_load"),
-        ("IG_multisite", "actual_load"),
-    }
     observed_pairs = set(zip(summary_frame["architecture"], summary_frame["base_load_case"]))
     if observed_pairs != expected_pairs or len(summary_frame) != len(expected_pairs):
         raise ValueError(f"Unexpected architecture/base-load cases: {observed_pairs}")
-    if_actual_cost = float(summary_frame.loc[
-        summary_frame.architecture.eq("IF") & summary_frame.base_load_case.eq("actual_load"),
+    reference_architecture = "IF" if "IF" in selected_architectures else selected_architectures[0]
+    reference_cost = float(summary_frame.loc[
+        summary_frame.architecture.eq(reference_architecture) & summary_frame.base_load_case.eq("actual_load"),
         "annual_incremental_total_cost_rmb",
     ].iloc[0])
-    summary_frame["cost_relative_to_IF_actual_load"] = summary_frame["annual_incremental_total_cost_rmb"] / if_actual_cost
+    summary_frame["cost_relative_to_IF_actual_load"] = (
+        summary_frame["annual_incremental_total_cost_rmb"] / reference_cost
+        if reference_architecture == "IF"
+        else float("nan")
+    )
+    summary_frame["cost_relative_to_reference_actual_load"] = summary_frame["annual_incremental_total_cost_rmb"] / reference_cost
     summary_frame.to_csv(output / "summary.csv", index=False, encoding="utf-8-sig")
     pd.concat(final_hourly, ignore_index=True).to_csv(output / "hourly.csv", index=False, encoding="utf-8-sig")
     pd.DataFrame(lineage).to_csv(output / "curve_lineage.csv", index=False, encoding="utf-8-sig")
-    paired = summary_frame.set_index(["architecture", "base_load_case"])
-    actual = paired.loc[("IG_1host", "actual_load")]
-    zero = paired.loc[("IG_1host", "zero_load")]
-    paired_frame = pd.DataFrame([{
-        "industry": industry,
-        "architecture": "IG_1host",
-        "load_alignment_value_total_cost_rmb": float(zero.annual_incremental_total_cost_rmb - actual.annual_incremental_total_cost_rmb),
-        "load_alignment_value_server_cost_rmb": float(zero.annual_server_cost_rmb - actual.annual_server_cost_rmb),
-        "load_alignment_value_energy_cost_rmb": float(zero.annual_ai_energy_cost_rmb - actual.annual_ai_energy_cost_rmb),
-        "load_alignment_value_maximum_demand_cost_rmb": float(zero.annual_incremental_maximum_demand_cost_rmb - actual.annual_incremental_maximum_demand_cost_rmb),
-        "avoided_incremental_grid_peak_mw": float(zero.sum_incremental_grid_peak_mw - actual.sum_incremental_grid_peak_mw),
-        "definition": "IG_1host_zero_load_reoptimized_minus_actual_load_reoptimized",
-    }])
-    paired_frame.to_csv(output / "load_alignment_value.csv", index=False, encoding="utf-8-sig")
+    if "IG_1host" in selected_architectures:
+        paired = summary_frame.set_index(["architecture", "base_load_case"])
+        actual = paired.loc[("IG_1host", "actual_load")]
+        zero = paired.loc[("IG_1host", "zero_load")]
+        paired_frame = pd.DataFrame([{
+            "industry": industry,
+            "architecture": "IG_1host",
+            "load_alignment_value_total_cost_rmb": float(zero.annual_incremental_total_cost_rmb - actual.annual_incremental_total_cost_rmb),
+            "load_alignment_value_server_cost_rmb": float(zero.annual_server_cost_rmb - actual.annual_server_cost_rmb),
+            "load_alignment_value_energy_cost_rmb": float(zero.annual_ai_energy_cost_rmb - actual.annual_ai_energy_cost_rmb),
+            "load_alignment_value_maximum_demand_cost_rmb": float(zero.annual_incremental_maximum_demand_cost_rmb - actual.annual_incremental_maximum_demand_cost_rmb),
+            "avoided_incremental_grid_peak_mw": float(zero.sum_incremental_grid_peak_mw - actual.sum_incremental_grid_peak_mw),
+            "definition": "IG_1host_zero_load_reoptimized_minus_actual_load_reoptimized",
+        }])
+        paired_frame.to_csv(output / "load_alignment_value.csv", index=False, encoding="utf-8-sig")
+    else:
+        pd.DataFrame(columns=["industry", "architecture"]).to_csv(output / "load_alignment_value.csv", index=False, encoding="utf-8-sig")
     metadata = {
         "status": "completed_IF_integer_IG_continuous_capacity_mechanism_test",
         "experiment": experiment,
@@ -529,7 +554,11 @@ def main() -> None:
         "IG_1host_factory_id": f"R{host_index + 1}",
         "hardware": hardware_meta,
         "variable_counts": variable_counts,
-        "base_load_cases_by_architecture": experiment["base_load_cases_by_architecture"],
+        "selected_architectures": selected_architectures,
+        "base_load_cases_by_architecture": {
+            architecture: cases_by_architecture[architecture]
+            for architecture in selected_architectures
+        },
         "load_profile_mode": str(config["model"]["load_profile_mode"]),
         "validated_architecture_base_load_pairs": sorted(f"{architecture}__{case}" for architecture, case in observed_pairs),
         "service_conservation_relative_error": {

@@ -10,11 +10,11 @@ from pathlib import Path
 import pandas as pd
 
 
-EXPECTED_PAIRS = {
-    ("IF", "actual_load"),
-    ("IG_1host", "actual_load"),
-    ("IG_1host", "zero_load"),
-    ("IG_multisite", "actual_load"),
+DEFAULT_ARCHITECTURES = ["IF", "IG_1host", "IG_multisite"]
+PAIRS_BY_ARCHITECTURE = {
+    "IF": {("IF", "actual_load")},
+    "IG_1host": {("IG_1host", "actual_load"), ("IG_1host", "zero_load")},
+    "IG_multisite": {("IG_multisite", "actual_load")},
 }
 SCALABLE_COLUMNS = [
     "installed_gpu_server_groups",
@@ -37,11 +37,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--alignment-output", type=Path, required=True)
     parser.add_argument("--lineage-output", type=Path, required=True)
     parser.add_argument("--done-output", type=Path, required=True)
+    parser.add_argument("--architectures", nargs="+", default=DEFAULT_ARCHITECTURES)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    architectures = list(args.architectures)
+    expected_pairs = set()
+    for architecture in architectures:
+        if architecture not in PAIRS_BY_ARCHITECTURE:
+            raise ValueError(f"Unsupported architecture: {architecture}")
+        expected_pairs |= PAIRS_BY_ARCHITECTURE[architecture]
     summaries = []
     alignments = []
     lineages = []
@@ -50,14 +57,17 @@ def main() -> None:
         folder = args.root / industry
         summary = pd.read_csv(folder / "summary.csv", encoding="utf-8-sig")
         pairs = set(zip(summary["architecture"], summary["base_load_case"]))
-        if len(summary) != 4 or pairs != EXPECTED_PAIRS:
-            raise ValueError(f"{industry}: expected four registered architecture/load pairs, found {pairs}")
+        if not expected_pairs.issubset(pairs):
+            raise ValueError(f"{industry}: expected {sorted(expected_pairs)}, found {pairs}")
+        summary = summary.loc[
+            [pair in expected_pairs for pair in zip(summary["architecture"], summary["base_load_case"])]
+        ].copy()
         if set(summary["industry"].astype(str)) != {industry}:
             raise ValueError(f"{industry}: summary industry label is inconsistent")
         actual = summary[summary["base_load_case"].eq("actual_load")]
-        if set(actual["architecture"]) != {"IF", "IG_1host", "IG_multisite"} or len(actual) != 3:
-            raise ValueError(f"{industry}: actual-load core comparison is incomplete")
-        if not bool(summary.loc[summary["architecture"].eq("IF"), "installed_server_groups_integer"].all()):
+        if set(actual["architecture"]) != set(architectures) or len(actual) != len(architectures):
+            raise ValueError(f"{industry}: actual-load comparison is incomplete")
+        if "IF" in architectures and not bool(summary.loc[summary["architecture"].eq("IF"), "installed_server_groups_integer"].all()):
             raise ValueError(f"{industry}: IF installed capacity must be integer")
         if bool(summary.loc[summary["architecture"].ne("IF"), "installed_server_groups_integer"].any()):
             raise ValueError(f"{industry}: group architectures must use continuous installed capacity")
@@ -67,10 +77,11 @@ def main() -> None:
             raise ValueError(f"{industry}: service conservation error {error:.3g}")
         summaries.append(actual)
 
-        alignment = pd.read_csv(folder / "load_alignment_value.csv", encoding="utf-8-sig")
-        if len(alignment) != 1 or alignment["architecture"].iloc[0] != "IG_1host":
-            raise ValueError(f"{industry}: expected one IG_1host load-alignment row")
-        alignments.append(alignment)
+        if "IG_1host" in architectures:
+            alignment = pd.read_csv(folder / "load_alignment_value.csv", encoding="utf-8-sig")
+            if len(alignment) != 1 or alignment["architecture"].iloc[0] != "IG_1host":
+                raise ValueError(f"{industry}: expected one IG_1host load-alignment row")
+            alignments.append(alignment)
 
         lineage = pd.read_csv(folder / "curve_lineage.csv", encoding="utf-8-sig")
         lineage.insert(0, "industry", industry)
@@ -93,21 +104,24 @@ def main() -> None:
             actual[f"industry_equivalent_{column}"] = actual[column].astype(float) * multiplier
         summaries[-1] = actual
 
-        alignment = alignment.copy()
-        alignment["representative_group_share"] = group_share
-        alignment["industry_equivalent_multiplier"] = multiplier
-        for column in [name for name in alignment.columns if name.startswith("load_alignment_value_") or name == "avoided_incremental_grid_peak_mw"]:
-            alignment[f"industry_equivalent_{column}"] = alignment[column].astype(float) * multiplier
-        alignments[-1] = alignment
+        if alignments:
+            alignment = alignments[-1].copy()
+            alignment["representative_group_share"] = group_share
+            alignment["industry_equivalent_multiplier"] = multiplier
+            for column in [name for name in alignment.columns if name.startswith("load_alignment_value_") or name == "avoided_incremental_grid_peak_mw"]:
+                alignment[f"industry_equivalent_{column}"] = alignment[column].astype(float) * multiplier
+            alignments[-1] = alignment
         lineages.append(lineage)
 
     if len(args.industries) != 31 or len(set(args.industries)) != 31:
         raise ValueError("The national core package requires exactly 31 unique industries")
     core = pd.concat(summaries, ignore_index=True)
-    alignment = pd.concat(alignments, ignore_index=True)
+    alignment = pd.concat(alignments, ignore_index=True) if alignments else pd.DataFrame()
     lineage = pd.concat(lineages, ignore_index=True)
-    if len(core) != 93 or len(alignment) != 31:
-        raise AssertionError("Unexpected national core output dimensions")
+    expected_actual_rows = 31 * len(architectures)
+    expected_alignment_rows = 31 if "IG_1host" in architectures else 0
+    if len(core) != expected_actual_rows or len(alignment) != expected_alignment_rows:
+        raise AssertionError("Unexpected national output dimensions")
     for path in (args.summary_output, args.alignment_output, args.lineage_output, args.done_output):
         path.parent.mkdir(parents=True, exist_ok=True)
     core.to_csv(args.summary_output, index=False, encoding="utf-8-sig")
@@ -116,9 +130,9 @@ def main() -> None:
     payload = {
         "status": "validated",
         "industry_count": 31,
-        "actual_load_architectures": ["IF", "IG_1host", "IG_multisite"],
-        "actual_load_rows": 93,
-        "ig_1host_zero_load_pair_rows": 31,
+        "actual_load_architectures": architectures,
+        "actual_load_rows": expected_actual_rows,
+        "ig_1host_zero_load_pair_rows": expected_alignment_rows,
         "II_1host_in_core": False,
         "factory_counts": factory_counts,
         "evidence_status": "outputs_validated_not_interpreted",

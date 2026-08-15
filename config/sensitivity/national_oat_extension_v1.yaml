@@ -7,6 +7,8 @@ default_enabled: false
 industry: C38
 selected_industries: [C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43]
 architectures: [IF, IG_1host, IG_multisite]
+# Parameter screens default to IG_1host only. Core and C33/C36 still compare all three.
+solve_architectures: [IG_1host]
 output_root: 05_results/sensitivity/v0.8.0/national_oat_group_architecture
 common_overrides:
   paths:
