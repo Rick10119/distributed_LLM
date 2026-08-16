@@ -581,7 +581,7 @@ def main() -> None:
 
 ## 中心结果
 
-美国官方活动量、采用率、每个采用者的任务单元数和单任务计算强度共同产生 **{result['compute'].query("parameter_case == 'base'").iloc[0].daily_effective_service_units:,.0f} 有效服务单位/日**。本地全国池化需要 **{base_local.installed_dual_l20_servers:,.0f} 台双 L20 服务器**，10% 装机裕量只计算一次；设施年用电 **{base_local.annual_ai_facility_energy_twh:.3f} TWh**，年核心成本 **{base_local.annual_local_cost_billion_usd:.3f} 十亿美元**。
+美国官方活动量、采用率、每个采用者的任务单元数和单任务计算强度共同产生 **{result['compute'].query("parameter_case == 'base'").iloc[0].daily_effective_service_units:,.0f} 有效服务单位/日**。本地全国池化需要 **{base_local.installed_dual_l20_servers:,.0f} 台双 L20 服务器**，15% 装机裕量只计算一次；设施年用电 **{base_local.annual_ai_facility_energy_twh:.3f} TWh**，年核心成本 **{base_local.annual_local_cost_billion_usd:.3f} 十亿美元**。
 
 | 美国完整云化厂商 | Token API | 四任务预留 GPU | 存储（百万美元） | 总成本（十亿美元） | 相对本地 |
 |---|---:|---:|---:|---:|---:|

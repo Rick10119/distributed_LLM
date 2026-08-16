@@ -18,7 +18,7 @@ integer_boundary:
   IG_1host_installed_server_groups_integer: false
   IG_multisite_installed_server_groups_integer: false
   online_server_groups_integer: false
-  planning_reserve_fraction: 0.10
+  planning_reserve_fraction: 0.15
   n_plus_spare_server_groups: 0
   model_state_minimum_groups_enabled: false
 task_boundary:

@@ -14,7 +14,11 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "08_code"))
 
-from core.capacity import arrival_time_required_server_groups, local_installed_capacity_floor
+from core.capacity import (
+    arrival_time_required_server_groups,
+    average_required_server_groups,
+    local_installed_capacity_floor,
+)
 from core.config import deep_merge, load_config, write_resolved_config
 from core.data import load_industry_inputs, read_core_grid_energy_prices, scale_task_workload, scale_workload
 from core.io import read_json, write_csv
@@ -115,15 +119,25 @@ def main() -> None:
             cpu_fraction = float(cpu_fractions.get(task, 0.0))
             gpu_compute += arrivals * inputs.accelerator_h_per_service_unit * (1.0 - cpu_fraction)
             cpu_compute += arrivals * inputs.accelerator_h_per_service_unit * cpu_fraction * float(cpu_multipliers.get(task, 1.0))
-        required_server_groups = float(np.max(gpu_compute)) / float(config["server"]["accelerators_per_server"])
-        required_cpu_groups = float(np.max(cpu_compute)) / float(cpu_server["service_capacity_cpu_server_h_per_h"])
+        arrival_peak_gpu_groups = float(np.max(gpu_compute)) / float(config["server"]["accelerators_per_server"])
+        arrival_peak_cpu_groups = float(np.max(cpu_compute)) / float(cpu_server["service_capacity_cpu_server_h_per_h"])
+        average_required_gpu_groups = average_required_server_groups(
+            float(gpu_compute.sum()),
+            len(gpu_compute),
+            float(config["server"]["accelerators_per_server"]),
+        )
+        average_required_cpu_groups = average_required_server_groups(
+            float(cpu_compute.sum()),
+            len(cpu_compute),
+            float(cpu_server["service_capacity_cpu_server_h_per_h"]),
+        )
         minimum_installed_hardware_groups = {
-            "gpu": local_installed_capacity_floor(required_server_groups, float(config["server"]["installed_reserve_fraction"]), int(config["server"]["n_plus_spare_server_groups"])),
+            "gpu": local_installed_capacity_floor(average_required_gpu_groups, float(config["server"]["installed_reserve_fraction"]), int(config["server"]["n_plus_spare_server_groups"])),
             "cpu": local_installed_capacity_floor(
-                required_cpu_groups,
+                average_required_cpu_groups,
                 float(cpu_server["installed_reserve_fraction"]),
                 int(config["server"]["n_plus_spare_server_groups"]),
-            ) if required_cpu_groups > 0 else 0.0,
+            ) if average_required_cpu_groups > 0 else 0.0,
         }
         heterogeneous_hardware = {
             "routing_case": routing_case,
@@ -137,19 +151,26 @@ def main() -> None:
     baseline = read_json(args.baseline_summary)
     baseline_model = baseline["model"]
     baseline_net_peak_mw = float(baseline_model["grid_import_peak_mw"])
-    # Capacity planning uses the directly calculated, unshifted arrival-time
-    # task peak.  The formal optimization may then use all installed capacity
-    # to shift flexible work without letting prices or DER choices redefine the
-    # exogenous planning reference.
+    # Capacity planning uses mean compute demand across the modeled horizon.
+    # Hourly throughput and job deadlines remain responsible for any capacity
+    # needed above the mean, so temporal shifting retains its planning value.
     if hardware_mode != "heterogeneous_cpu_gpu":
-        required_server_groups = arrival_time_required_server_groups(
+        arrival_peak_gpu_groups = arrival_time_required_server_groups(
             rigid,
             ((job.release_hour, job.amount_service_units) for job in jobs),
             inputs.accelerator_h_per_service_unit,
             float(config["server"]["accelerators_per_server"]),
         )
+        average_required_gpu_groups = average_required_server_groups(
+            (float(rigid.sum()) + sum(job.amount_service_units for job in jobs))
+            * inputs.accelerator_h_per_service_unit,
+            len(rigid),
+            float(config["server"]["accelerators_per_server"]),
+        )
+        arrival_peak_cpu_groups = 0.0
+        average_required_cpu_groups = 0.0
         minimum_installed_server_groups = local_installed_capacity_floor(
-            required_server_groups,
+            average_required_gpu_groups,
             float(config["server"]["installed_reserve_fraction"]),
             int(config["server"]["n_plus_spare_server_groups"]),
         )
@@ -234,10 +255,13 @@ def main() -> None:
         "derived_reference_energy_twh": inputs.derived_reference_energy_twh,
         "external_energy_alignment_ratio": inputs.external_energy_alignment_ratio,
         "reference_energy_server_groups": inputs.reference_energy_server_groups,
-        "capacity_reference_server_groups_unshifted_arrival_peak": required_server_groups,
+        "capacity_reference_server_groups_unshifted_arrival_peak": arrival_peak_gpu_groups,
+        "capacity_reference_server_groups_horizon_average": average_required_gpu_groups,
         "minimum_installed_server_groups_from_capacity_rule": minimum_installed_server_groups,
-        "capacity_reference_gpu_server_groups_unshifted_arrival_peak": required_server_groups,
-        "capacity_reference_cpu_server_groups_unshifted_arrival_peak": required_cpu_groups if hardware_mode == "heterogeneous_cpu_gpu" else 0.0,
+        "capacity_reference_gpu_server_groups_unshifted_arrival_peak": arrival_peak_gpu_groups,
+        "capacity_reference_cpu_server_groups_unshifted_arrival_peak": arrival_peak_cpu_groups,
+        "capacity_reference_gpu_server_groups_horizon_average": average_required_gpu_groups,
+        "capacity_reference_cpu_server_groups_horizon_average": average_required_cpu_groups,
         "minimum_installed_gpu_server_groups_from_capacity_rule": minimum_installed_hardware_groups["gpu"] if minimum_installed_hardware_groups else minimum_installed_server_groups,
         "minimum_installed_cpu_server_groups_from_capacity_rule": minimum_installed_hardware_groups["cpu"] if minimum_installed_hardware_groups else 0.0,
         "installed_capacity_rule": config["server"]["installed_capacity_rule"],
@@ -262,6 +286,33 @@ def main() -> None:
         "per_host_model_storage_required_gb": result.summary["model_storage_required_gb"],
         "per_host_model_storage_available_gb": result.summary["model_storage_available_gb"],
     }
+    realized_average_groups: dict[str, float] = {}
+    realized_peak_groups: dict[str, float] = {}
+    installed_groups: dict[str, float] = {}
+    for hardware, capacity in {
+        "gpu": float(config["server"]["accelerators_per_server"]),
+        "cpu": float(cpu_server["service_capacity_cpu_server_h_per_h"]) if heterogeneous_hardware else 1.0,
+    }.items():
+        compute = result.hourly[f"{hardware}_compute_h"].to_numpy(dtype=float)
+        average_groups = float(np.mean(compute)) / capacity
+        peak_groups = float(np.max(compute, initial=0.0)) / capacity
+        installed_value = float(result.summary[f"installed_{hardware}_server_groups"])
+        realized_average_groups[hardware] = average_groups
+        realized_peak_groups[hardware] = peak_groups
+        installed_groups[hardware] = installed_value
+        ratio = installed_value / average_groups if average_groups > 1e-12 else np.nan
+        row[f"per_host_realized_average_required_{hardware}_server_groups"] = average_groups
+        row[f"per_host_realized_peak_required_{hardware}_server_groups"] = peak_groups
+        row[f"installed_{hardware}_capacity_to_average_local_demand_ratio"] = ratio
+        row[f"realized_{hardware}_installed_capacity_utilization_fraction"] = 1.0 / ratio if np.isfinite(ratio) and ratio > 0 else np.nan
+        row[f"realized_{hardware}_capacity_redundancy_fraction_above_average"] = ratio - 1.0 if np.isfinite(ratio) else np.nan
+    average_total_groups = sum(realized_average_groups.values())
+    installed_total_groups = sum(installed_groups.values())
+    total_ratio = installed_total_groups / average_total_groups if average_total_groups > 1e-12 else np.nan
+    row["per_host_realized_average_required_total_server_groups"] = average_total_groups
+    row["installed_total_server_capacity_to_average_local_demand_ratio"] = total_ratio
+    row["realized_total_installed_capacity_utilization_fraction"] = 1.0 / total_ratio if np.isfinite(total_ratio) and total_ratio > 0 else np.nan
+    row["realized_total_capacity_redundancy_fraction_above_average"] = total_ratio - 1.0 if np.isfinite(total_ratio) else np.nan
     for key in (
         "rooftop_pv_capacity_mw",
         "battery_power_mw",

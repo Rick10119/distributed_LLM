@@ -135,11 +135,14 @@ server:
   maximum_wall_power_kw: 1.50
   online_idle_wall_power_kw: 0.36
   cold_spare_standby_power_kw: 0.02
-  installed_capacity_rule: max_10pct_planning_headroom_and_n_plus_1
-  installed_reserve_fraction: 0.10
-  n_plus_spare_server_groups: 1
-  # Installed headroom is a planning floor, not an hourly withholding rule.
-  # The operational solve may use 100% of installed capacity.
+  installed_capacity_rule: daily_average_plus_planning_headroom_and_n_plus_spare
+  installed_reserve_fraction: 0.15
+  # Reliability spares are a structural sensitivity, not part of the core
+  # 15% planning-headroom case.
+  n_plus_spare_server_groups: 0
+  # Installed headroom is applied to average local compute demand, not the
+  # unshifted arrival peak. Hourly deadline constraints may require more
+  # capacity, and the operational solve may use 100% of installed capacity.
   normal_dispatch_reserve_fraction: 0.0
   # China evidence supports five years as the conservative AI-server core:
   # Alibaba computer equipment 3-5 years; QingCloud servers 5 years; Tencent

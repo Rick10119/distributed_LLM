@@ -46,6 +46,6 @@ national_cloud_center:
   battery_investment_enabled: false
   gpu_facility_multiplier: 1.22
   cpu_facility_multiplier: 1.22
-  installed_reserve_fraction: 0.10
+  installed_reserve_fraction: 0.15
   n_plus_spare_server_groups: 1
   interpretation: all_31_manufacturing_industry_AI_workloads_at_one_greenfield_cloud_node

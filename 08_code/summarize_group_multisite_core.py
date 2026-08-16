@@ -19,6 +19,9 @@ PAIRS_BY_ARCHITECTURE = {
 SCALABLE_COLUMNS = [
     "installed_gpu_server_groups",
     "installed_cpu_server_groups",
+    "average_required_gpu_server_groups",
+    "average_required_cpu_server_groups",
+    "average_required_total_server_groups",
     "annual_server_cost_rmb",
     "annual_ai_energy_cost_rmb",
     "annual_incremental_maximum_demand_cost_rmb",
@@ -71,6 +74,13 @@ def main() -> None:
             raise ValueError(f"{industry}: IF installed capacity must be integer")
         if bool(summary.loc[summary["architecture"].ne("IF"), "installed_server_groups_integer"].any()):
             raise ValueError(f"{industry}: group architectures must use continuous installed capacity")
+        if bool(summary["online_server_groups_integer"].any()):
+            raise ValueError(f"{industry}: hourly online capacity must remain continuous")
+        reserve_values = summary["planning_reserve_fraction"].astype(float)
+        if not ((reserve_values - 0.15).abs() <= 1e-12).all():
+            raise ValueError(f"{industry}: core planning headroom must be 15%")
+        if not (summary["n_plus_spare_server_groups"].astype(float) == 0.0).all():
+            raise ValueError(f"{industry}: N+1 belongs to sensitivity analysis, not the core")
         reference = float(summary["weekly_service_units"].iloc[0])
         error = (summary["weekly_service_units"] - reference).abs().max() / max(abs(reference), 1e-12)
         if error > 1e-7:
@@ -86,6 +96,8 @@ def main() -> None:
         lineage = pd.read_csv(folder / "curve_lineage.csv", encoding="utf-8-sig")
         lineage.insert(0, "industry", industry)
         metadata = json.loads((folder / "metadata.json").read_text(encoding="utf-8"))
+        if abs(float(metadata["planning_reserve_fraction"]) - 0.15) > 1e-12:
+            raise ValueError(f"{industry}: metadata does not record the 15% core headroom")
         expected_factories = int(metadata["physical_factory_count"])
         expected_nodes = int(metadata["modeled_routing_node_count"])
         if len(lineage) != expected_nodes:

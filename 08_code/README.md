@@ -75,7 +75,7 @@ conda run -n pypsa snakemake all --cores 1 --configfile config/runs/single_indus
 
 `analyze_api_token_cost.py`读取复核后的官方 API 价格、31行业就业基线、项目既有 office/agent Token 参数、预留 GPU-IaaS 付款结果和 `CL004` 对象存储价，生成 `full_cloud_cost_v1.0.0` 完整云化企业付款场景。office/agent 走 Token API，其余四类任务走预留 GPU 云，并与 IF、IG、II 和全工作负荷预留 GPU-IaaS 基准方案比较；正式中国表只保留Alibaba Cloud和DeepSeek，不展示按量 GPU 订阅。其他厂商、轻量模型及低/基准/高预留价格保留在详细审计表。剩余 GPU 容量目前按有效服务份额分配、尚未按峰值重优化，因此不能解释为质量等效采购建议或核心科学主结果。
 
-`prepare_us_manufacturing_ai_research.py`把 Economic Census、MOPS、BTOS、MECS 和 BERD 官方输入整理为五个稳定 CSV 及六任务参数表。`build_us_manufacturing_ai_demand.py`按“美国活动量×采用率×每个采用者每日任务单元×单任务有效服务×行业适用度”自下而上生成 NAICS3×六任务×low/base/high 需求、Token、逐时容量、本地核心成本与完整云化付款；不存在按中国总量反推的缩放乘数。中国同档用电和制造业增加值比例仅作外部量级检查。office/agent 才生成 Token，其余四任务按任务峰值采购预留 GPU，且不输出按量 GPU。`validate_us_manufacturing_ai_demand.py`检查 21 行业、六任务、三情景覆盖、采用率边界、自下而上汇总、外部量级检查、Token 边界、单一 10% 装机裕量和成本组件核对。该模块已纳入项目根目录 `Makefile` 调用的主 Snakemake 依赖图。
+`prepare_us_manufacturing_ai_research.py`把 Economic Census、MOPS、BTOS、MECS 和 BERD 官方输入整理为五个稳定 CSV 及六任务参数表。`build_us_manufacturing_ai_demand.py`按“美国活动量×采用率×每个采用者每日任务单元×单任务有效服务×行业适用度”自下而上生成 NAICS3×六任务×low/base/high 需求、Token、逐时容量、本地核心成本与完整云化付款；不存在按中国总量反推的缩放乘数。中国同档用电和制造业增加值比例仅作外部量级检查。office/agent 才生成 Token，其余四任务按任务峰值采购预留 GPU，且不输出按量 GPU。`validate_us_manufacturing_ai_demand.py`检查 21 行业、六任务、三情景覆盖、采用率边界、自下而上汇总、外部量级检查、Token 边界、单一 15% 装机裕量和成本组件核对。该模块已纳入项目根目录 `Makefile` 调用的主 Snakemake 依赖图。
 
 `analyze_us_owned_core_cost.py`和`analyze_us_full_cloud_cost.py`已分别作为主流程规则`analyze_us_owned_core_cost`与`analyze_us_full_cloud_cost`接入。它们在相同物理需求与Token总量上建立独立的美国价格环境：本地成本读取EIA全国工业电价与美国服务器BOM代理；云端将美国区Token API、AWS一年期预留GPU容量代理和S3 Standard相加。美国正式表只保留OpenAI、Anthropic和Google，不展示按量GPU；完整五厂商表作为审计输出。中美分别在各自本币价格环境内计算比值。
 

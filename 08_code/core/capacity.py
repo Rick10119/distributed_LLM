@@ -25,12 +25,28 @@ def arrival_time_required_server_groups(
     )
 
 
+def average_required_server_groups(
+    total_compute_h: float,
+    horizon_hours: int,
+    service_capacity_per_server_group_h_per_h: float,
+) -> float:
+    """Return server groups needed to serve the horizon workload at its mean rate."""
+    compute = float(total_compute_h)
+    hours = int(horizon_hours)
+    capacity = float(service_capacity_per_server_group_h_per_h)
+    if not math.isfinite(compute) or compute < 0.0:
+        raise ValueError("Total compute must be finite and non-negative")
+    if hours <= 0 or not math.isfinite(capacity) or capacity <= 0.0:
+        raise ValueError("Horizon and server-group capacity must be positive")
+    return compute / (hours * capacity)
+
+
 def local_installed_capacity_floor(
     required_server_groups: float,
     planning_headroom_fraction: float,
     n_plus_spare_server_groups: int,
 ) -> float:
-    """Return max(percentage headroom, integer N+k capacity)."""
+    """Return max(average-demand headroom, continuous N+k capacity)."""
     required = float(required_server_groups)
     fraction = float(planning_headroom_fraction)
     spare = int(n_plus_spare_server_groups)
@@ -38,4 +54,7 @@ def local_installed_capacity_floor(
         raise ValueError("Required server groups must be finite and non-negative")
     if not 0.0 <= fraction < 1.0 or spare < 0:
         raise ValueError("Invalid local installed-capacity reserve parameters")
-    return max(required * (1.0 + fraction), math.ceil(required) + spare)
+    # Integer deployment cases round this lower bound through the installed
+    # server decision itself. Continuous group cases must not inherit an
+    # artificial whole-server rounding step.
+    return max(required * (1.0 + fraction), required + spare)

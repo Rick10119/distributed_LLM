@@ -223,9 +223,9 @@ def validate_config(config: dict[str, Any]) -> None:
     if alignment.get("per_industry_check", "hard") not in {"hard", "diagnostic"}:
         raise ValueError("per_industry_check must be hard or diagnostic")
     server = config.get("server", {})
-    if server.get("installed_capacity_rule") != "max_10pct_planning_headroom_and_n_plus_1":
+    if server.get("installed_capacity_rule") != "daily_average_plus_planning_headroom_and_n_plus_spare":
         raise ValueError(
-            "server installed_capacity_rule must be max_10pct_planning_headroom_and_n_plus_1"
+            "server installed_capacity_rule must be daily_average_plus_planning_headroom_and_n_plus_spare"
         )
     for field in ("installed_reserve_fraction", "normal_dispatch_reserve_fraction"):
         value = float(server.get(field, -1.0))

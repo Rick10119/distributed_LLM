@@ -168,14 +168,27 @@ def main() -> None:
     accelerators = float(config["server"]["accelerators_per_server"])
     reserve = float(config["server"]["installed_reserve_fraction"])
     heterogeneous = str(row.get("compute_hardware_mode", "gpu_only")) == "heterogeneous_cpu_gpu"
+    cloud_enabled = bool(row.get("hybrid_cloud_enabled", False))
     if not heterogeneous:
         require(np.all(execution <= accelerators * online + 1e-5), "online throughput constraint violated")
-        required_groups = float(row["capacity_reference_server_groups_unshifted_arrival_peak"])
-        capacity_floor = local_installed_capacity_floor(required_groups, reserve, int(config["server"]["n_plus_spare_server_groups"]))
-        require(float(row["per_host_installed_server_groups"]) + 1e-5 >= capacity_floor, "installed capacity does not satisfy max(10% headroom, N+1)")
+        average_groups = float(row["per_host_realized_average_required_gpu_server_groups"])
+        installed_groups = float(row["per_host_installed_gpu_server_groups"])
+        require(installed_groups + 1e-5 >= average_groups * (1.0 + reserve), "installed capacity is below average-demand planning headroom")
+        if not cloud_enabled:
+            capacity_floor = local_installed_capacity_floor(average_groups, reserve, int(config["server"]["n_plus_spare_server_groups"]))
+            require(installed_groups + 1e-5 >= capacity_floor, "installed capacity does not satisfy average-demand headroom and N+spare")
+        elif average_groups > 1e-9:
+            require(installed_groups + 1e-5 >= average_groups + int(config["server"]["n_plus_spare_server_groups"]), "hybrid local capacity does not satisfy conditional N+spare")
     else:
         require(np.allclose(hourly["ai_facility_power_mw"], hourly["gpu_facility_power_mw"] + hourly["cpu_facility_power_mw"]), "heterogeneous hardware power components do not sum")
-        if not bool(row.get("hybrid_cloud_enabled", False)):
+        for hardware in ("gpu", "cpu"):
+            average_groups = float(row[f"per_host_realized_average_required_{hardware}_server_groups"])
+            installed_groups = float(row[f"per_host_installed_{hardware}_server_groups"])
+            hardware_reserve = reserve if hardware == "gpu" else float(config["compute_hardware"].get("cpu_server_overrides", {}).get("installed_reserve_fraction", reserve))
+            require(installed_groups + 1e-5 >= average_groups * (1.0 + hardware_reserve), f"{hardware.upper()} installed capacity is below average-demand planning headroom")
+            if cloud_enabled and average_groups > 1e-9:
+                require(installed_groups + 1e-5 >= average_groups + int(config["server"]["n_plus_spare_server_groups"]), f"Hybrid local {hardware.upper()} capacity does not satisfy conditional N+spare")
+        if not cloud_enabled:
             require(float(row["per_host_installed_gpu_server_groups"]) + 1e-5 >= float(row["minimum_installed_gpu_server_groups_from_capacity_rule"]), "GPU installed capacity is below its planning floor")
             require(float(row["per_host_installed_cpu_server_groups"]) + 1e-5 >= float(row["minimum_installed_cpu_server_groups_from_capacity_rule"]), "CPU installed capacity is below its planning floor")
     require(

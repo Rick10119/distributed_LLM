@@ -27,6 +27,29 @@ from core.representative_group import read_representative_groups
 from prepare_eweld_representative_weeks import complete_weeks
 
 
+INTEGER_INSTALLED_CAPACITY_BY_ARCHITECTURE = {
+    "IF": True,
+    "IG_1host": False,
+    "IG_multisite": False,
+}
+
+
+def validate_integer_boundary(experiment: dict) -> None:
+    """Keep integer server installation exclusive to independent factories."""
+    boundary = experiment.get("integer_boundary", {})
+    for architecture, expected in INTEGER_INSTALLED_CAPACITY_BY_ARCHITECTURE.items():
+        field = f"{architecture}_installed_server_groups_integer"
+        configured = boundary.get(field, expected)
+        if not isinstance(configured, bool) or configured is not expected:
+            raise ValueError(
+                f"{field} must be {str(expected).lower()}: only IF uses integer "
+                "installed server groups; both group architectures use continuous "
+                "equivalent capacity"
+            )
+    if boundary.get("online_server_groups_integer", False) is not False:
+        raise ValueError("online_server_groups_integer must be false for all group-architecture cases")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--defaults", type=Path, default=Path("config/defaults.yaml"))
@@ -151,7 +174,7 @@ def solve_architecture(
     discount = float(config["model"]["discount_rate"])
     demand_rate = float(config["energy"]["maximum_demand_rmb_per_kw_month"]) * 1000.0 * 12.0
     accelerator_factor = float(config["demand"]["effective_service"]["accelerator_h_per_service_unit"])
-    reserve = 0.10
+    reserve = float(servers["gpu"]["installed_reserve_fraction"])
 
     model = linopy.Model()
     site_index = pd.Index(sites, name="site")
@@ -220,7 +243,6 @@ def solve_architecture(
                 installed_value = installed.sel(site=site, hardware=name)
                 model.add_constraints(online_value <= installed_value, name=f"online_installed_{site}_{name}_{hour}")
                 model.add_constraints(compute <= capacity * online_value, name=f"online_capacity_{site}_{name}_{hour}")
-                model.add_constraints(compute * (1.0 + reserve) <= capacity * installed_value, name=f"planning_capacity_{site}_{name}_{hour}")
                 pue = float(server["marginal_facility_multiplier"])
                 maximum = float(server["maximum_wall_power_kw"])
                 idle = float(server["online_idle_wall_power_kw"])
@@ -230,6 +252,16 @@ def solve_architecture(
             power_expr[(site, hour)] = power
             model.add_constraints(float(base_loads[site, hour]) + power <= peak.sel(site=site), name=f"grid_peak_{site}_{hour}")
             objective += annual_periods * float(grid_prices[hour]) * power
+    for site in sites:
+        for name in hardware:
+            server = servers[name]
+            capacity = float(server["service_capacity_cpu_server_h_per_h"] if name == "cpu" else server["accelerators_per_server"])
+            average_compute = sum(compute_expr[(site, hour, name)] for hour in hours) / len(list(hours))
+            model.add_constraints(
+                installed.sel(site=site, hardware=name)
+                >= (1.0 + float(server["installed_reserve_fraction"])) * average_compute / capacity,
+                name=f"average_demand_planning_capacity_{site}_{name}",
+            )
     model.objective = objective
     status, condition = model.solve(solver_name=solver_name, log_to_console=False)
     if status != "ok":
@@ -284,6 +316,11 @@ def solve_architecture(
     incremental_demand_cost = float(np.sum(np.asarray(peak_values) - base_peaks) * demand_rate)
     annual_energy_cost = float(sum(row["ai_facility_power_mw"] * grid_prices[int(row["hour"])] * annual_periods for row in rows))
     annual_server_cost = float(sum(installed_values.loc[site, name] * server_cost[name] for site in sites for name in hardware))
+    average_required_gpu_groups = float(hourly["gpu_compute_h"].sum()) / (len(list(hours)) * float(servers["gpu"]["accelerators_per_server"]))
+    average_required_cpu_groups = float(hourly["cpu_compute_h"].sum()) / (len(list(hours)) * float(servers["cpu"]["service_capacity_cpu_server_h_per_h"]))
+    average_required_total_groups = average_required_gpu_groups + average_required_cpu_groups
+    installed_total_groups = float(installed_values["gpu"].sum() + installed_values["cpu"].sum())
+    installed_to_average_ratio = installed_total_groups / average_required_total_groups
     summary = {
         "architecture": architecture,
         "base_load_case": base_load_case,
@@ -297,6 +334,12 @@ def solve_architecture(
         "planning_reserve_fraction": reserve,
         "installed_gpu_server_groups": float(installed_values["gpu"].sum()),
         "installed_cpu_server_groups": float(installed_values["cpu"].sum()),
+        "average_required_gpu_server_groups": average_required_gpu_groups,
+        "average_required_cpu_server_groups": average_required_cpu_groups,
+        "average_required_total_server_groups": average_required_total_groups,
+        "installed_total_server_capacity_to_average_demand_ratio": installed_to_average_ratio,
+        "realized_total_installed_capacity_utilization_fraction": 1.0 / installed_to_average_ratio,
+        "realized_total_capacity_redundancy_fraction_above_average": installed_to_average_ratio - 1.0,
         "annual_server_cost_rmb": annual_server_cost,
         "annual_ai_energy_cost_rmb": annual_energy_cost,
         "annual_incremental_maximum_demand_cost_rmb": incremental_demand_cost,
@@ -363,6 +406,14 @@ def main() -> None:
     routing_node_loads = representative_factory_loads * factory_weights[:, None]
     host_index = int(np.argsort(representative_factory_loads.max(axis=1))[modeled_node_count // 2])
     servers, cpu_fraction, cpu_multiplier, hardware_meta = hardware_parameters(config)
+    planning_reserve = float(
+        experiment.get("integer_boundary", {}).get(
+            "planning_reserve_fraction",
+            config["server"]["installed_reserve_fraction"],
+        )
+    )
+    for server in servers.values():
+        server["installed_reserve_fraction"] = planning_reserve
     rigid_group, jobs_group = scale_task_workload(inputs, share)
     grid_prices = read_core_grid_energy_prices(config)
     horizon_hours = int(config["model"]["horizon_hours"])
@@ -404,6 +455,7 @@ def main() -> None:
     allowed_architectures = {"IF", "IG_1host", "IG_multisite"}
     if not selected_architectures or set(selected_architectures) - allowed_architectures:
         raise ValueError(f"Unsupported group architectures: {selected_architectures}")
+    validate_integer_boundary(experiment)
     cases_by_architecture = experiment["base_load_cases_by_architecture"]
     expected_pairs = {
         (architecture, case)
@@ -415,6 +467,7 @@ def main() -> None:
     final_hourly = []
     additive_fields = [
         "installed_gpu_server_groups", "installed_cpu_server_groups", "annual_server_cost_rmb",
+        "average_required_gpu_server_groups", "average_required_cpu_server_groups", "average_required_total_server_groups",
         "annual_ai_energy_cost_rmb", "annual_incremental_maximum_demand_cost_rmb",
         "annual_incremental_total_cost_rmb", "annual_ai_facility_energy_twh",
         "sum_incremental_grid_peak_mw", "weekly_service_units",
@@ -432,7 +485,8 @@ def main() -> None:
                 architecture=f"IF_F{site + 1}", config=config, base_loads=representative_factory_loads[[site]],
                 rigid_by_task=rigid_site, jobs=jobs_site, grid_prices=grid_prices,
                 servers=servers, cpu_fraction=cpu_fraction, cpu_multiplier=cpu_multiplier,
-                solver_name=str(experiment["solver"]), installed_integer=True,
+                solver_name=str(experiment["solver"]),
+                installed_integer=INTEGER_INSTALLED_CAPACITY_BY_ARCHITECTURE["IF"],
                 base_load_case="actual_load",
             )
             weight = int(factory_weights[site])
@@ -454,9 +508,14 @@ def main() -> None:
             "modeled_routing_node_count": modeled_node_count,
             "active_compute_node_count": count,
             "online_server_groups_integer": False, "n_plus_spare_server_groups": 0,
-            "model_state_minimum_groups_enabled": False, "planning_reserve_fraction": 0.10,
+            "model_state_minimum_groups_enabled": False,
+            "planning_reserve_fraction": planning_reserve,
             "maximum_single_site_ai_facility_power_mw": float(max(row["maximum_single_site_ai_facility_power_mw"] for row in if_site_summaries)),
         })
+        if_ratio = float(if_summary["installed_gpu_server_groups"] + if_summary["installed_cpu_server_groups"]) / float(if_summary["average_required_total_server_groups"])
+        if_summary["installed_total_server_capacity_to_average_demand_ratio"] = if_ratio
+        if_summary["realized_total_installed_capacity_utilization_fraction"] = 1.0 / if_ratio
+        if_summary["realized_total_capacity_redundancy_fraction_above_average"] = if_ratio - 1.0
         final_summaries.append(if_summary)
         final_hourly.append(pd.concat(if_site_hourly, ignore_index=True).assign(architecture="IF"))
 
@@ -473,7 +532,8 @@ def main() -> None:
                 architecture="IG_1host", config=config, base_loads=host_load,
                 rigid_by_task=rigid_group, jobs=jobs_group, grid_prices=grid_prices,
                 servers=servers, cpu_fraction=cpu_fraction, cpu_multiplier=cpu_multiplier,
-                solver_name=str(experiment["solver"]), installed_integer=False,
+                solver_name=str(experiment["solver"]),
+                installed_integer=INTEGER_INSTALLED_CAPACITY_BY_ARCHITECTURE["IG_1host"],
                 base_load_case=base_load_case,
             )
             summary["physical_factory_count"] = count
@@ -489,7 +549,8 @@ def main() -> None:
             architecture="IG_multisite", config=config, base_loads=routing_node_loads,
             rigid_by_task=rigid_group, jobs=jobs_group, grid_prices=grid_prices,
             servers=servers, cpu_fraction=cpu_fraction, cpu_multiplier=cpu_multiplier,
-            solver_name=str(experiment["solver"]), installed_integer=False,
+            solver_name=str(experiment["solver"]),
+            installed_integer=INTEGER_INSTALLED_CAPACITY_BY_ARCHITECTURE["IG_multisite"],
             base_load_case="actual_load",
         )
         summary["physical_factory_count"] = count

@@ -45,8 +45,8 @@ def main() -> None:
     non_token = task[~task["task_id"].isin(["office", "agent"])]
     if (non_token[["annual_input_tokens", "annual_output_tokens"]].abs().max().max() != 0):
         raise ValueError("Non-token tasks generated tokens")
-    if set(validation["installed_reserve_fraction"]) != {0.10}:
-        raise ValueError("Installed reserve must be exactly one 10% parameter")
+    if set(validation["installed_reserve_fraction"]) != {0.15}:
+        raise ValueError("Installed reserve must be exactly one 15% parameter")
     external = config["external_scale_validation"]
     for row in validation.itertuples(index=False):
         ratio = float(row.annual_ai_facility_energy_twh) / float(external["china_energy_twh"][row.parameter_case])
@@ -74,7 +74,7 @@ def main() -> None:
         "parameter_cases": ["low", "base", "high"],
         "checks": [
             "activity/task/case coverage", "adoption and coverage bounds", "industry/task reconciliation",
-            "tokens restricted to office and agent", "single 10% installed reserve", "local cost reconciliation",
+            "tokens restricted to office and agent", "single 15% installed reserve", "local cost reconciliation",
             "bottom-up formula and external scale check", "cloud cost reconciliation", "on-demand GPU excluded",
             "least-cost base cloud premium target",
         ],

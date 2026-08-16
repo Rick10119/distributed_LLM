@@ -114,7 +114,7 @@ compute:
   efficiency_case: conservative
   accelerators_per_server: 2
   installed_utilization: 0.65
-  installed_reserve_fraction: 0.10
+  installed_reserve_fraction: 0.15
   server_idle_power_kw: 0.36
   cold_spare_standby_power_kw: 0.02
   server_maximum_power_kw: 1.50

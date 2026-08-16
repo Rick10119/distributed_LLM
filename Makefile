@@ -20,7 +20,7 @@ dry-run:
 	conda run -n $(ENV) snakemake $(TARGET) --cores $(CORES) \
 		--configfile $(CONFIG) \
 		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_snakemake_dryrun.XXXXXX)" \
-		--dry-run $(SNAKEMAKE_ARGS)
+		--dry-run --rerun-incomplete $(SNAKEMAKE_ARGS)
 
 # Figures and HTML are explicit because the briefing currently reads completed
 # sensitivity outputs as well as the core results.
@@ -52,7 +52,7 @@ sensitivity-smoke-dry-run:
 	conda run -n $(ENV) snakemake single_industry_sensitivity --cores $(CORES) \
 		--configfile config/runs/all_industries_core.yaml \
 		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_sensitivity_dryrun.XXXXXX)" \
-		--dry-run $(SNAKEMAKE_ARGS)
+		--dry-run --rerun-incomplete $(SNAKEMAKE_ARGS)
 
 sensitivity-grid-hybrid:
 	conda run -n $(ENV) snakemake single_industry_grid_hybrid_sensitivity --cores $(CORES) \
@@ -64,7 +64,7 @@ sensitivity-grid-hybrid-dry-run:
 	conda run -n $(ENV) snakemake single_industry_grid_hybrid_sensitivity --cores $(CORES) \
 		--configfile config/runs/all_industries_core.yaml \
 		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_grid_hybrid_dryrun.XXXXXX)" \
-		--dry-run $(SNAKEMAKE_ARGS)
+		--dry-run --rerun-incomplete $(SNAKEMAKE_ARGS)
 
 sensitivity-group-multisite:
 	conda run -n $(ENV) snakemake single_industry_group_multisite_sensitivity --cores $(CORES) \
@@ -76,11 +76,11 @@ sensitivity-group-multisite-dry-run:
 	conda run -n $(ENV) snakemake single_industry_group_multisite_sensitivity --cores $(CORES) \
 		--configfile config/runs/all_industries_core.yaml \
 		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_group_multisite_dryrun.XXXXXX)" \
-		--dry-run $(SNAKEMAKE_ARGS)
+		--dry-run --rerun-incomplete $(SNAKEMAKE_ARGS)
 
-# Descriptive 31-industry cost comparison using completed IF, IG and II core
-# results only. It changes no sensitivity parameter and does not create new
-# optimization scenarios.
+# Descriptive 31-industry cost comparison using the completed IF, IG_1host,
+# and IG_multisite core results. It changes no sensitivity parameter and does
+# not create new optimization scenarios.
 industry-cost-differences:
 	conda run -n $(ENV) snakemake core_industry_cost_differences --cores $(CORES) \
 		--configfile $(CONFIG) \

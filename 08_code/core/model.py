@@ -425,6 +425,17 @@ def optimize_host(
         hardware_names = ["gpu", "cpu"] if heterogeneous else ["gpu"]
         hardware_index = pd.Index(hardware_names, name="hardware")
         installed = model.add_variables(lower=0.0, integer=installed_integer, coords=[hardware_index], name="AI-installed-server-groups")
+        local_active = (
+            model.add_variables(
+                lower=0.0,
+                upper=1.0,
+                integer=True,
+                coords=[hardware_index],
+                name="AI-local-hardware-active",
+            )
+            if cloud_enabled
+            else None
+        )
         floors = minimum_installed_hardware_groups or ({"gpu": minimum_installed_server_groups} if minimum_installed_server_groups is not None else {})
         for hardware, floor in floors.items():
             minimum_installed = float(floor)
@@ -432,19 +443,21 @@ def optimize_host(
                 raise ValueError("Minimum installed hardware groups must be valid and non-negative")
             model.add_constraints(installed.sel(hardware=hardware) >= minimum_installed, name=f"AI-external-minimum-installed-{hardware}-groups")
         model_state = config["model_state"]
-        # A hybrid subscription case may optimally have no local footprint at
-        # all.  Requiring a permanently online local replica would make a
-        # zero-headroom connection infeasible even when every task is served
-        # by the cloud.  The ordinary local-only cases retain the replica and
-        # bundled-storage floor unchanged.
-        if bool(model_state["enabled"]) and not cloud_enabled:
+        # In a hybrid case the local model-state footprint is conditional on
+        # actually assigning compute to local hardware. Pure cloud can still
+        # choose a zero local footprint.
+        if bool(model_state["enabled"]):
+            local_gpu_active = local_active.sel(hardware="gpu") if cloud_enabled else 1.0
             model.add_constraints(
-                installed.sel(hardware="gpu") >= int(model_state["minimum_server_groups_for_model_state"]),
+                installed.sel(hardware="gpu")
+                >= int(model_state["minimum_server_groups_for_model_state"])
+                * local_gpu_active,
                 name="AI-minimum-model-replica-and-vram",
             )
             model.add_constraints(
                 installed.sel(hardware="gpu") * float(model_state["bundled_storage_gb_per_server_group"])
-                >= float(model_state["model_storage_required_gb_per_deployment"]),
+                >= float(model_state["model_storage_required_gb_per_deployment"])
+                * local_gpu_active,
                 name="AI-model-storage-capacity",
             )
         online = model.add_variables(
@@ -489,9 +502,7 @@ def optimize_host(
         )
         cpu_fractions = heterogeneous_hardware.get("cpu_fraction_by_task", {}) if heterogeneous else {}
         cpu_multipliers = heterogeneous_hardware.get("cpu_compute_multiplier_by_task", {}) if heterogeneous else {}
-        minimum_online = (
-            0 if cloud_enabled else int(config["model"]["minimum_online_servers"])
-        )
+        minimum_online = int(config["model"]["minimum_online_servers"])
         link_power = model.variables["Link-p"].sel(name=ai_link)
         hourly_expressions: list[Any] = []
         hardware_compute_expressions: dict[str, list[Any]] = {
@@ -573,13 +584,13 @@ def optimize_host(
                     )
                 online_hour = online.sel(snapshot=hour, hardware=hardware)
                 installed_hardware = installed.sel(hardware=hardware)
-                planning_reserve = float(server["installed_reserve_fraction"])
                 dispatch_reserve = float(server.get("normal_dispatch_reserve_fraction", 0.0))
                 model.add_constraints(online_hour <= installed_hardware, name=f"AI-{hardware}-online-below-installed-{hour}")
-                model.add_constraints(online_hour >= (minimum_online if hardware == "gpu" else 0), name=f"AI-{hardware}-minimum-online-{hour}")
+                minimum_online_expression = minimum_online if hardware == "gpu" else 0
+                if cloud_enabled:
+                    minimum_online_expression *= local_active.sel(hardware=hardware)
+                model.add_constraints(online_hour >= minimum_online_expression, name=f"AI-{hardware}-minimum-online-{hour}")
                 model.add_constraints(compute <= capacity * online_hour, name=f"AI-{hardware}-online-throughput-{hour}")
-                if hardware not in floors:
-                    model.add_constraints(compute * (1.0 + planning_reserve) <= capacity * installed_hardware, name=f"AI-{hardware}-planning-reserve-{hour}")
                 model.add_constraints(compute * (1.0 + dispatch_reserve) <= capacity * installed_hardware, name=f"AI-{hardware}-dispatch-reserve-{hour}")
                 pue = float(server["marginal_facility_multiplier"])
                 maximum_kw = float(server["maximum_wall_power_kw"])
@@ -588,6 +599,50 @@ def optimize_host(
                 power_terms.append(pue / 1000.0 * (standby_kw * installed_hardware + (idle_kw - standby_kw) * online_hour + (maximum_kw - idle_kw) / capacity * compute))
             model.add_constraints(link_power.sel(snapshot=hour) == sum(power_terms), name=f"AI-facility-power-{hour}")
             hourly_expressions.append(total_service)
+        # Planning headroom is based on the mean local compute requirement
+        # across the modeled horizon. Hourly throughput and job-deadline
+        # constraints remain responsible for any capacity needed above that
+        # mean. This preserves the value of temporal workload shifting.
+        for hardware in hardware_names:
+            server = servers[hardware]
+            capacity = (
+                float(server["accelerators_per_server"])
+                if hardware == "gpu"
+                else float(server["service_capacity_cpu_server_h_per_h"])
+            )
+            total_local_compute = sum(hardware_compute_expressions[hardware])
+            average_local_groups = total_local_compute / (horizon_hours * capacity)
+            planning_reserve = float(server["installed_reserve_fraction"])
+            model.add_constraints(
+                installed.sel(hardware=hardware)
+                >= (1.0 + planning_reserve) * average_local_groups,
+                name=f"AI-{hardware}-average-demand-planning-headroom",
+            )
+            if cloud_enabled:
+                total_possible_compute = 0.0
+                for task in task_ids:
+                    task_total = float(task_rigid[task].sum()) if heterogeneous else float(rigid.sum())
+                    task_total += sum(
+                        job.amount_service_units
+                        for job in aggregated_jobs
+                        if job.task_id == task or not heterogeneous
+                    )
+                    cpu_fraction = float(cpu_fractions.get(task, 0.0))
+                    fraction = cpu_fraction if hardware == "cpu" else 1.0 - cpu_fraction
+                    multiplier = float(cpu_multipliers.get(task, 1.0)) if hardware == "cpu" else 1.0
+                    total_possible_compute += task_total * accelerator_h_per_service_unit * fraction * multiplier
+                active_hardware = local_active.sel(hardware=hardware)
+                model.add_constraints(
+                    total_local_compute <= total_possible_compute * active_hardware,
+                    name=f"AI-{hardware}-local-activity-link",
+                )
+                spare = int(config["server"]["n_plus_spare_server_groups"])
+                if spare > 0:
+                    model.add_constraints(
+                        installed.sel(hardware=hardware)
+                        >= average_local_groups + spare * active_hardware,
+                        name=f"AI-{hardware}-average-demand-n-plus-spare",
+                    )
         custom.update(
             {
                 "assignments": assignments,
@@ -600,6 +655,7 @@ def optimize_host(
                 "cloud_reserved": cloud_reserved,
                 "cloud_prices": cloud_prices,
                 "installed": installed,
+                "local_active": local_active,
                 "online": online,
                 "hourly_expressions": hourly_expressions,
                 "hardware_compute_expressions": hardware_compute_expressions,
@@ -647,10 +703,19 @@ def optimize_host(
     cloud_reserved_by_hardware: dict[str, float] = {}
     cloud_compute: dict[str, np.ndarray] = {}
     cloud_service_by_task: dict[str, np.ndarray] = {}
+    local_active_by_hardware: dict[str, float] = {}
     if include_ai and ai_link is not None:
         installed_solution = custom["installed"].solution
         online_solution = custom["online"].solution
         installed_by_hardware = {name: float(installed_solution.sel(hardware=name)) for name in custom["hardware_names"]}
+        if custom["local_active"] is not None:
+            local_active_solution = custom["local_active"].solution
+            local_active_by_hardware = {
+                name: float(local_active_solution.sel(hardware=name))
+                for name in custom["hardware_names"]
+            }
+        else:
+            local_active_by_hardware = {name: 1.0 for name in custom["hardware_names"]}
         online_by_hardware = {name: np.asarray(online_solution.sel(hardware=name), dtype=float) for name in custom["hardware_names"]}
         installed_groups = sum(installed_by_hardware.values())
         online_groups = sum(online_by_hardware.values(), np.zeros(horizon_hours))
@@ -761,10 +826,11 @@ def optimize_host(
         ),
         "annual_cloud_subscription_cost_rmb": cloud_subscription_cost,
     }
+    local_model_active = local_active_by_hardware.get("gpu", 0.0)
     lifecycle_components = {
-        "annual_model_initialization_cost_rmb": costs["model_initialization_rmb_per_deployment_year"] if include_ai else 0.0,
+        "annual_model_initialization_cost_rmb": costs["model_initialization_rmb_per_deployment_year"] * local_model_active if include_ai else 0.0,
         "annual_model_storage_cost_rmb": installed_by_hardware.get("gpu", 0.0) * costs["model_storage_rmb_per_server_group_year"] if include_ai else 0.0,
-        "annual_model_operations_cost_rmb": costs["model_operations_rmb_per_deployment_year"] if include_ai else 0.0,
+        "annual_model_operations_cost_rmb": costs["model_operations_rmb_per_deployment_year"] * local_model_active if include_ai else 0.0,
     }
     network_objective = float(network.objective)
     reconstructed_network = sum(physical_components.values())
@@ -773,7 +839,7 @@ def optimize_host(
     components = {**physical_components, **lifecycle_components}
     objective = network_objective + sum(lifecycle_components.values())
     initialization_energy_twh = (
-        costs["model_initialization_energy_kwh_per_deployment_year"] / 1e9
+        costs["model_initialization_energy_kwh_per_deployment_year"] * local_model_active / 1e9
         if include_ai
         else 0.0
     )
@@ -825,6 +891,8 @@ def optimize_host(
         "installed_server_groups": installed_groups,
         "installed_gpu_server_groups": installed_by_hardware.get("gpu", 0.0) if include_ai else 0.0,
         "installed_cpu_server_groups": installed_by_hardware.get("cpu", 0.0) if include_ai else 0.0,
+        "local_gpu_hardware_active": local_active_by_hardware.get("gpu", 0.0),
+        "local_cpu_hardware_active": local_active_by_hardware.get("cpu", 0.0),
         "cloud_reserved_gpu_groups": cloud_reserved_by_hardware.get("gpu", 0.0),
         "cloud_reserved_cpu_groups": cloud_reserved_by_hardware.get("cpu", 0.0),
         "annual_cloud_service_units": float(cloud_service.sum()) * annual_periods,
@@ -894,10 +962,10 @@ def optimize_host(
         "battery_investment_enabled": bool(config["energy"]["battery_investment_enabled"]),
         "annual_objective_rmb": objective,
         "network_optimization_objective_rmb": network_objective,
-        "required_model_replicas": int(config["model_state"]["required_model_replicas"]) if include_ai and not bool(config.get("hybrid_cloud", {}).get("enabled", False)) else 0,
-        "minimum_server_groups_for_model_state": int(config["model_state"]["minimum_server_groups_for_model_state"]) if include_ai and not bool(config.get("hybrid_cloud", {}).get("enabled", False)) else 0,
+        "required_model_replicas": int(config["model_state"]["required_model_replicas"]) * local_model_active if include_ai else 0,
+        "minimum_server_groups_for_model_state": int(config["model_state"]["minimum_server_groups_for_model_state"]) * local_model_active if include_ai else 0,
         "model_vram_gb_per_replica": float(config["model_state"]["vram_gb_per_replica"]) if include_ai else 0.0,
-        "model_storage_required_gb": float(config["model_state"]["model_storage_required_gb_per_deployment"]) if include_ai and not bool(config.get("hybrid_cloud", {}).get("enabled", False)) else 0.0,
+        "model_storage_required_gb": float(config["model_state"]["model_storage_required_gb_per_deployment"]) * local_model_active if include_ai else 0.0,
         "model_storage_available_gb": (installed_by_hardware.get("gpu", 0.0) if include_ai else 0.0) * float(config["model_state"]["bundled_storage_gb_per_server_group"]),
         **components,
     }

@@ -15,7 +15,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "08_code"))
 
-from core.capacity import local_installed_capacity_floor
+from core.capacity import average_required_server_groups, local_installed_capacity_floor
 from core.config import load_config, write_resolved_config
 from core.data import FlexibleJob, load_industry_inputs, read_core_grid_energy_prices
 from core.io import write_csv
@@ -101,8 +101,16 @@ def main() -> None:
         cpu_fraction = float(cpu_fractions.get(task, 0.0))
         gpu_compute += arrivals * accelerator_h * (1.0 - cpu_fraction)
         cpu_compute += arrivals * accelerator_h * cpu_fraction * float(cpu_multipliers.get(task, 1.0))
-    gpu_required = float(gpu_compute.max()) / float(cloud_config["server"]["accelerators_per_server"])
-    cpu_required = float(cpu_compute.max()) / float(cpu_server["service_capacity_cpu_server_h_per_h"])
+    gpu_required = average_required_server_groups(
+        float(gpu_compute.sum()),
+        horizon,
+        float(cloud_config["server"]["accelerators_per_server"]),
+    )
+    cpu_required = average_required_server_groups(
+        float(cpu_compute.sum()),
+        horizon,
+        float(cpu_server["service_capacity_cpu_server_h_per_h"]),
+    )
     floors = {
         "gpu": local_installed_capacity_floor(
             gpu_required,
@@ -148,6 +156,8 @@ def main() -> None:
         "cpu_facility_multiplier": cpu_server["marginal_facility_multiplier"],
         "installed_gpu_server_groups": result.summary["installed_gpu_server_groups"],
         "installed_cpu_server_groups": result.summary["installed_cpu_server_groups"],
+        "average_required_gpu_server_groups": float(result.hourly["gpu_compute_h"].mean()) / float(cloud_config["server"]["accelerators_per_server"]),
+        "average_required_cpu_server_groups": float(result.hourly["cpu_compute_h"].mean()) / float(cpu_server["service_capacity_cpu_server_h_per_h"]),
         "annual_ai_facility_energy_twh": result.summary["annual_ai_facility_energy_twh"],
         "ai_facility_peak_mw": result.summary["ai_facility_peak_mw"],
         "grid_import_peak_mw": result.summary["grid_import_peak_mw"],
@@ -155,6 +165,11 @@ def main() -> None:
         "existing_grid_capacity_mw": result.summary["existing_grid_capacity_mw"],
         "interpretation": cloud["interpretation"],
     }
+    average_required_total = row["average_required_gpu_server_groups"] + row["average_required_cpu_server_groups"]
+    installed_total = row["installed_gpu_server_groups"] + row["installed_cpu_server_groups"]
+    row["installed_total_server_capacity_to_average_demand_ratio"] = installed_total / average_required_total
+    row["realized_total_installed_capacity_utilization_fraction"] = average_required_total / installed_total
+    row["realized_total_capacity_redundancy_fraction_above_average"] = installed_total / average_required_total - 1.0
     if not np.isclose(
         row["daily_effective_service_units"],
         row["reconstructed_daily_effective_service_units"],

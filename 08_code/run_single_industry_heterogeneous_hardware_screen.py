@@ -3,7 +3,7 @@
 
 This is deliberately a one-industry sensitivity module. It preserves the active
 C36 service quantities, task shapes, flexibility windows, IG replication scale,
-five-year life, and one 10% installed margin. CPU task time and routing shares
+five-year life, and one 15% installed margin. CPU task time and routing shares
 remain explicit structural scenarios until task benchmarks are available.
 """
 
@@ -170,7 +170,9 @@ def hardware_screen(
     discount_rate: float,
 ) -> dict[str, float]:
     reserve = float(server["installed_reserve_fraction"])
-    installed = float(compute.max(initial=0.0)) * (1.0 + reserve) / capacity_per_group
+    average_required = float(compute.mean()) / capacity_per_group
+    peak_required = float(compute.max(initial=0.0)) / capacity_per_group
+    installed = max(peak_required, average_required * (1.0 + reserve))
     online = compute / capacity_per_group
     maximum = float(server["maximum_wall_power_kw"])
     idle = float(server["online_idle_wall_power_kw"])
@@ -185,6 +187,10 @@ def hardware_screen(
     annual_energy_kwh = float(power_kw.sum()) * annual_days / represented_days
     return {
         "installed_groups": installed,
+        "average_required_groups": average_required,
+        "peak_required_groups": peak_required,
+        "installed_capacity_to_average_demand_ratio": installed / average_required if average_required > 0.0 else np.nan,
+        "realized_capacity_redundancy_fraction_above_average": installed / average_required - 1.0 if average_required > 0.0 else np.nan,
         "peak_compute_per_h": float(compute.max(initial=0.0)),
         "annual_compute_h": float(compute.sum()) * annual_days / represented_days,
         "annual_facility_energy_kwh": annual_energy_kwh,

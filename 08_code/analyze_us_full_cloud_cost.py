@@ -251,7 +251,7 @@ def main() -> None:
 
 ## 结果
 
-美国本地 IG 基准为 **{owned_costs['IG']/1e9:.3f} 十亿美元/年**，与中国本地部署共用唯一的10%装机峰值裕量。美国完整云化场景保留一年期预留 GPU，不展示按量 GPU；office/agent 走美国区 Token API，其余四类任务走预留 GPU，另加 S3 Standard。正式美国面板按厂商来源规则只保留OpenAI、Anthropic和Google；Qwen与DeepSeek只留在审计表，不进入美国正式结论。
+美国本地 IG 基准为 **{owned_costs['IG']/1e9:.3f} 十亿美元/年**，与中国本地部署共用唯一的15%装机规划裕量。美国完整云化场景保留一年期预留 GPU，不展示按量 GPU；office/agent 走美国区 Token API，其余四类任务走预留 GPU，另加 S3 Standard。正式美国面板按厂商来源规则只保留OpenAI、Anthropic和Google；Qwen与DeepSeek只留在审计表，不进入美国正式结论。
 
 | 美国区 API 代表模型 | API（十亿美元） | 剩余预留 GPU（十亿美元） | 存储（百万美元） | 合计（十亿美元） | 相对美国本地 IG |
 |---|---:|---:|---:|---:|---:|

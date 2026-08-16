@@ -13,7 +13,7 @@ common_overrides:
 # directory; do not splice architecture files from a partially rerun mainline.
 reference_case:
   case_id: REF__baseline
-  display_value: central__reserve_0.10__continuous
+  display_value: central__reserve_0.15__continuous
   overrides: {}
 
 # These smoke factors do not alter the no-AI factory baseline, so all cases
@@ -108,7 +108,7 @@ factors:
               marginal_facility_multiplier: 1.60
   PHY07:
     label_cn: CPU/GPU服务器装机裕量
-    baseline_value: 0.10
+    baseline_value: 0.15
     primary_claims: [C1, C2]
     cases:
       zero:
@@ -119,24 +119,32 @@ factors:
           compute_hardware:
             cpu_server_overrides:
               installed_reserve_fraction: 0.0
-      high:
-        display_value: 0.25
+      medium:
+        display_value: 0.30
         overrides:
           server:
-            installed_reserve_fraction: 0.25
+            installed_reserve_fraction: 0.30
           compute_hardware:
             cpu_server_overrides:
-              installed_reserve_fraction: 0.25
-  PHY08:
-    label_cn: N+1备用服务器组
-    baseline_value: 1
-    primary_claims: [C1, C2]
-    cases:
-      zero:
-        display_value: 0
+              installed_reserve_fraction: 0.30
+      high:
+        display_value: 0.50
         overrides:
           server:
-            n_plus_spare_server_groups: 0
+            installed_reserve_fraction: 0.50
+          compute_hardware:
+            cpu_server_overrides:
+              installed_reserve_fraction: 0.50
+  PHY08:
+    label_cn: N+1备用服务器组
+    baseline_value: 0
+    primary_claims: [C1, C2]
+    cases:
+      n_plus_one:
+        display_value: 1
+        overrides:
+          server:
+            n_plus_spare_server_groups: 1
   PHY09:
     label_cn: 服务器组整数化
     baseline_value: false

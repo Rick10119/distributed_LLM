@@ -27,7 +27,7 @@ lines += [
  '', '## 结论', '',
         f'- 中国基准需求下，本地异构部署耗电 {cn_energy:.3f} TWh/年。本地联合物理优化成本为 {cn.local_joint_physical_annual_cost_rmb.iloc[0]/1e9:.3f} 十亿元人民币/年；相对阿里云节省 {cn_alibaba:.1%}，相对 DeepSeek 节省 {cn_deepseek:.1%}。',
  f'- 美国基准需求下，本地异构部署耗电 {us_energy:.3f} TWh/年。本地成本为 {us_base.local_total_annual_cost_usd.iloc[0]/1e9:.3f} 十亿美元/年；三家云服务商的云/本地比为 {us_base.cloud_to_local_cost_ratio.min():.3f}–{us_base.cloud_to_local_cost_ratio.max():.3f}，本地节省 {us_base.local_savings_vs_cloud_fraction.min():.1%}–{us_base.local_savings_vs_cloud_fraction.max():.1%}。',
- '- 以上是企业付款口径，不是云商底层资源成本；中美分别满足本国制造业 AI 需求，且服务器寿命统一为 5 年、每个硬件池只保留一次 10% 裕量。',
+ '- 以上是企业付款口径，不是云商底层资源成本；中美分别满足本国制造业 AI 需求，且服务器寿命统一为 5 年、每个硬件池只保留一次 15% 裕量。',
  '- 结果对 CPU/GPU 路由、CPU 相对服务时间、本地 CPU 采购价和云端 CPU 容量价格敏感。美国高 CPU 采购价情景下，本地仍节省约 35%，但该结果仍依赖物理核比例代理，不能替代匹配任务质量与 SLA 的吞吐基准。',
 ]
 a.findings_output.write_text('\n'.join(lines)+'\n',encoding='utf-8')
