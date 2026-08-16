@@ -41,6 +41,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lineage-output", type=Path, required=True)
     parser.add_argument("--done-output", type=Path, required=True)
     parser.add_argument("--architectures", nargs="+", default=DEFAULT_ARCHITECTURES)
+    parser.add_argument(
+        "--enforce-core-capacity-boundary",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Require the core 15% average-demand headroom and zero N+1 spare. Disable for national OAT capacity screens.",
+    )
     return parser.parse_args()
 
 
@@ -77,10 +83,16 @@ def main() -> None:
         if bool(summary["online_server_groups_integer"].any()):
             raise ValueError(f"{industry}: hourly online capacity must remain continuous")
         reserve_values = summary["planning_reserve_fraction"].astype(float)
-        if not ((reserve_values - 0.15).abs() <= 1e-12).all():
-            raise ValueError(f"{industry}: core planning headroom must be 15%")
-        if not (summary["n_plus_spare_server_groups"].astype(float) == 0.0).all():
-            raise ValueError(f"{industry}: N+1 belongs to sensitivity analysis, not the core")
+        spare_values = summary["n_plus_spare_server_groups"].astype(float)
+        if reserve_values.nunique(dropna=False) != 1:
+            raise ValueError(f"{industry}: planning reserve is inconsistent across architectures")
+        if spare_values.nunique(dropna=False) != 1:
+            raise ValueError(f"{industry}: N+k spare count is inconsistent across architectures")
+        if args.enforce_core_capacity_boundary:
+            if not ((reserve_values - 0.15).abs() <= 1e-12).all():
+                raise ValueError(f"{industry}: core planning headroom must be 15%")
+            if not (spare_values == 0.0).all():
+                raise ValueError(f"{industry}: N+1 belongs to sensitivity analysis, not the core")
         reference = float(summary["weekly_service_units"].iloc[0])
         error = (summary["weekly_service_units"] - reference).abs().max() / max(abs(reference), 1e-12)
         if error > 1e-7:
@@ -96,8 +108,17 @@ def main() -> None:
         lineage = pd.read_csv(folder / "curve_lineage.csv", encoding="utf-8-sig")
         lineage.insert(0, "industry", industry)
         metadata = json.loads((folder / "metadata.json").read_text(encoding="utf-8"))
-        if abs(float(metadata["planning_reserve_fraction"]) - 0.15) > 1e-12:
-            raise ValueError(f"{industry}: metadata does not record the 15% core headroom")
+        if "planning_reserve_fraction" in metadata:
+            if abs(float(metadata["planning_reserve_fraction"]) - float(reserve_values.iloc[0])) > 1e-12:
+                raise ValueError(f"{industry}: metadata planning reserve does not match summary")
+        if "n_plus_spare_server_groups" in metadata:
+            if abs(float(metadata["n_plus_spare_server_groups"]) - float(spare_values.iloc[0])) > 1e-12:
+                raise ValueError(f"{industry}: metadata N+k spare does not match summary")
+        if args.enforce_core_capacity_boundary:
+            if abs(float(metadata.get("planning_reserve_fraction", reserve_values.iloc[0])) - 0.15) > 1e-12:
+                raise ValueError(f"{industry}: metadata does not record the 15% core headroom")
+            if abs(float(metadata.get("n_plus_spare_server_groups", spare_values.iloc[0]))) > 1e-12:
+                raise ValueError(f"{industry}: metadata must record zero N+1 for the core")
         expected_factories = int(metadata["physical_factory_count"])
         expected_nodes = int(metadata["modeled_routing_node_count"])
         if len(lineage) != expected_nodes:

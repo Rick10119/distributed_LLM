@@ -175,6 +175,11 @@ def solve_architecture(
     demand_rate = float(config["energy"]["maximum_demand_rmb_per_kw_month"]) * 1000.0 * 12.0
     accelerator_factor = float(config["demand"]["effective_service"]["accelerator_h_per_service_unit"])
     reserve = float(servers["gpu"]["installed_reserve_fraction"])
+    n_plus_spare = int(servers["gpu"].get("n_plus_spare_server_groups", 0))
+    if any(int(servers[name].get("n_plus_spare_server_groups", n_plus_spare)) != n_plus_spare for name in hardware):
+        raise ValueError("GPU/CPU n_plus_spare_server_groups must match within one solve")
+    if any(abs(float(servers[name]["installed_reserve_fraction"]) - reserve) > 1e-12 for name in hardware):
+        raise ValueError("GPU/CPU installed_reserve_fraction must match within one solve")
 
     model = linopy.Model()
     site_index = pd.Index(sites, name="site")
@@ -257,11 +262,20 @@ def solve_architecture(
             server = servers[name]
             capacity = float(server["service_capacity_cpu_server_h_per_h"] if name == "cpu" else server["accelerators_per_server"])
             average_compute = sum(compute_expr[(site, hour, name)] for hour in hours) / len(list(hours))
+            reserve_fraction = float(server["installed_reserve_fraction"])
+            spare_groups = int(server.get("n_plus_spare_server_groups", 0))
+            if spare_groups < 0:
+                raise ValueError("n_plus_spare_server_groups must be non-negative")
+            average_required = average_compute / capacity
             model.add_constraints(
-                installed.sel(site=site, hardware=name)
-                >= (1.0 + float(server["installed_reserve_fraction"])) * average_compute / capacity,
+                installed.sel(site=site, hardware=name) >= (1.0 + reserve_fraction) * average_required,
                 name=f"average_demand_planning_capacity_{site}_{name}",
             )
+            if spare_groups:
+                model.add_constraints(
+                    installed.sel(site=site, hardware=name) >= average_required + spare_groups,
+                    name=f"n_plus_spare_capacity_{site}_{name}",
+                )
     model.objective = objective
     status, condition = model.solve(solver_name=solver_name, log_to_console=False)
     if status != "ok":
@@ -329,7 +343,7 @@ def solve_architecture(
         "physical_factory_count": len(sites),
         "installed_server_groups_integer": installed_integer,
         "online_server_groups_integer": False,
-        "n_plus_spare_server_groups": 0,
+        "n_plus_spare_server_groups": n_plus_spare,
         "model_state_minimum_groups_enabled": False,
         "planning_reserve_fraction": reserve,
         "installed_gpu_server_groups": float(installed_values["gpu"].sum()),
@@ -406,14 +420,20 @@ def main() -> None:
     routing_node_loads = representative_factory_loads * factory_weights[:, None]
     host_index = int(np.argsort(representative_factory_loads.max(axis=1))[modeled_node_count // 2])
     servers, cpu_fraction, cpu_multiplier, hardware_meta = hardware_parameters(config)
-    planning_reserve = float(
-        experiment.get("integer_boundary", {}).get(
-            "planning_reserve_fraction",
-            config["server"]["installed_reserve_fraction"],
-        )
-    )
+    # Prefer the merged run/case config so PHY07/PHY08 overrides are not wiped by
+    # the core experiment pin. Fill only missing hardware fields.
+    default_planning_reserve = float(config["server"]["installed_reserve_fraction"])
+    default_n_plus = int(config["server"].get("n_plus_spare_server_groups", 0))
     for server in servers.values():
-        server["installed_reserve_fraction"] = planning_reserve
+        server.setdefault("installed_reserve_fraction", default_planning_reserve)
+        server.setdefault("n_plus_spare_server_groups", default_n_plus)
+    planning_reserve = float(servers["gpu"]["installed_reserve_fraction"])
+    n_plus_spare = int(servers["gpu"].get("n_plus_spare_server_groups", default_n_plus))
+    for server in servers.values():
+        if abs(float(server["installed_reserve_fraction"]) - planning_reserve) > 1e-12:
+            raise ValueError("GPU/CPU planning reserves must match")
+        if int(server.get("n_plus_spare_server_groups", n_plus_spare)) != n_plus_spare:
+            raise ValueError("GPU/CPU N+k spare counts must match")
     rigid_group, jobs_group = scale_task_workload(inputs, share)
     grid_prices = read_core_grid_energy_prices(config)
     horizon_hours = int(config["model"]["horizon_hours"])
@@ -507,7 +527,7 @@ def main() -> None:
             "physical_factory_count": count, "installed_server_groups_integer": True,
             "modeled_routing_node_count": modeled_node_count,
             "active_compute_node_count": count,
-            "online_server_groups_integer": False, "n_plus_spare_server_groups": 0,
+            "online_server_groups_integer": False, "n_plus_spare_server_groups": n_plus_spare,
             "model_state_minimum_groups_enabled": False,
             "planning_reserve_fraction": planning_reserve,
             "maximum_single_site_ai_facility_power_mw": float(max(row["maximum_single_site_ai_facility_power_mw"] for row in if_site_summaries)),
@@ -616,6 +636,8 @@ def main() -> None:
         "hardware": hardware_meta,
         "variable_counts": variable_counts,
         "selected_architectures": selected_architectures,
+        "planning_reserve_fraction": planning_reserve,
+        "n_plus_spare_server_groups": n_plus_spare,
         "base_load_cases_by_architecture": {
             architecture: cases_by_architecture[architecture]
             for architecture in selected_architectures

@@ -380,6 +380,7 @@ rule combine_national_oat_case:
         "python {input.script} --root " + NATIONAL_OAT_ROOT + "/model/{wildcards.case_id} "
         "--industries " + " ".join(NATIONAL_OAT_INDUSTRIES) + " "
         "--architectures " + " ".join(NATIONAL_OAT_ARCHITECTURES) + " "
+        "--no-enforce-core-capacity-boundary "
         "--summary-output {output.summary} --alignment-output {output.alignment} "
         "--lineage-output {output.lineage} --done-output {output.done}"
 
