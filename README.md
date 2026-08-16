@@ -178,6 +178,7 @@ snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --rer
 | `make national-grid-comparison` | `snakemake national_grid_capacity_comparison --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
 | `make national-no-shift-sensitivity` | `snakemake national_no_shift_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
 | `make national-high-impact-sensitivity` | `snakemake national_high_impact_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make national-extended-sensitivity` | `snakemake national_extended_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete`（可选扩展屏 PHY04–PHY11/HW01–HW02，默认不跑） |
 
 默认环境名为 `pypsa`，默认目标为 `core`，默认配置为 `config/runs/all_industries_core.yaml`，默认使用 5 个核心。
 

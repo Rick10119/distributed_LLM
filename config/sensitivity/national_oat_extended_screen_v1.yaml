@@ -1,0 +1,151 @@
+sensitivity_version: national_oat_extended_screen_v1.0.0
+model_version: v0.8.0
+status: group_architecture_oat_extended_screen
+# Opt-in only. Trigger with `snakemake national_extended_sensitivity` or
+# `make national-extended-sensitivity`. Not part of core / extended_analysis.
+default_enabled: false
+industry: C38
+selected_industries: [C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43]
+architectures: [IF, IG_1host, IG_multisite]
+# Parameter screens default to IG_1host only. Core and C33/C36 still compare all three.
+# C38-screened PHY04–PHY11 and HW01–HW02 promoted to all 31 industries.
+solve_architectures: [IG_1host]
+# Share the national OAT output root so case folders stay consistent with PHY01–PHY03.
+output_root: 05_results/sensitivity/v0.8.0/national_oat_group_architecture
+common_overrides:
+  paths:
+    hourly_industry_profiles: 02_data/processed/core/manufacturing_31sector_real_weeks.csv
+reference_case:
+  case_id: REF__baseline
+  display_value: central
+  overrides: {}
+baseline_invariant: true
+baseline_summary: 05_results/v0.8.0/model/C38/baseline/summary.json
+factors:
+  PHY04:
+    label_cn: GPU服务器满载功率
+    baseline_value: 1.50
+    primary_claims: [C1, C2, C3]
+    cases:
+      low:
+        display_value: 1.05
+        overrides:
+          server:
+            maximum_wall_power_kw: 1.05
+  PHY05:
+    label_cn: GPU服务器在线空闲功率
+    baseline_value: 0.36
+    primary_claims: [C1, C2, C3]
+    cases:
+      low:
+        display_value: 0.28
+        overrides:
+          server:
+            online_idle_wall_power_kw: 0.28
+      high:
+        display_value: 0.50
+        overrides:
+          server:
+            online_idle_wall_power_kw: 0.50
+  PHY06:
+    label_cn: 本地设施功率乘数
+    baseline_value: 1.30
+    primary_claims: [C1, C2, C3]
+    cases:
+      low:
+        display_value: 1.20
+        overrides:
+          server:
+            marginal_facility_multiplier: 1.20
+          compute_hardware:
+            cpu_server_overrides:
+              marginal_facility_multiplier: 1.20
+      high:
+        display_value: 1.60
+        overrides:
+          server:
+            marginal_facility_multiplier: 1.60
+          compute_hardware:
+            cpu_server_overrides:
+              marginal_facility_multiplier: 1.60
+  PHY07:
+    label_cn: CPU/GPU服务器装机裕量
+    baseline_value: 0.10
+    primary_claims: [C1, C2]
+    cases:
+      zero:
+        display_value: 0.00
+        overrides:
+          server:
+            installed_reserve_fraction: 0.0
+          compute_hardware:
+            cpu_server_overrides:
+              installed_reserve_fraction: 0.0
+      high:
+        display_value: 0.25
+        overrides:
+          server:
+            installed_reserve_fraction: 0.25
+          compute_hardware:
+            cpu_server_overrides:
+              installed_reserve_fraction: 0.25
+  PHY08:
+    label_cn: N+1备用服务器组
+    baseline_value: 1
+    primary_claims: [C1, C2]
+    cases:
+      zero:
+        display_value: 0
+        overrides:
+          server:
+            n_plus_spare_server_groups: 0
+  PHY09:
+    label_cn: 服务器组整数化
+    baseline_value: false
+    primary_claims: [C1, C2]
+    cases:
+      integer:
+        display_value: true
+        overrides:
+          model:
+            server_groups_integer: true
+  PHY11:
+    label_cn: 最大需量电价
+    baseline_value: 36.1
+    primary_claims: [C1, C2]
+    cases:
+      low:
+        display_value: 26.1
+        overrides:
+          energy:
+            maximum_demand_rmb_per_kw_month: 26.1
+  HW01:
+    label_cn: CPU/GPU任务路由
+    baseline_value: practice_routed
+    primary_claims: [C1, C2, C3]
+    cases:
+      gpu_only:
+        display_value: gpu_only
+        overrides:
+          compute_hardware:
+            routing_case: gpu_only
+      cpu_heavy:
+        display_value: cpu_heavy
+        overrides:
+          compute_hardware:
+            routing_case: cpu_heavy
+  HW02:
+    label_cn: CPU相对服务时间
+    baseline_value: 1.0
+    primary_claims: [C1, C2, C3]
+    cases:
+      low:
+        display_value: 0.5
+        overrides:
+          compute_hardware:
+            cpu_time_multiplier_factor: 0.5
+      high:
+        display_value: 4.0
+        overrides:
+          compute_hardware:
+            cpu_time_multiplier_factor: 4.0

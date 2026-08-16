@@ -1,5 +1,5 @@
 experiment_id: group_multisite_31industry_core_v1
-solver: highs
+solver: gurobi
 industry: null
 factory_count: representative_group_case
 max_modeled_routing_nodes: 5

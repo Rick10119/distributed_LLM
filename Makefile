@@ -4,7 +4,7 @@ CONFIG ?= config/runs/all_industries_core.yaml
 TARGET ?= core
 SNAKEMAKE_ARGS ?=
 
-.PHONY: all results dry-run briefing extended-analysis sensitivity-smoke sensitivity-smoke-dry-run sensitivity-grid-hybrid sensitivity-grid-hybrid-dry-run sensitivity-group-multisite sensitivity-group-multisite-dry-run industry-cost-differences national-cloud-center national-grid-comparison national-no-shift-sensitivity national-high-impact-sensitivity
+.PHONY: all results dry-run briefing extended-analysis sensitivity-smoke sensitivity-smoke-dry-run sensitivity-grid-hybrid sensitivity-grid-hybrid-dry-run sensitivity-group-multisite sensitivity-group-multisite-dry-run industry-cost-differences national-cloud-center national-grid-comparison national-no-shift-sensitivity national-high-impact-sensitivity national-extended-sensitivity
 
 all: results
 
@@ -109,4 +109,10 @@ national-high-impact-sensitivity:
 	conda run -n $(ENV) snakemake national_high_impact_sensitivity --cores $(CORES) \
 		--configfile config/runs/all_industries_core.yaml \
 		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_high_impact.XXXXXX)" \
+		--rerun-incomplete $(SNAKEMAKE_ARGS)
+
+national-extended-sensitivity:
+	conda run -n $(ENV) snakemake national_extended_sensitivity --cores $(CORES) \
+		--configfile config/runs/all_industries_core.yaml \
+		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_extended.XXXXXX)" \
 		--rerun-incomplete $(SNAKEMAKE_ARGS)

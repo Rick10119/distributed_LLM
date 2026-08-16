@@ -99,16 +99,31 @@ NATIONAL_GRID_COMPARISON = "05_results/sensitivity/v0.8.0/national_grid_capacity
 NATIONAL_GRID_COMPARISON_DONE = "05_results/sensitivity/v0.8.0/national_grid_capacity_comparison.validated.done.json"
 NATIONAL_OAT_REGISTRY = "config/sensitivity/national_oat_extension_v1.yaml"
 NATIONAL_OAT = yaml.safe_load(open(NATIONAL_OAT_REGISTRY, encoding="utf-8"))
+NATIONAL_OAT_EXTENDED_REGISTRY = "config/sensitivity/national_oat_extended_screen_v1.yaml"
+NATIONAL_OAT_EXTENDED = yaml.safe_load(open(NATIONAL_OAT_EXTENDED_REGISTRY, encoding="utf-8"))
 NATIONAL_OAT_ROOT = NATIONAL_OAT["output_root"]
 NATIONAL_OAT_INDUSTRIES = NATIONAL_OAT["selected_industries"]
 NATIONAL_OAT_ARCHITECTURES = NATIONAL_OAT.get("solve_architectures", NATIONAL_OAT["architectures"])
-NATIONAL_OAT_CASES = [
+NATIONAL_OAT_DEFAULT_CASES = [
     factor_id + "__" + case_name
     for factor_id, factor in NATIONAL_OAT["factors"].items()
     for case_name in factor["cases"]
 ]
+NATIONAL_OAT_EXTENDED_CASES = [
+    factor_id + "__" + case_name
+    for factor_id, factor in NATIONAL_OAT_EXTENDED["factors"].items()
+    for case_name in factor["cases"]
+]
+# Shared rule wildcards cover both registries; only explicit targets pull either set.
+NATIONAL_OAT_CASES = NATIONAL_OAT_DEFAULT_CASES + NATIONAL_OAT_EXTENDED_CASES
 NATIONAL_OAT_NO_SHIFT_CASES = ["PHY03__no_shift"]
 NATIONAL_OAT_HIGH_CASES = ["PHY01__low", "PHY01__high", "PHY02__efficient"]
+
+
+def national_oat_registry_for_case(wildcards):
+    if wildcards.case_id in NATIONAL_OAT_EXTENDED_CASES:
+        return NATIONAL_OAT_EXTENDED_REGISTRY
+    return NATIONAL_OAT_REGISTRY
 NATIONAL_OAT_CONFIG = NATIONAL_OAT_ROOT + "/configs/{case_id}.yaml"
 NATIONAL_OAT_INDUSTRY_ROOT = NATIONAL_OAT_ROOT + "/model/{case_id}/{industry}"
 NATIONAL_OAT_INDUSTRY_SUMMARY = NATIONAL_OAT_INDUSTRY_ROOT + "/summary.csv"
@@ -284,9 +299,14 @@ rule national_high_impact_sensitivity:
         expand(NATIONAL_OAT_COMPARISON_DONE, case_id=NATIONAL_OAT_HIGH_CASES),
 
 
+rule national_extended_sensitivity:
+    input:
+        expand(NATIONAL_OAT_COMPARISON_DONE, case_id=NATIONAL_OAT_EXTENDED_CASES),
+
+
 rule materialize_national_oat_case:
     input:
-        registry=NATIONAL_OAT_REGISTRY,
+        registry=national_oat_registry_for_case,
         script="08_code/materialize_sensitivity_case.py",
     output:
         NATIONAL_OAT_CONFIG,
