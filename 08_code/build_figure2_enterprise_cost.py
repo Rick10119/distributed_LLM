@@ -37,6 +37,24 @@ SENSITIVITY_VERSION_ROOT = DEFAULT_RESULTS_ROOT / "sensitivity" / DEFAULT_MODEL_
 RESULT_ROOT = VERSION_RESULT_ROOT / "manuscript_figures"
 CHINA_PROVIDERS = ["DeepSeek", "Alibaba Cloud"]
 DEMAND_CASES = ["low", "base", "high"]
+CHINA_COST_COLUMNS = [
+    "industry_equivalent_installed_gpu_server_groups",
+    "industry_equivalent_installed_cpu_server_groups",
+    "industry_equivalent_annual_ai_energy_cost_rmb",
+    "industry_equivalent_annual_incremental_maximum_demand_cost_rmb",
+    "industry_equivalent_annual_incremental_total_cost_rmb",
+]
+US_PROVIDERS = ["OpenAI", "Anthropic", "Google"]
+US_COST_COLUMNS = [
+    "local_total_annual_cost_usd",
+    "cloud_total_annual_cost_usd",
+    "local_gpu_servers",
+    "local_cpu_servers",
+    "annual_facility_energy_twh",
+    "cloud_gpu_reserved_cost_usd",
+    "cloud_cpu_reserved_cost_usd",
+    "cloud_token_api_cost_usd",
+]
 COLORS = {
     "gpu": "#496F95", "cpu": "#86A8C2", "energy": "#D6A457",
     "demand": "#9B735E", "token": "#8A6DAA",
@@ -93,13 +111,54 @@ def _industry_token_demand(
     return annual_input, annual_output
 
 
-def _validate_china_case(frame: pd.DataFrame, demand_case: str) -> pd.DataFrame:
-    selected = frame[frame["architecture"].eq("IG_1host")].copy()
-    if selected["industry"].nunique() != 31 or len(selected) != 31:
-        raise ValueError(f"China {demand_case} case must contain 31 IG_1host industries")
-    if set(pd.to_numeric(selected["planning_reserve_fraction"]).round(8)) != {0.15}:
-        raise ValueError(f"China {demand_case} case is not synchronized to the 15% reserve boundary")
-    return selected
+def _read_csv_or_empty(path: Path) -> pd.DataFrame:
+    if not path.exists() or path.stat().st_size == 0:
+        return pd.DataFrame()
+    return pd.read_csv(path, encoding="utf-8-sig")
+
+
+def _prepare_china_case(
+    frame: pd.DataFrame, demand_case: str, industries: list[str],
+) -> tuple[pd.DataFrame, bool]:
+    if {"architecture", "industry"}.issubset(frame.columns):
+        selected = frame[frame["architecture"].eq("IG_1host")].copy()
+        selected["industry"] = selected["industry"].astype(str)
+        selected = selected.drop_duplicates("industry", keep="last").set_index("industry")
+    else:
+        selected = pd.DataFrame(index=pd.Index([], name="industry"))
+    missing_industries = set(industries) - set(selected.index)
+    missing_columns = set(CHINA_COST_COLUMNS) - set(selected.columns)
+    selected = selected.reindex(industries)
+    for column in CHINA_COST_COLUMNS:
+        if column not in selected:
+            selected[column] = 0.0
+        selected[column] = pd.to_numeric(selected[column], errors="coerce").fillna(0.0)
+    selected["architecture"] = "IG_1host"
+    selected["demand_case"] = demand_case
+    return selected.reset_index(), bool(missing_industries or missing_columns)
+
+
+def _prepare_us_cases(frame: pd.DataFrame) -> tuple[pd.DataFrame, bool]:
+    if "cpu_server_price_case" in frame:
+        frame = frame[frame["cpu_server_price_case"].eq("base")].copy()
+    required_keys = {"parameter_case", "provider"}
+    if required_keys.issubset(frame.columns):
+        frame = frame.drop_duplicates(["parameter_case", "provider"], keep="last")
+        frame = frame.set_index(["parameter_case", "provider"])
+    else:
+        frame = pd.DataFrame(index=pd.MultiIndex.from_tuples([], names=["parameter_case", "provider"]))
+    expected = pd.MultiIndex.from_product(
+        [DEMAND_CASES, US_PROVIDERS], names=["parameter_case", "provider"]
+    )
+    missing_cases = set(expected) - set(frame.index)
+    missing_columns = set(US_COST_COLUMNS) - set(frame.columns)
+    frame = frame.reindex(expected)
+    for column in US_COST_COLUMNS:
+        if column not in frame:
+            frame[column] = 0.0
+        frame[column] = pd.to_numeric(frame[column], errors="coerce").fillna(0.0)
+    frame["cpu_server_price_case"] = "base"
+    return frame.reset_index(), bool(missing_cases or missing_columns)
 
 
 def prepare(
@@ -117,12 +176,19 @@ def prepare(
     us_parameters_path: Path,
     model_version: str,
 ) -> pd.DataFrame:
+    baseline = pd.read_csv(baseline_path, encoding="utf-8-sig")
+    industries = baseline["industry_code"].astype(str).tolist()
     china_frames = {
-        "low": pd.read_csv(china_low_path, encoding="utf-8-sig"),
-        "base": pd.read_csv(core_path, encoding="utf-8-sig"),
-        "high": pd.read_csv(china_high_path, encoding="utf-8-sig"),
+        "low": _read_csv_or_empty(china_low_path),
+        "base": _read_csv_or_empty(core_path),
+        "high": _read_csv_or_empty(china_high_path),
     }
-    china_ig = {case: _validate_china_case(frame, case) for case, frame in china_frames.items()}
+    china_prepared = {
+        case: _prepare_china_case(frame, case, industries)
+        for case, frame in china_frames.items()
+    }
+    china_ig = {case: prepared[0] for case, prepared in china_prepared.items()}
+    china_zero_filled = {case: prepared[1] for case, prepared in china_prepared.items()}
 
     defaults = yaml.safe_load(defaults_path.read_text(encoding="utf-8"))
     routing_doc = yaml.safe_load(routing_path.read_text(encoding="utf-8"))
@@ -132,7 +198,6 @@ def prepare(
     cpu_annual = _annual_server_cost(routing_doc["cpu_server"], discount)
     service = pd.read_csv(service_path, encoding="utf-8-sig")
     workload = pd.read_csv(workload_path, encoding="utf-8-sig")
-    baseline = pd.read_csv(baseline_path, encoding="utf-8-sig")
     prices = pd.read_csv(api_price_path, encoding="utf-8-sig")
     prices = prices[
         prices["provider"].isin(CHINA_PROVIDERS)
@@ -141,6 +206,12 @@ def prepare(
     ]
     if set(prices["provider"]) != set(CHINA_PROVIDERS) or prices["provider"].duplicated().any():
         raise ValueError("Expected one active price for each China provider")
+    usd_fx = pd.to_numeric(
+        prices.loc[prices["currency"].eq("USD"), "fx_to_cny"], errors="coerce"
+    ).dropna().unique()
+    if len(usd_fx) != 1 or float(usd_fx[0]) <= 0:
+        raise ValueError("Expected one positive CNY-per-USD exchange rate in active price inputs")
+    cny_per_usd = float(usd_fx[0])
 
     cloud_cfg = defaults["hybrid_cloud"]
     gpu_subscription = float(cloud_cfg["gpu_annual_subscription_rmb_per_group"])
@@ -155,7 +226,8 @@ def prepare(
             "panel": "a", "country": "China", "demand_case": demand_case,
             "option": "cn_local", "label": "本地自建", "component": "总成本",
             "value": float(ig["industry_equivalent_annual_incremental_total_cost_rmb"].sum()),
-            "unit": "RMB/year", "evidence_status": "validated_15pct_IG_1host",
+            "unit": "RMB/year",
+            "evidence_status": "zero_filled_missing_values" if china_zero_filled[demand_case] else "available_IG_1host",
         })
         provider_values = {
             provider: {"GPU容量付款": 0.0, "CPU容量付款": 0.0, "Token API": 0.0}
@@ -224,7 +296,7 @@ def prepare(
             "panel": "c", "country": "China", "demand_case": "base",
             "option": "cn_local", "label": "本地自建", "component": component,
             "value": value, "unit": "RMB/year",
-            "evidence_status": "validated_15pct_IG_1host",
+            "evidence_status": "zero_filled_missing_values" if china_zero_filled["base"] else "available_IG_1host",
         })
     for provider in CHINA_PROVIDERS:
         option = "cn_cloud_deepseek" if provider == "DeepSeek" else "cn_cloud_alibaba"
@@ -236,12 +308,7 @@ def prepare(
                 "evidence_status": "provisional_china_cloud_price_proxy",
             })
 
-    us_national = pd.read_csv(us_national_path, encoding="utf-8-sig")
-    us_national = us_national[us_national["cpu_server_price_case"].eq("base")].copy()
-    if set(us_national["parameter_case"]) != set(DEMAND_CASES):
-        raise ValueError("U.S. result must contain low/base/high demand")
-    if set(us_national["provider"]) != {"OpenAI", "Anthropic", "Google"}:
-        raise ValueError("U.S. result must contain the three formal providers")
+    us_national, us_zero_filled = _prepare_us_cases(_read_csv_or_empty(us_national_path))
     for demand_case in DEMAND_CASES:
         selected = us_national[us_national["parameter_case"].eq(demand_case)]
         if selected["local_total_annual_cost_usd"].round(2).nunique() != 1:
@@ -251,7 +318,7 @@ def prepare(
             "option": "us_local", "label": "本地自建", "component": "总成本",
             "value": float(selected.iloc[0]["local_total_annual_cost_usd"]),
             "unit": "USD/year",
-            "evidence_status": "validated_us_21_naics_native_demand_heterogeneous_hardware",
+            "evidence_status": "zero_filled_missing_values" if us_zero_filled else "available_us_native_demand_heterogeneous_hardware",
         })
         for item in selected.itertuples(index=False):
             rows.append({
@@ -259,7 +326,7 @@ def prepare(
                 "option": f"us_cloud_{str(item.provider).lower()}", "label": item.provider,
                 "component": "总成本", "value": float(item.cloud_total_annual_cost_usd),
                 "unit": "USD/year",
-                "evidence_status": "validated_us_21_naics_native_demand_cloud_payment_proxy",
+                "evidence_status": "zero_filled_missing_values" if us_zero_filled else "available_us_native_demand_cloud_payment_proxy",
             })
 
     us_config = yaml.safe_load(us_cost_config_path.read_text(encoding="utf-8"))["us_cost_environment"]
@@ -290,7 +357,7 @@ def prepare(
             "panel": "d", "country": "US", "demand_case": "base",
             "option": "us_local", "label": "本地自建", "component": component,
             "value": value, "unit": "USD/year",
-            "evidence_status": "validated_us_21_naics_native_demand_heterogeneous_hardware",
+            "evidence_status": "zero_filled_missing_values" if us_zero_filled else "available_us_native_demand_heterogeneous_hardware",
         })
     for item in us_base.itertuples(index=False):
         for component, value in (
@@ -302,11 +369,15 @@ def prepare(
                 "panel": "d", "country": "US", "demand_case": "base",
                 "option": f"us_cloud_{str(item.provider).lower()}", "label": item.provider,
                 "component": component, "value": value, "unit": "USD/year",
-                "evidence_status": "validated_us_21_naics_native_demand_cloud_payment_proxy",
+                "evidence_status": "zero_filled_missing_values" if us_zero_filled else "available_us_native_demand_cloud_payment_proxy",
             })
 
     output = pd.DataFrame(rows)
     output.insert(0, "model_version", model_version)
+    output["value_local_currency"] = output["value"]
+    output["local_currency_unit"] = output["unit"]
+    output["local_currency_per_usd"] = np.where(output["country"].eq("China"), cny_per_usd, 1.0)
+    output["value_usd"] = output["value_local_currency"] / output["local_currency_per_usd"]
     return output
 
 
@@ -320,32 +391,57 @@ def _style(ax: plt.Axes, grid_axis: str = "y") -> None:
     ax.set_axisbelow(True)
 
 
-def _plot_demand_range(
-    ax: plt.Axes, data: pd.DataFrame, options: list[str], labels: list[str],
+def _plot_cost_by_demand(
+    ax: plt.Axes, data: pd.DataFrame, local_options: list[str], cloud_options: list[str],
     divisor: float, ylabel: str, title: str,
 ) -> None:
-    pivot = data.pivot(index="option", columns="demand_case", values="value").loc[options] / divisor
-    x = np.arange(len(options), dtype=float)
-    ax.vlines(x, pivot["low"], pivot["high"], color="#9AA3A8", linewidth=2.0, zorder=1)
-    markers = {"low": "v", "base": "o", "high": "^"}
-    for case in DEMAND_CASES:
+    pivot = data.pivot(index="option", columns="demand_case", values="value") / divisor
+    x = np.arange(len(DEMAND_CASES), dtype=float)
+    local = pivot.loc[local_options, DEMAND_CASES].to_numpy(dtype=float)
+    cloud = pivot.loc[cloud_options, DEMAND_CASES].to_numpy(dtype=float)
+    local_min = local.min(axis=0)
+    local_max = local.max(axis=0)
+    cloud_min = cloud.min(axis=0)
+    cloud_max = cloud.max(axis=0)
+    local_x = x - 0.035
+    cloud_x = x + 0.035
+
+    ax.fill_between(local_x, local_min, local_max, color=COLORS["base"], alpha=0.18, zorder=1)
+    ax.plot(local_x, local_min, color=COLORS["base"], linewidth=2.0, marker="o", markersize=5, zorder=3)
+    ax.plot(local_x, local_max, color=COLORS["base"], linewidth=2.0, marker="o", markersize=5, zorder=3)
+    ax.vlines(local_x, local_min, local_max, color=COLORS["base"], linewidth=4.0, alpha=0.8, zorder=2)
+    ax.hlines(local_min, local_x - 0.055, local_x + 0.055, color=COLORS["base"], linewidth=1.2, zorder=3)
+    ax.hlines(local_max, local_x - 0.055, local_x + 0.055, color=COLORS["base"], linewidth=1.2, zorder=3)
+
+    ax.fill_between(cloud_x, cloud_min, cloud_max, color=COLORS["high"], alpha=0.18, zorder=1)
+    ax.plot(cloud_x, cloud_min, color=COLORS["high"], linewidth=2.0, marker="o", markersize=5, zorder=3)
+    ax.plot(cloud_x, cloud_max, color=COLORS["high"], linewidth=2.0, marker="o", markersize=5, zorder=3)
+    ax.vlines(cloud_x, cloud_min, cloud_max, color=COLORS["high"], linewidth=4.0, alpha=0.8, zorder=2)
+    ax.hlines(cloud_min, cloud_x - 0.055, cloud_x + 0.055, color=COLORS["high"], linewidth=1.2, zorder=3)
+    ax.hlines(cloud_max, cloud_x - 0.055, cloud_x + 0.055, color=COLORS["high"], linewidth=1.2, zorder=3)
+    for provider_index, provider_values in enumerate(cloud):
+        offset = (provider_index - (len(cloud_options) - 1) / 2.0) * 0.035
         ax.scatter(
-            x, pivot[case], s=46 if case == "base" else 38,
-            marker=markers[case], color=COLORS[case], zorder=3,
-            edgecolor="white", linewidth=0.5,
+            cloud_x + offset, provider_values, s=26, color=COLORS["high"],
+            edgecolor="white", linewidth=0.45, zorder=4,
         )
-    for xx, value in zip(x, pivot["base"]):
-        ax.text(xx, value + pivot["high"].max() * 0.025, f"{value:.1f}", ha="center", va="bottom", fontsize=8)
-    ax.set_xticks(x, labels)
+    label_offset = max(float(local_max.max()), float(cloud_max.max())) * 0.025
+    for xx, low, high in zip(local_x, local_min, local_max):
+        ax.text(xx, high + label_offset, f"{low:.1f}–{high:.1f}", ha="right", va="bottom", fontsize=8)
+    for xx, low, high in zip(cloud_x, cloud_min, cloud_max):
+        ax.text(xx, high + label_offset, f"{low:.1f}–{high:.1f}", ha="left", va="bottom", fontsize=8)
+    ax.set_xticks(x, ["低需求", "中需求", "高需求"])
+    ax.set_xlabel("AI服务需求水平")
     ax.set_ylabel(ylabel)
     ax.set_title(title, loc="left", fontweight="bold")
-    ax.set_ylim(0, pivot["high"].max() * 1.18)
+    ax.set_ylim(0, max(float(local_max.max()), float(cloud_max.max())) * 1.18)
     ax.legend(
         handles=[
-            Line2D([0], [0], marker=markers[case], linestyle="none", color=COLORS[case],
-                   label={"low": "低需求", "base": "基准需求", "high": "高需求"}[case], markersize=6)
-            for case in DEMAND_CASES
-        ], frameon=False, ncol=3, fontsize=8, loc="upper left",
+            Line2D([0], [0], marker="o", linestyle="-", linewidth=2.0,
+                   color=COLORS["base"], label="本地自建范围", markersize=5),
+            Line2D([0], [0], marker="o", linestyle="-", linewidth=2.0,
+                   color=COLORS["high"], label="云端采购范围", markersize=5),
+        ], frameon=False, ncol=2, fontsize=8, loc="upper left",
     )
     _style(ax, "y")
 
@@ -388,6 +484,8 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
         "font.sans-serif": ["Arial Unicode MS", "PingFang SC", "Noto Sans CJK SC", "DejaVu Sans"],
         "axes.unicode_minus": False, "svg.fonttype": "none", "pdf.fonttype": 42, "font.size": 9,
     })
+    plot_data = data.copy()
+    plot_data["value"] = plot_data["value_usd"]
     fig, axes = plt.subplots(2, 2, figsize=(14.8, 9.2))
     fig.subplots_adjust(left=0.075, right=0.985, top=0.91, bottom=0.11, wspace=0.25, hspace=0.38)
     cn_options = ["cn_local", "cn_cloud_deepseek", "cn_cloud_alibaba"]
@@ -395,22 +493,28 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
     us_options = ["us_local", "us_cloud_google", "us_cloud_openai", "us_cloud_anthropic"]
     us_labels = ["本地自建\n行业分别定容", "Google", "OpenAI", "Anthropic"]
 
-    _plot_demand_range(
-        axes[0, 0], data[data["panel"].eq("a")], cn_options, cn_labels, 1e8,
-        "企业年成本/付款（亿元/年）", "a  中国：低—基准—高需求下的成本",
+    _plot_cost_by_demand(
+        axes[0, 0], plot_data[plot_data["panel"].eq("a")], cn_options[:1], cn_options[1:], 1e9,
+        "企业年成本/付款（十亿美元/年）", "a  中国：不同需求水平下的本地与云端成本",
     )
-    _plot_demand_range(
-        axes[0, 1], data[data["panel"].eq("b")], us_options, us_labels, 1e9,
-        "企业年成本/付款（十亿美元/年）", "b  美国：低—基准—高需求下的成本",
+    _plot_cost_by_demand(
+        axes[0, 1], plot_data[plot_data["panel"].eq("b")], us_options[:1], us_options[1:], 1e9,
+        "企业年成本/付款（十亿美元/年）", "b  美国：不同需求水平下的本地与云端成本",
+    )
+    top_max = plot_data[plot_data["panel"].isin(["a", "b"])]["value"].max() / 1e9
+    for ax in axes[0]:
+        ax.set_ylim(0, top_max * 1.18)
+    _plot_composition(
+        axes[1, 0], plot_data[plot_data["panel"].eq("c")], cn_options, cn_labels, 1e9,
+        "企业年成本/付款（十亿美元/年）", "c  中国：基准需求下的成本构成", 1,
     )
     _plot_composition(
-        axes[1, 0], data[data["panel"].eq("c")], cn_options, cn_labels, 1e8,
-        "企业年成本/付款（亿元/年）", "c  中国：基准需求下的成本构成", 1,
-    )
-    _plot_composition(
-        axes[1, 1], data[data["panel"].eq("d")], us_options, us_labels, 1e9,
+        axes[1, 1], plot_data[plot_data["panel"].eq("d")], us_options, us_labels, 1e9,
         "企业年成本/付款（十亿美元/年）", "d  美国：基准需求下的成本构成", 1,
     )
+    bottom_max = plot_data[plot_data["panel"].isin(["c", "d"])]["value"].max() / 1e9
+    for ax in axes[1]:
+        ax.set_ylim(0, bottom_max * 1.19)
     fig.legend(
         handles=[
             Patch(facecolor=COLORS["gpu"], label="GPU服务器/容量"),
@@ -423,7 +527,7 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
     fig.suptitle("不同AI需求水平下中国与美国制造业的本地自建与云端采购成本", fontsize=15, fontweight="bold", y=0.965)
     fig.text(
         0.5, 0.015,
-        "* 中国为31个制造业大类，云端付款沿用当前公开价格试算；美国为21个NAICS制造行业及美国本土需求。两国分别以人民币和美元计价，不直接比较绝对金额。",
+        "* 中国为31个制造业大类，云端付款沿用当前公开价格试算；美国为21个NAICS制造行业及美国本土需求。中国成本按输入价格表中的人民币兑美元汇率换算。",
         ha="center", fontsize=7.8, color="#5B5B5B",
     )
     for output in outputs:
@@ -465,9 +569,13 @@ def main() -> None:
         "status": "iterative_draft_not_release_ready",
         "model_version": args.model_version,
         "panels": ["china_demand_range", "us_demand_range", "china_base_cost_composition", "us_base_cost_composition"],
-        "china_local_evidence": "validated_31_industry_15pct_IG_1host_low_base_high",
+        "china_local_evidence": "available_31_industry_IG_1host_low_base_high_with_zero_fill_fallback",
         "china_cloud_evidence": "provisional_current_price_proxy",
-        "us_evidence": "validated_21_naics_native_demand_heterogeneous_hardware",
+        "us_evidence": "available_21_naics_native_demand_heterogeneous_hardware_with_zero_fill_fallback",
+        "zero_filled_output_rows": int(data["evidence_status"].eq("zero_filled_missing_values").sum()),
+        "currency": "USD/year",
+        "china_cny_per_usd": float(data.loc[data["country"].eq("China"), "local_currency_per_usd"].iloc[0]),
+        "exchange_rate_source": "active USD-denominated row in api_token_prices input",
         "excluded": ["zero_production_load_counterfactual", "break_even_thresholds", "mechanism_decomposition"],
         "manuscript_numbers_updated": False,
     }

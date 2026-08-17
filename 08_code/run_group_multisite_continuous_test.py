@@ -378,29 +378,54 @@ def solve_architecture(
     for site in sites:
         for hour in hours:
             service_by_task = {}
+            rigid_service_by_task = {}
+            flexible_service_by_task = {}
             for task in tasks:
-                service = float(rigid_values[rigid_lookup[(hour, task, site)]])
-                service += sum(float(flexible_values[idx]) for idx in by_site_hour_task.get((site, hour, task), []))
-                service_by_task[task] = service
+                rigid_service = float(rigid_values[rigid_lookup[(hour, task, site)]])
+                flexible_service = sum(
+                    float(flexible_values[idx])
+                    for idx in by_site_hour_task.get((site, hour, task), [])
+                )
+                rigid_service_by_task[task] = rigid_service
+                flexible_service_by_task[task] = flexible_service
+                service_by_task[task] = rigid_service + flexible_service
             compute_by_hardware = {}
+            rigid_compute_by_hardware = {}
+            flexible_compute_by_hardware = {}
             facility_power = 0.0
+            fixed_overhead_power = 0.0
+            unshiftable_active_power = 0.0
+            shiftable_active_power = 0.0
             for name in hardware:
-                compute = 0.0
-                for task, service in service_by_task.items():
+                rigid_compute = 0.0
+                flexible_compute = 0.0
+                for task in tasks:
                     cpu_share = float(cpu_fraction.get(task, 0.0))
                     fraction = cpu_share if name == "cpu" else 1.0 - cpu_share
                     multiplier = float(cpu_multiplier.get(task, 1.0)) if name == "cpu" else 1.0
-                    compute += service * accelerator_factor * fraction * multiplier
+                    conversion = accelerator_factor * fraction * multiplier
+                    rigid_compute += rigid_service_by_task[task] * conversion
+                    flexible_compute += flexible_service_by_task[task] * conversion
+                compute = rigid_compute + flexible_compute
                 compute_by_hardware[name] = compute
+                rigid_compute_by_hardware[name] = rigid_compute
+                flexible_compute_by_hardware[name] = flexible_compute
                 server = servers[name]
                 capacity = float(server["service_capacity_cpu_server_h_per_h"] if name == "cpu" else server["accelerators_per_server"])
                 online_count = float(online_values.loc[(site, name, hour)])
                 installed_count = float(installed_values.loc[site, name])
-                facility_power += float(server["marginal_facility_multiplier"]) / 1000.0 * (
+                multiplier_pue = float(server["marginal_facility_multiplier"]) / 1000.0
+                fixed_overhead_power += multiplier_pue * (
                     float(server["cold_spare_standby_power_kw"]) * installed_count
                     + (float(server["online_idle_wall_power_kw"]) - float(server["cold_spare_standby_power_kw"])) * online_count
-                    + (float(server["maximum_wall_power_kw"]) - float(server["online_idle_wall_power_kw"])) / capacity * compute
                 )
+                active_coefficient = multiplier_pue * (
+                    float(server["maximum_wall_power_kw"])
+                    - float(server["online_idle_wall_power_kw"])
+                ) / capacity
+                unshiftable_active_power += active_coefficient * rigid_compute
+                shiftable_active_power += active_coefficient * flexible_compute
+            facility_power = fixed_overhead_power + unshiftable_active_power + shiftable_active_power
             rows.append({
                 "architecture": architecture,
                 "base_load_case": base_load_case,
@@ -408,12 +433,41 @@ def solve_architecture(
                 "hour": hour,
                 "base_load_mw": float(base_loads[site, hour]),
                 "ai_service_units": sum(service_by_task.values()),
+                "unshiftable_ai_service_units": sum(rigid_service_by_task.values()),
+                "shiftable_ai_service_units": sum(flexible_service_by_task.values()),
                 "gpu_compute_h": compute_by_hardware["gpu"],
                 "cpu_compute_h": compute_by_hardware["cpu"],
+                "unshiftable_gpu_compute_h": rigid_compute_by_hardware["gpu"],
+                "shiftable_gpu_compute_h": flexible_compute_by_hardware["gpu"],
+                "unshiftable_cpu_compute_h": rigid_compute_by_hardware["cpu"],
+                "shiftable_cpu_compute_h": flexible_compute_by_hardware["cpu"],
+                "ai_fixed_overhead_power_mw": fixed_overhead_power,
+                "unshiftable_ai_active_power_mw": unshiftable_active_power,
+                "shiftable_ai_active_power_mw": shiftable_active_power,
                 "ai_facility_power_mw": facility_power,
                 "grid_import_mw": float(base_loads[site, hour]) + facility_power,
             })
     hourly = pd.DataFrame(rows)
+    if not np.allclose(
+        hourly["ai_facility_power_mw"],
+        hourly[
+            [
+                "ai_fixed_overhead_power_mw",
+                "unshiftable_ai_active_power_mw",
+                "shiftable_ai_active_power_mw",
+            ]
+        ].sum(axis=1),
+        rtol=0,
+        atol=1e-10,
+    ):
+        raise AssertionError("AI facility-power decomposition does not reconstruct total power")
+    if not np.allclose(
+        hourly["ai_service_units"],
+        hourly[["unshiftable_ai_service_units", "shiftable_ai_service_units"]].sum(axis=1),
+        rtol=0,
+        atol=1e-10,
+    ):
+        raise AssertionError("AI service decomposition does not reconstruct total service")
     base_peaks = base_loads.max(axis=1)
     incremental_demand_cost = float(np.sum(np.asarray(peak_values) - base_peaks) * demand_rate)
     annual_energy_cost = float(sum(row["ai_facility_power_mw"] * grid_prices[int(row["hour"])] * annual_periods for row in rows))
@@ -447,6 +501,9 @@ def solve_architecture(
         "annual_incremental_maximum_demand_cost_rmb": incremental_demand_cost,
         "annual_incremental_total_cost_rmb": annual_server_cost + annual_energy_cost + incremental_demand_cost,
         "annual_ai_facility_energy_twh": float(hourly["ai_facility_power_mw"].sum() * annual_periods / 1e6),
+        "annual_ai_fixed_overhead_energy_twh": float(hourly["ai_fixed_overhead_power_mw"].sum() * annual_periods / 1e6),
+        "annual_unshiftable_ai_active_energy_twh": float(hourly["unshiftable_ai_active_power_mw"].sum() * annual_periods / 1e6),
+        "annual_shiftable_ai_active_energy_twh": float(hourly["shiftable_ai_active_power_mw"].sum() * annual_periods / 1e6),
         "sum_incremental_grid_peak_mw": float(np.sum(np.maximum(np.asarray(peak_values) - base_peaks, 0.0))),
         "maximum_single_site_ai_facility_power_mw": float(hourly.groupby("factory_id")["ai_facility_power_mw"].max().max()),
         "weekly_service_units": float(hourly["ai_service_units"].sum()),
@@ -636,6 +693,8 @@ def main() -> None:
         "average_required_gpu_server_groups", "average_required_cpu_server_groups", "average_required_total_server_groups",
         "annual_ai_energy_cost_rmb", "annual_incremental_maximum_demand_cost_rmb",
         "annual_incremental_total_cost_rmb", "annual_ai_facility_energy_twh",
+        "annual_ai_fixed_overhead_energy_twh", "annual_unshiftable_ai_active_energy_twh",
+        "annual_shiftable_ai_active_energy_twh",
         "sum_incremental_grid_peak_mw", "weekly_service_units",
     ]
     if_site_summaries = []
@@ -660,7 +719,14 @@ def main() -> None:
                 summary[field] = float(summary[field]) * weight
             summary["representative_factory_weight"] = weight
             if_site_summaries.append(summary)
-            for field in ["base_load_mw", "ai_service_units", "gpu_compute_h", "cpu_compute_h", "ai_facility_power_mw", "grid_import_mw"]:
+            for field in [
+                "base_load_mw", "ai_service_units", "unshiftable_ai_service_units",
+                "shiftable_ai_service_units", "gpu_compute_h", "cpu_compute_h",
+                "unshiftable_gpu_compute_h", "shiftable_gpu_compute_h",
+                "unshiftable_cpu_compute_h", "shiftable_cpu_compute_h",
+                "ai_fixed_overhead_power_mw", "unshiftable_ai_active_power_mw",
+                "shiftable_ai_active_power_mw", "ai_facility_power_mw", "grid_import_mw",
+            ]:
                 hourly[field] = hourly[field].astype(float) * weight
             hourly["factory_id"] = f"R{site + 1}"
             hourly["represented_factory_count"] = weight

@@ -265,12 +265,18 @@ def plot(data: pd.DataFrame, svg_path: Path, png_path: Path) -> None:
         "IG_multisite": ["集团多节点"],
         "CLOUD_ALL_1HOST": ["绿地大型云"],
     }
-    palette = {
-        "IF": "#31688E",
-        "IG_1host_zero_load": "#A6B8B3",
-        "IG_1host": "#4C9A88",
-        "IG_multisite": "#78B36A",
-        "CLOUD_ALL_1HOST": "#7B4F9D",
+    # Keep the two panels visually independent: panel a uses a warm-to-cool
+    # scenario path, whereas panel b uses a separate violet/slate comparison.
+    panel_a_palette = {
+        "CLOUD_ALL_1HOST": "#C65D3A",
+        "IG_1host_zero_load": "#E3A64A",
+        "IG_1host": "#2A9D8F",
+        "IF": "#3A7CA5",
+        "IG_multisite": "#A64B73",
+    }
+    panel_b_palette = {
+        "local": "#7B61A8",
+        "cloud": "#B8C4CE",
     }
     width, height = 2400, 880
     background, foreground, grid_color = "#FFFFFF", "#1B1F24", "#D9DDE3"
@@ -415,7 +421,7 @@ def plot(data: pd.DataFrame, svg_path: Path, png_path: Path) -> None:
             {
                 "label_lines": label_lines[row.deployment],
                 "value": value,
-                "color": palette[row.deployment],
+                "color": panel_a_palette[row.deployment],
             }
         )
     draw_waterfall_panel(
@@ -434,8 +440,6 @@ def plot(data: pd.DataFrame, svg_path: Path, png_path: Path) -> None:
     local_water = float(local["water_m3"].mean()) / 1e6
     cloud_water = float(cloud["water_m3"]) / 1e6
     local_floor = float(local["occupied_technical_floor_central_m2"].mean()) / 1e6
-    local_floor_low = float(local["occupied_technical_floor_low_m2"].mean()) / 1e6
-    local_floor_high = float(local["occupied_technical_floor_high_m2"].mean()) / 1e6
     cloud_gfa = float(cloud["new_gfa_m2"]) / 1e6
     cloud_land = float(cloud["land_conversion_m2"]) / 1e6
     normalized_rows = [
@@ -445,17 +449,15 @@ def plot(data: pd.DataFrame, svg_path: Path, png_path: Path) -> None:
             "unit": "百万m²",
             "local": local_floor,
             "cloud": cloud_gfa,
-            "local_low": local_floor_low,
-            "local_high": local_floor_high,
         },
         {"label": "土地转换", "unit": "百万m²", "local": 0.0, "cloud": cloud_land},
     ]
     panel_left, plot_left, plot_top = 1270, 1390, 275
     plot_width, plot_height = 850, 405
-    add_text(panel_left, 145, "b  资源与建设需求（大型云 = 100%）", "panel")
-    add_rect(1840, 205, 26, 18, palette["IF"])
+    add_text(panel_left, 145, "b  资源与建设需求（核心情景；大型云 = 100%）", "panel")
+    add_rect(1840, 205, 26, 18, panel_b_palette["local"])
     add_text(1878, 198, "本地工厂节点", "small")
-    add_rect(2070, 205, 26, 18, palette["CLOUD_ALL_1HOST"])
+    add_rect(2070, 205, 26, 18, panel_b_palette["cloud"])
     add_text(2108, 198, "绿地大型云", "small")
     for tick in [0, 25, 50, 75, 100]:
         y = plot_top + plot_height * (1.0 - tick / 100.0)
@@ -470,24 +472,13 @@ def plot(data: pd.DataFrame, svg_path: Path, png_path: Path) -> None:
         local_abs, cloud_abs = float(row["local"]), float(row["cloud"])
         center = plot_left + group_width * (index + 0.5)
         values = [local_abs / cloud_abs * 100.0 if cloud_abs else 0.0, 100.0]
-        colors = [palette["IF"], palette["CLOUD_ALL_1HOST"]]
+        colors = [panel_b_palette["local"], panel_b_palette["cloud"]]
         absolute_values = [local_abs, cloud_abs]
         for series_index, (offset, value, color, absolute) in enumerate(
             zip([-48, 48], values, colors, absolute_values)
         ):
             x = center + offset - bar_width / 2
             bar_height = plot_height * value / 100.0
-            if series_index == 0 and "local_low" in row:
-                low = float(row["local_low"]) / cloud_abs * 100.0
-                high = float(row["local_high"]) / cloud_abs * 100.0
-                whisker_x = x + bar_width / 2
-                y_low = plot_top + plot_height * (1.0 - low / 100.0)
-                y_high = plot_top + plot_height * (1.0 - min(high, 100.0) / 100.0)
-                add_line(whisker_x, y_high, whisker_x, y_low, foreground, 4)
-                add_line(whisker_x - 22, y_high, whisker_x + 22, y_high, foreground, 4)
-                add_line(whisker_x - 22, y_low, whisker_x + 22, y_low, foreground, 4)
-                if high > 100.0:
-                    add_text(whisker_x, plot_top - 35, f"上限{high:.0f}%", "note", "#59616B", "middle")
             if value > 0:
                 add_rect(x, plot_top + plot_height - bar_height, bar_width, bar_height, color)
                 label_y = max(plot_top - 6, plot_top + plot_height - bar_height - 34)
@@ -505,7 +496,7 @@ def plot(data: pd.DataFrame, svg_path: Path, png_path: Path) -> None:
     add_text(
         width / 2,
         835,
-        "注：a为相邻情景路径而非单因素贡献分解，首步同时改变汇聚尺度、PUE与规划边界；技术楼面误差线为规范锚定范围；按国家级开发区工业容积率0.99折算，本地中央值约116 ha，占其工业用地约0.06%；*0表示由原有厂区内部消化。",
+        "注：a为相邻情景路径而非单因素贡献分解，首步同时改变汇聚尺度、PUE与规划边界；b仅展示核心情景，楼面参数敏感性分析见附录；按国家级开发区工业容积率0.99折算，本地核心情景约116 ha，占其工业用地约0.06%；*0表示由原有厂区内部消化。",
         "note",
         "#59616B",
         "middle",

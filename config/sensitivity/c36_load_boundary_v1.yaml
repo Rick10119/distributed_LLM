@@ -24,6 +24,7 @@ task_boundary:
   AI_deployment_points_equal_routing_nodes: true
   all_six_core_tasks_group_routable: true
   flexible_jobs_keep_original_deadlines: true
+  report_AI_power_decomposition: fixed_overhead_unshiftable_active_shiftable_active
   cross_factory_routing: IG_multisite_only
 energy_boundary:
   pv_capacity_mode: none

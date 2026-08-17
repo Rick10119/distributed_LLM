@@ -186,6 +186,8 @@ snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --rer
 | `make all-results-dry-run` | `snakemake all_results --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run --rerun-incomplete` |
 | `make all-results` | `snakemake all_results --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
 | `make extended-analysis` | `snakemake extended_analysis --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make figure2` | `snakemake figure2_all --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make figure2-dry-run` | `snakemake figure2_all --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run --rerun-incomplete` |
 | `make sensitivity-smoke-dry-run` | `snakemake single_industry_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run` |
 | `make sensitivity-grid-hybrid-dry-run` | `snakemake single_industry_grid_hybrid_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run` |
 | `make sensitivity-smoke` | `snakemake single_industry_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |

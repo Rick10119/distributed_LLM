@@ -379,6 +379,15 @@ rule core_group_architectures:
         GROUP_CORE_TARGETS,
 
 
+rule figure2_all:
+    input:
+        FIGURE2_DATA,
+        FIGURE2_PNG,
+        FIGURE2_PDF,
+        FIGURE2_SVG,
+        FIGURE2_DONE,
+
+
 rule run_group_architecture_core_industry:
     input:
         registry=GROUP_CORE_REGISTRY,

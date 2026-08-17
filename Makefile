@@ -4,7 +4,7 @@ CONFIG ?= config/runs/all_industries_core.yaml
 TARGET ?= core
 SNAKEMAKE_ARGS ?=
 
-.PHONY: all results dry-run all-results all-results-dry-run extended-analysis sensitivity-smoke sensitivity-smoke-dry-run sensitivity-grid-hybrid sensitivity-grid-hybrid-dry-run sensitivity-group-multisite sensitivity-group-multisite-dry-run industry-cost-differences national-cloud-center national-grid-comparison national-no-shift-sensitivity national-high-impact-sensitivity national-extended-sensitivity
+.PHONY: all results dry-run all-results all-results-dry-run extended-analysis figure2 figure2-dry-run sensitivity-smoke sensitivity-smoke-dry-run sensitivity-grid-hybrid sensitivity-grid-hybrid-dry-run sensitivity-group-multisite sensitivity-group-multisite-dry-run industry-cost-differences national-cloud-center national-grid-comparison national-no-shift-sensitivity national-high-impact-sensitivity national-extended-sensitivity
 
 all: results
 
@@ -44,6 +44,19 @@ extended-analysis:
 		--configfile $(CONFIG) \
 		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_extended.XXXXXX)" \
 		--rerun-incomplete $(SNAKEMAKE_ARGS)
+
+# Figure 2 and every upstream China/U.S. demand and cost scenario it needs.
+figure2:
+	conda run -n $(ENV) snakemake figure2_all --cores $(CORES) \
+		--configfile $(CONFIG) \
+		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_figure2.XXXXXX)" \
+		--rerun-incomplete $(SNAKEMAKE_ARGS)
+
+figure2-dry-run:
+	conda run -n $(ENV) snakemake figure2_all --cores $(CORES) \
+		--configfile $(CONFIG) \
+		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_figure2_dryrun.XXXXXX)" \
+		--dry-run --rerun-incomplete $(SNAKEMAKE_ARGS)
 
 # Config-selected single-industry physical/grid one-at-a-time screen. Outputs
 # remain outside the v0.8.0 mainline and reuse the selected industry's no-AI

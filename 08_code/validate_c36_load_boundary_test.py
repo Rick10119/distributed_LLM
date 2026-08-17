@@ -87,6 +87,24 @@ def main() -> None:
     expected_hourly_rows = (5 + 1 + 1 + 5) * 168
     assert len(new_hourly) == expected_hourly_rows
     assert new_meta["IG_1host_factory_id"] == "R4"
+    power_components = [
+        "ai_fixed_overhead_power_mw",
+        "unshiftable_ai_active_power_mw",
+        "shiftable_ai_active_power_mw",
+    ]
+    assert set(power_components).issubset(new_hourly.columns)
+    assert np.allclose(
+        new_hourly["ai_facility_power_mw"],
+        new_hourly[power_components].sum(axis=1),
+        rtol=0,
+        atol=1e-8,
+    )
+    assert np.allclose(
+        new_hourly["ai_service_units"],
+        new_hourly[["unshiftable_ai_service_units", "shiftable_ai_service_units"]].sum(axis=1),
+        rtol=0,
+        atol=1e-8,
+    )
 
     relative_metrics = figure[
         figure.metric.isin(

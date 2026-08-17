@@ -48,6 +48,19 @@ def prepare(root: Path, industries: list[str], version: str) -> pd.DataFrame:
     ].copy()
     if len(one_actual) != 168 or len(one_zero) != 168:
         raise ValueError(f"{focus}: IG_1host Figure 3 series must each contain 168 hours")
+    decomposition_columns = [
+        "ai_fixed_overhead_power_mw",
+        "unshiftable_ai_active_power_mw",
+        "shiftable_ai_active_power_mw",
+    ]
+    missing_decomposition = [
+        column for column in decomposition_columns if column not in hourly.columns
+    ]
+    if missing_decomposition:
+        raise ValueError(
+            "Figure 3c requires rerun hourly power decomposition columns: "
+            + ", ".join(missing_decomposition)
+        )
     node_counts = multisite.groupby("factory_id").hour.nunique()
     if len(node_counts) < 2 or not node_counts.eq(168).all():
         raise ValueError(f"{focus}: incomplete IG_multisite node-hour coverage")
@@ -83,6 +96,15 @@ def prepare(root: Path, industries: list[str], version: str) -> pd.DataFrame:
                     "unit": "MW",
                 }
             )
+            for metric in decomposition_columns:
+                rows.append(
+                    {
+                        **common,
+                        "metric": metric,
+                        "value": float(getattr(row, metric)),
+                        "unit": "MW",
+                    }
+                )
 
     for factory_id, node in multisite.groupby("factory_id", sort=True):
         node = node.sort_values("hour")
@@ -182,6 +204,28 @@ def plot(data: pd.DataFrame, svg: Path, png: Path) -> None:
         metric="ai_facility_power_mw",
         base_load_case="zero_load_reoptimized",
     )
+    ai_overhead = _series(
+        data,
+        panel="a",
+        metric="ai_fixed_overhead_power_mw",
+        base_load_case="actual_load",
+    )
+    ai_unshiftable = _series(
+        data,
+        panel="a",
+        metric="unshiftable_ai_active_power_mw",
+        base_load_case="actual_load",
+    )
+    ai_shiftable = _series(
+        data,
+        panel="a",
+        metric="shiftable_ai_active_power_mw",
+        base_load_case="actual_load",
+    )
+    if not np.allclose(
+        ai_actual, ai_overhead + ai_unshiftable + ai_shiftable, rtol=0, atol=1e-8
+    ):
+        raise ValueError("Figure 3c power components do not reconstruct total AI power")
     nodes, base_relative = _heatmap_matrix(
         data, "base_load_fraction_of_node_weekly_peak"
     )
@@ -227,30 +271,23 @@ def plot(data: pd.DataFrame, svg: Path, png: Path) -> None:
     )
     _style_time_axis(ax_prod, show_labels=False)
 
+    ax_ai.stackplot(
+        x,
+        ai_overhead,
+        ai_unshiftable,
+        ai_shiftable,
+        colors=["#B7BEC4", "#D46F21", "#5A9BC4"],
+        alpha=0.82,
+        labels=["服务器基础功率", "不可平移任务", "可平移任务"],
+    )
+    ax_ai.plot(x, ai_actual, color="#6F4C2F", lw=1.05, label="配合生产负荷：总功率")
     ax_ai.plot(
         x,
         ai_zero,
         color="#3D8B85",
         lw=1.35,
         ls=(0, (4, 3)),
-        label="未配合生产负荷",
-    )
-    ax_ai.plot(
-        x,
-        ai_actual,
-        color="#D46F21",
-        lw=1.75,
-        label="配合生产负荷",
-    )
-    changed = np.abs(ai_actual - ai_zero) > 0.1
-    ax_ai.fill_between(
-        x,
-        ai_actual,
-        ai_zero,
-        where=changed,
-        color="#E6A15C",
-        alpha=0.36,
-        interpolate=True,
+        label="无生产负荷：总功率",
     )
     peak_hour = int(np.argmax(production))
     for ax in [ax_prod, ax_ai]:
@@ -274,12 +311,12 @@ def plot(data: pd.DataFrame, svg: Path, png: Path) -> None:
     ax_ai.set_ylabel("AI设施功率（MW）")
     ax_ai.set_xlabel("星期")
     ax_ai.set_title(
-        f"c  AI负荷的时间调整（{host_node}）",
+        f"c  可平移与不可平移AI负荷（{host_node}）",
         loc="left",
         fontweight="bold",
         fontsize=11,
     )
-    ax_ai.legend(loc="lower left", frameon=False, fontsize=8)
+    ax_ai.legend(loc="upper right", frameon=False, fontsize=7.4, ncol=2)
     _style_time_axis(ax_ai, show_labels=True)
 
     blue_map = LinearSegmentedColormap.from_list(
@@ -361,6 +398,7 @@ def plot(data: pd.DataFrame, svg: Path, png: Path) -> None:
         f"注：C36汽车制造业代表集团，连续168小时；左侧承载节点为{host_node}。"
         "多节点中的5个节点分别使用所在代表工厂的未聚合生产负荷，"
         "不把其他生产基地的电表或最大需量并入承载节点。"
+        "c将配合生产负荷时的AI设施功率拆为服务器基础功率、不可平移任务活动功率和可平移任务活动功率；"
         f"生产负荷和AI负荷均按各节点自身周峰值分别归一化{zero_note}。",
         ha="center",
         fontsize=8,
@@ -409,6 +447,12 @@ def main() -> None:
                 "panels": ["single_host_temporal_coordination", "multisite_heatmaps"],
                 "architectures": ["IG_1host", "IG_multisite"],
                 "zero_load_label": "AI_only_reoptimized_counterfactual",
+                "panel_c_power_decomposition": [
+                    "ai_fixed_overhead_power_mw",
+                    "unshiftable_ai_active_power_mw",
+                    "shiftable_ai_active_power_mw",
+                ],
+                "panel_c_decomposition_reconstructs_total_AI_facility_power": True,
                 "node_dimension_preserved": True,
                 "electrical_load_aggregation_at_AI_nodes": False,
                 "multisite_AI_deployment_points_equal_routing_nodes": True,
