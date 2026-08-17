@@ -30,6 +30,17 @@ def main() -> None:
         raise AssertionError("national summary mixes model versions")
     if frame[["industry_code", "scenario"]].duplicated().any():
         raise AssertionError("duplicate industry-scenario rows")
+    if "production_load_mode" not in frame.columns:
+        raise AssertionError("national summary lacks production-load boundary metadata")
+    load_modes = set(frame["production_load_mode"].astype(str))
+    valid_load_modes = {"calibrated_registry", "legacy_industry_electricity_share"}
+    if not load_modes.issubset(valid_load_modes):
+        raise AssertionError(f"unsupported production-load modes: {sorted(load_modes)}")
+    if set(frame.loc[frame["industry_code"].eq("C36"), "production_load_mode"].astype(str)) != {"calibrated_registry"}:
+        raise AssertionError("C36 must use its approved calibrated production-load boundary")
+    load_mode_counts = (
+        frame.drop_duplicates("industry_code")["production_load_mode"].value_counts().to_dict()
+    )
 
     for _, group in frame.groupby("industry_code"):
         demanded = group["industry_daily_effective_service_units"].to_numpy(float)
@@ -91,6 +102,8 @@ def main() -> None:
             "accelerator_h_per_service_unit": float(conversion_values[0]),
             "server_maximum_wall_power_kw": float(server_power_values[0]),
         },
+        "production_load_mode_counts": load_mode_counts,
+        "production_load_boundary_status": "mixed_explicit_C36_calibrated_other_industries_legacy_compatibility",
         "checks": [
             "31-industry and three-scenario coverage",
             "one row per industry-scenario",
@@ -100,6 +113,7 @@ def main() -> None:
             "optimized national electricity inside the external 8-28 TWh envelope",
             "single model version",
             "lifecycle energy and cost components included in national aggregation",
+            "C36 calibrated production-load boundary and explicit per-industry load modes",
         ],
         "national_totals": totals.to_dict("records"),
     }

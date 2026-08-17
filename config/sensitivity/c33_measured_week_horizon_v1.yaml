@@ -2,7 +2,8 @@ experiment_id: c33_measured_week_horizon_v1
 output_root: 05_results/sensitivity/v0.8.0/group_multisite/C33_measured_week
 solver: highs
 industry: C33
-factory_count: 6
+production_load_site_count: 6
+ai_deployment_node_rule: same_as_modeled_routing_nodes
 modeled_routing_node_count: 6
 architectures: [IF, IG_1host, IG_multisite]
 base_load_cases_by_architecture:

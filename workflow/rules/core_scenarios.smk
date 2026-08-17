@@ -22,6 +22,7 @@ if CORE_ARCHITECTURE not in SCENARIOS:
 VERSION_OUTPUT_ROOT = config["paths"]["results_root"] + "/" + MODEL_VERSION
 MODEL_OUTPUT_ROOT = VERSION_OUTPUT_ROOT + "/model"
 RESULT_OUTPUT_ROOT = VERSION_OUTPUT_ROOT + "/result"
+SENSITIVITY_VERSION_OUTPUT_ROOT = config["paths"]["results_root"] + "/sensitivity/" + MODEL_VERSION
 GROUP_CORE_REGISTRY = "config/scenarios/group_multisite_core_v1.yaml"
 GROUP_CORE_ROOT = RESULT_OUTPUT_ROOT + "/group_architecture_core"
 GROUP_CORE_SUMMARIES = expand(GROUP_CORE_ROOT + "/{industry}/summary.csv", industry=INDUSTRIES)
@@ -35,7 +36,7 @@ GROUP_CORE_NATIONAL_ALIGNMENT = GROUP_CORE_NATIONAL_ROOT + "/ig_1host_load_align
 GROUP_CORE_NATIONAL_LINEAGE = GROUP_CORE_NATIONAL_ROOT + "/curve_lineage.csv"
 GROUP_CORE_NATIONAL_DONE = GROUP_CORE_NATIONAL_ROOT + "/validated.done.json"
 NATIONAL_CLOUD_CONFIG = "config/sensitivity/national_cloud_center_v1.yaml"
-NATIONAL_CLOUD_ROOT = "05_results/sensitivity/v0.8.0/national_cloud_center_v1"
+NATIONAL_CLOUD_ROOT = SENSITIVITY_VERSION_OUTPUT_ROOT + "/national_cloud_center_v1"
 NATIONAL_CLOUD_SUMMARY = NATIONAL_CLOUD_ROOT + "/summary.csv"
 GROUP_CORE_TARGETS = (
     [
@@ -54,6 +55,7 @@ CORE_SOURCES = [
     "08_code/core/data.py",
     "08_code/core/io.py",
     "08_code/core/model.py",
+    "08_code/core/production_load.py",
     "08_code/core/representative_group.py",
 ]
 
@@ -99,6 +101,7 @@ COMMON_INPUTS = [
     "config/defaults.yaml",
     RUN_CONFIG,
     config["paths"]["representative_group_report"],
+    config["paths"]["production_load_calibration"],
     config["paths"]["hourly_industry_profiles"],
     config["paths"]["hourly_industry_profiles_lineage"],
     MODEL_READY_SERVICE,
@@ -289,10 +292,6 @@ SPOT_PV_COMPARISON = SPOT_PV_ROOT + "/industry_comparison.csv"
 SPOT_PV_ALL_FINDINGS = SPOT_PV_ROOT + "/findings.md"
 SPOT_PV_ALL_DONE = SPOT_PV_ROOT + "/validated.done.json"
 C40_SPOT_PV_SUMMARY = SPOT_PV_ROOT + "/C40/summary.csv"
-BOLUN_PROGRESS_BRIEFING = RESULT_OUTPUT_ROOT + "/briefing/bolun_progress_briefing_2026-08-12.html"
-BOLUN_SENSITIVITY_FACTOR_RESULTS = "05_results/sensitivity/v0.8.0/single_industry_oat/result/factor_results.csv"
-BOLUN_CORE_GRID_COMPARISON = "05_results/sensitivity/v0.8.0/national_grid_capacity_comparison.csv"
-BOLUN_NO_SHIFT_GRID_COMPARISON = "05_results/sensitivity/v0.8.0/national_oat_extension/result/PHY03__no_shift/grid_capacity_comparison.csv"
 LAND_MATERIAL_ROOT = RESULT_OUTPUT_ROOT + "/resource_footprint_land_materials"
 LAND_SPACE_RESULTS = "02_data/processed/resource_footprint/land_space_scenarios.csv"
 LAND_MATERIAL_RESULTS = "02_data/processed/resource_footprint/building_material_scenarios.csv"
@@ -341,7 +340,6 @@ OPTIONAL_DIAGNOSTIC_TARGETS = (
         SPOT_PV_COMPARISON,
         SPOT_PV_ALL_FINDINGS,
         SPOT_PV_ALL_DONE,
-        BOLUN_PROGRESS_BRIEFING,
     ]
     if len(INDUSTRIES) == 31
     else []
@@ -627,6 +625,7 @@ rule unit_tests:
         COMMON_INPUTS,
         "tests/test_core_config_and_scaling.py",
         "tests/test_core_land_material_footprint.py",
+        "tests/test_production_load.py",
         "08_code/analyze_land_material_footprint.py",
         LAND_SPACE_PARAMETERS,
         LAND_MATERIAL_PARAMETERS,
@@ -853,8 +852,21 @@ rule build_figure1_demand_architecture:
 rule build_figure2_enterprise_cost:
     input:
         national=GROUP_CORE_NATIONAL_SUMMARY,
-        alignment=GROUP_CORE_NATIONAL_ALIGNMENT,
-        validation=GROUP_CORE_NATIONAL_DONE,
+        national_validation=GROUP_CORE_NATIONAL_DONE,
+        china_low=SENSITIVITY_VERSION_OUTPUT_ROOT + "/national_oat_group_architecture/result/PHY01__low/core_scenarios.csv",
+        china_low_validation=SENSITIVITY_VERSION_OUTPUT_ROOT + "/national_oat_group_architecture/result/PHY01__low/validated.done.json",
+        china_high=SENSITIVITY_VERSION_OUTPUT_ROOT + "/national_oat_group_architecture/result/PHY01__high/core_scenarios.csv",
+        china_high_validation=SENSITIVITY_VERSION_OUTPUT_ROOT + "/national_oat_group_architecture/result/PHY01__high/validated.done.json",
+        defaults="config/defaults.yaml",
+        routing=CPU_GPU_ROUTING_CONFIG,
+        service=MODEL_READY_SERVICE,
+        workload="02_data/raw/curated/china_manufacturing_ai_workload_parameters.csv",
+        baseline="02_data/china_manufacturing_sector_baseline.csv",
+        api_prices=API_TOKEN_PRICES,
+        us_national=US_HETEROGENEOUS_NATIONAL,
+        us_validation=US_HETEROGENEOUS_DONE,
+        us_cost_config=US_HETEROGENEOUS_COST_CONFIG,
+        us_parameters=US_COST_PARAMETERS,
         script="08_code/build_figure2_enterprise_cost.py",
     output:
         data=FIGURE2_DATA,
@@ -865,15 +877,21 @@ rule build_figure2_enterprise_cost:
     conda:
         "../envs/core_model.yaml"
     shell:
-        "python {input.script} --national-input {input.national} --alignment-input {input.alignment} "
-        "--model-version {MODEL_VERSION} --data-output {output.data} --png-output {output.png} "
+        "python {input.script} --core {input.national} "
+        "--china-low {input.china_low} --china-high {input.china_high} "
+        "--defaults {input.defaults} --routing {input.routing} --service {input.service} "
+        "--workload {input.workload} --baseline {input.baseline} --api-prices {input.api_prices} "
+        "--us-national {input.us_national} --us-cost-config {input.us_cost_config} "
+        "--us-parameters {input.us_parameters} --model-version {MODEL_VERSION} "
+        "--data-output {output.data} --png-output {output.png} "
         "--pdf-output {output.pdf} --svg-output {output.svg} --validation-output {output.done}"
 
 
 rule build_figure3_grid_capacity:
     input:
-        summaries=GROUP_CORE_SUMMARIES,
-        hourly=GROUP_CORE_HOURLY,
+        summary=GROUP_CORE_ROOT + "/C36/summary.csv",
+        hourly=GROUP_CORE_ROOT + "/C36/hourly.csv",
+        metadata=GROUP_CORE_ROOT + "/C36/metadata.json",
         script="08_code/build_figure3_grid_capacity.py",
     output:
         data=FIGURE3_DATA,
@@ -1388,28 +1406,6 @@ rule summarize_industry_spot_price_pv_tests:
         "--summary-inputs {input.summaries} --cases-output {output.cases} "
         "--comparison-output {output.comparison} --findings-output {output.findings} "
         "--done-output {output.done}"
-
-
-rule build_bolun_progress_briefing:
-    input:
-        method=FIGURE1_METHOD_SVG,
-        figure1=FIGURE1_SVG,
-        figure2=FIGURE2_SVG,
-        figure3=FIGURE3_SVG,
-        figure4=FIGURE4_SVG,
-        figure5=FIGURE5_SVG,
-        script="08_code/build_bolun_progress_briefing.py",
-    output:
-        BOLUN_PROGRESS_BRIEFING,
-    conda:
-        "../envs/core_model.yaml"
-    shell:
-        "python {input.script} --model-version {MODEL_VERSION} --method-svg {input.method} --figure1-svg {input.figure1} "
-        "--figure2-svg {input.figure2} "
-        "--figure3-svg {input.figure3} "
-        "--figure4-svg {input.figure4} "
-        "--figure5-svg {input.figure5} "
-        "--output {output}"
 
 
 wildcard_constraints:

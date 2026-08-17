@@ -14,6 +14,7 @@ from core.config import load_config, write_resolved_config
 from core.data import load_industry_inputs, read_core_grid_energy_prices
 from core.io import write_csv, write_json
 from core.model import optimize_host
+from core.production_load import resolve_site_load_profile
 from core.representative_group import read_representative_groups, scenario_scale
 
 
@@ -37,10 +38,18 @@ def main() -> None:
     group = groups[args.industry]
     scale = scenario_scale(group, config["industry_parameter_case"], "IF")
     inputs = load_industry_inputs(config, args.industry)
+    site_load, production_load = resolve_site_load_profile(
+        root=ROOT,
+        config=config,
+        industry=args.industry,
+        industry_profile_mw=inputs.base_load_mw,
+        ai_service_group_share=scale.group_share,
+        legacy_load_site_count=scale.group_factory_count,
+    )
     grid_prices = read_core_grid_energy_prices(config)
     result = optimize_host(
         config,
-        base_load_mw=inputs.base_load_mw * scale.base_load_scale_per_host,
+        base_load_mw=site_load,
         pv_capacity_factor=inputs.pv_capacity_factor,
         roof_area_m2=inputs.roof_area_proxy_m2,
         grid_energy_price_rmb_per_mwh=grid_prices,
@@ -52,7 +61,9 @@ def main() -> None:
         "parameter_case": config["industry_parameter_case"],
         "group_share": scale.group_share,
         "group_factory_count": scale.group_factory_count,
-        "factory_activity_share": scale.base_load_scale_per_host,
+        "ai_service_group_share": scale.group_share,
+        "ai_factory_count": scale.group_factory_count,
+        "production_load": production_load,
         "roof_area_proxy_m2": inputs.roof_area_proxy_m2,
         "roof_area_case": inputs.roof_area_case,
         "roof_source_naics": inputs.roof_source_naics,

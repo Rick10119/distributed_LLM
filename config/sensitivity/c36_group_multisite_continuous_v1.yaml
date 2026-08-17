@@ -2,7 +2,9 @@ experiment_id: c36_group_multisite_installed_integer_v1
 output_root: 05_results/sensitivity/v0.8.0/group_multisite/C36
 solver: highs
 industry: C36
-factory_count: 5
+production_load_site_count: registry_or_representative_group_case
+modeled_routing_node_count: 5
+ai_deployment_node_rule: same_as_modeled_routing_nodes
 architectures: [IF, IG_1host, IG_multisite]
 base_load_cases_by_architecture:
   IF: [actual_load]
@@ -35,7 +37,7 @@ energy_boundary:
 load_curve_selection:
   source: EWELD_ISIC_29
   source_isic: 29
-  rule: distinct_users_first_then_distinct_complete_weeks_until_factory_count
+  rule: distinct_users_first_then_distinct_complete_weeks_until_modeled_routing_node_count
   single_user_industry_rule: use_distinct_complete_weeks_from_the_same_user_aligned_by_weekday_hour
   scaling: equal_factory_mean_preserve_total_group_activity_share
   simultaneity: align_by_weekday_and_hour_not_same_calendar_week

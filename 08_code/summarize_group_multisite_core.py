@@ -62,6 +62,8 @@ def main() -> None:
     alignments = []
     lineages = []
     factory_counts = {}
+    ai_deployment_node_counts = {}
+    production_load_modes = {}
     for industry in args.industries:
         folder = args.root / industry
         summary = pd.read_csv(folder / "summary.csv", encoding="utf-8-sig")
@@ -108,6 +110,8 @@ def main() -> None:
         lineage = pd.read_csv(folder / "curve_lineage.csv", encoding="utf-8-sig")
         lineage.insert(0, "industry", industry)
         metadata = json.loads((folder / "metadata.json").read_text(encoding="utf-8"))
+        load_calibration = metadata.get("load_calibration", {})
+        production_load_modes[industry] = str(load_calibration.get("mode", "missing"))
         if "planning_reserve_fraction" in metadata:
             if abs(float(metadata["planning_reserve_fraction"]) - float(reserve_values.iloc[0])) > 1e-12:
                 raise ValueError(f"{industry}: metadata planning reserve does not match summary")
@@ -119,13 +123,30 @@ def main() -> None:
                 raise ValueError(f"{industry}: metadata does not record the 15% core headroom")
             if abs(float(metadata.get("n_plus_spare_server_groups", spare_values.iloc[0]))) > 1e-12:
                 raise ValueError(f"{industry}: metadata must record zero N+1 for the core")
-        expected_factories = int(metadata["physical_factory_count"])
+        expected_factories = int(metadata["production_load_site_count"])
         expected_nodes = int(metadata["modeled_routing_node_count"])
+        deployment_counts = {
+            key: int(value)
+            for key, value in metadata["ai_deployment_node_count_by_architecture"].items()
+        }
+        if deployment_counts != {
+            "IF": expected_factories,
+            "IG_1host": 1,
+            "IG_multisite": expected_nodes,
+        }:
+            raise ValueError(
+                f"{industry}: inconsistent architecture-specific AI deployment counts"
+            )
+        if metadata.get("multisite_AI_deployment_points_equal_routing_nodes") is not True:
+            raise ValueError(f"{industry}: multisite AI deployment points must equal routing nodes")
+        if metadata.get("electrical_load_aggregation_at_AI_nodes") is not False:
+            raise ValueError(f"{industry}: production loads must remain on independent electrical boundaries")
         if len(lineage) != expected_nodes:
             raise ValueError(f"{industry}: curve lineage does not match its modeled routing-node count")
-        if int(lineage["represented_factory_count"].sum()) != expected_factories:
-            raise ValueError(f"{industry}: representative-node weights do not reconstruct physical factories")
+        if int(lineage["represented_production_load_site_count"].sum()) != expected_factories:
+            raise ValueError(f"{industry}: representative-node weights do not reconstruct production-load sites")
         factory_counts[industry] = expected_factories
+        ai_deployment_node_counts[industry] = deployment_counts
         group_share = float(metadata["group_share"])
         if not 0 < group_share <= 1:
             raise ValueError(f"{industry}: invalid representative group share {group_share}")
@@ -141,6 +162,8 @@ def main() -> None:
             alignment = alignments[-1].copy()
             alignment["representative_group_share"] = group_share
             alignment["industry_equivalent_multiplier"] = multiplier
+            alignment["production_load_mode"] = str(load_calibration["mode"])
+            alignment["production_load_boundary_id"] = str(load_calibration["boundary_id"])
             for column in [name for name in alignment.columns if name.startswith("load_alignment_value_") or name == "avoided_incremental_grid_peak_mw"]:
                 alignment[f"industry_equivalent_{column}"] = alignment[column].astype(float) * multiplier
             alignments[-1] = alignment
@@ -148,6 +171,13 @@ def main() -> None:
 
     if len(args.industries) != 31 or len(set(args.industries)) != 31:
         raise ValueError("The national core package requires exactly 31 unique industries")
+    valid_load_modes = {"calibrated_registry", "legacy_industry_electricity_share"}
+    observed_load_modes = set(production_load_modes.values())
+    if not observed_load_modes or not observed_load_modes.issubset(valid_load_modes):
+        raise ValueError(f"Unsupported or missing production-load modes: {observed_load_modes}")
+    if production_load_modes.get("C36") != "calibrated_registry":
+        raise ValueError("C36 must use the approved calibrated production-load registry boundary")
+    load_mode_counts = pd.Series(production_load_modes).value_counts().to_dict()
     core = pd.concat(summaries, ignore_index=True)
     alignment = pd.concat(alignments, ignore_index=True) if alignments else pd.DataFrame()
     lineage = pd.concat(lineages, ignore_index=True)
@@ -168,6 +198,11 @@ def main() -> None:
         "ig_1host_zero_load_pair_rows": expected_alignment_rows,
         "II_1host_in_core": False,
         "factory_counts": factory_counts,
+        "production_load_site_counts": factory_counts,
+        "ai_deployment_node_counts": ai_deployment_node_counts,
+        "production_load_mode_by_industry": production_load_modes,
+        "production_load_mode_counts": load_mode_counts,
+        "production_load_boundary_status": "mixed_explicit_C36_calibrated_other_industries_legacy_compatibility",
         "evidence_status": "outputs_validated_not_interpreted",
     }
     args.done_output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

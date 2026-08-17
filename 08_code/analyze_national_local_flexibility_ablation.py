@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT / "08_code"))
 from core.config import load_config  # noqa: E402
 from core.data import load_industry_inputs  # noqa: E402
 from core.model import optimize_host  # noqa: E402
+from core.production_load import production_load_mode, resolve_site_load_profile  # noqa: E402
 from core.representative_group import read_representative_groups, scenario_scale  # noqa: E402
 
 
@@ -52,6 +53,13 @@ def main() -> None:
     industries = sorted(config["selected_industries"])
     if len(industries) != 31:
         raise ValueError("National flexibility ablation requires all 31 industries")
+    load_modes = {industry: production_load_mode(config, industry) for industry in industries}
+    valid_load_modes = {"calibrated_registry", "legacy_industry_electricity_share"}
+    if not set(load_modes.values()).issubset(valid_load_modes):
+        raise ValueError("National flexibility ablation found an unsupported production-load mode")
+    if load_modes.get("C36") != "calibrated_registry":
+        raise ValueError("National flexibility ablation requires the approved C36 calibrated boundary")
+    load_mode_counts = pd.Series(load_modes).value_counts().to_dict()
     flexible = pd.concat(
         [pd.read_csv(path, encoding="utf-8-sig") for path in args.if_summaries],
         ignore_index=True,
@@ -91,13 +99,21 @@ def main() -> None:
             scale = scenario_scale(
                 groups[industry], config["industry_parameter_case"], "IF"
             )
+            site_load, _production_load = resolve_site_load_profile(
+                root=ROOT,
+                config=config,
+                industry=industry,
+                industry_profile_mw=inputs.base_load_mw,
+                ai_service_group_share=scale.group_share,
+                legacy_load_site_count=scale.group_factory_count,
+            )
             arrival = inputs.rigid_service_units.copy()
             for job in inputs.flexible_jobs:
                 arrival[job.release_hour] += job.amount_service_units
             with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
                 result = optimize_host(
                     config,
-                    inputs.base_load_mw * scale.base_load_scale_per_host,
+                    site_load,
                     inputs.pv_capacity_factor,
                     inputs.roof_area_proxy_m2,
                     rigid_service_units=arrival * scale.ai_service_scale_per_host,
@@ -198,6 +214,8 @@ def main() -> None:
         "status": "validated",
         "model_version": config["model_version"],
         "industries": 31,
+        "production_load_mode_counts": load_mode_counts,
+        "production_load_boundary_status": "mixed_explicit_C36_calibrated_other_industries_legacy_compatibility",
         "same_service": abs(
             float(rigid.daily_effective_service_units)
             - float(flex.daily_effective_service_units)

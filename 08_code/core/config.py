@@ -106,6 +106,18 @@ def validate_config(config: dict[str, Any]) -> None:
     case = config.get("industry_parameter_case")
     if case not in {"low", "base", "high"}:
         raise ValueError("industry_parameter_case must be low, base, or high")
+    production_load = config.get("production_load", {})
+    valid_load_modes = {
+        "calibrated_registry", "legacy_industry_electricity_share"
+    }
+    default_load_mode = production_load.get("default_mode")
+    if default_load_mode not in valid_load_modes:
+        raise ValueError("production_load.default_mode must be explicit and supported")
+    if not production_load.get("registry_path"):
+        raise ValueError("production_load.registry_path is required")
+    invalid_load_modes = set(production_load.get("mode_by_industry", {}).values()) - valid_load_modes
+    if invalid_load_modes:
+        raise ValueError(f"Unsupported production-load modes: {sorted(invalid_load_modes)}")
     model = config.get("model", {})
     horizon = int(model.get("horizon_hours", 0))
     if horizon < 24 or horizon > 8784 or horizon % 24 != 0:

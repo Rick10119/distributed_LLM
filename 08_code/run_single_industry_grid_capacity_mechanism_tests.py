@@ -26,6 +26,7 @@ from core.data import FlexibleJob, load_industry_inputs, read_core_grid_energy_p
 from core.io import write_csv
 from core.model import HostResult, optimize_host
 from core.representative_group import read_representative_groups, scenario_scale
+from core.production_load import resolve_site_load_profile
 
 
 def parse_args() -> argparse.Namespace:
@@ -184,10 +185,15 @@ def main() -> None:
     )["C36"]
     scale = scenario_scale(group, base["industry_parameter_case"], "IG")
     rigid, jobs = scale_workload(inputs_full, scale.ai_service_scale_per_host)
-    inputs = replace(
-        inputs_full,
-        base_load_mw=inputs_full.base_load_mw * scale.base_load_scale_per_host,
+    site_load, _production_load = resolve_site_load_profile(
+        root=ROOT,
+        config=base,
+        industry="C36",
+        industry_profile_mw=inputs_full.base_load_mw,
+        ai_service_group_share=scale.group_share,
+        legacy_load_site_count=scale.group_factory_count,
     )
+    inputs = replace(inputs_full, base_load_mw=site_load)
     prices = read_core_grid_energy_prices(base)
 
     no_storage_config = configured(base, battery=False)

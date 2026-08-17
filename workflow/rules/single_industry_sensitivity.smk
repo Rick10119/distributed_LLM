@@ -119,7 +119,6 @@ NATIONAL_OAT_CASES = NATIONAL_OAT_DEFAULT_CASES + NATIONAL_OAT_EXTENDED_CASES
 NATIONAL_OAT_NO_SHIFT_CASES = ["PHY03__no_shift"]
 NATIONAL_OAT_HIGH_CASES = ["PHY01__low", "PHY01__high", "PHY02__efficient"]
 
-
 def national_oat_registry_for_case(wildcards):
     if wildcards.case_id in NATIONAL_OAT_EXTENDED_CASES:
         return NATIONAL_OAT_EXTENDED_REGISTRY
@@ -139,12 +138,56 @@ NATIONAL_OAT_CLOUD = NATIONAL_OAT_ROOT + "/cloud/{case_id}/summary.csv"
 NATIONAL_OAT_COMPARISON = NATIONAL_OAT_ROOT + "/result/{case_id}/grid_capacity_comparison.csv"
 NATIONAL_OAT_COMPARISON_DONE = NATIONAL_OAT_ROOT + "/result/{case_id}/grid_capacity_comparison.validated.done.json"
 
+# One-click publication package. This deliberately includes every registered
+# 31-industry OAT case, while leaving retired legacy-architecture diagnostics
+# outside the active result package.
+ALL_NATIONAL_OAT_CASES = list(dict.fromkeys(
+    NATIONAL_OAT_DEFAULT_CASES + NATIONAL_OAT_EXTENDED_CASES
+))
+ALL_NATIONAL_OAT_TARGETS = expand(
+    NATIONAL_OAT_COMPARISON_DONE,
+    case_id=ALL_NATIONAL_OAT_CASES,
+)
+ALL_REQUIRED_RESULT_TARGETS = list(dict.fromkeys(
+    list(GROUP_CORE_TARGETS)
+    + list(ADDITIONAL_ANALYSIS_TARGETS)
+    + [
+        INDUSTRY_COST_DIFFERENCE_DETAIL,
+        INDUSTRY_COST_DRIVER_ASSOCIATIONS,
+        INDUSTRY_COST_GAP_DECOMPOSITION,
+        INDUSTRY_COST_DIFFERENCE_FINDINGS,
+        INDUSTRY_COST_DIFFERENCE_DONE,
+        SINGLE_INDUSTRY_CASE_RESULTS,
+        SINGLE_INDUSTRY_FACTOR_RESULTS,
+        SINGLE_INDUSTRY_DONE,
+        GRID_HYBRID_COMPARISON,
+        GRID_HYBRID_FINDINGS,
+        GRID_HYBRID_DONE,
+        GROUP_MULTISITE_SUMMARY,
+        GROUP_MULTISITE_HOURLY,
+        GROUP_MULTISITE_LINEAGE,
+        GROUP_MULTISITE_ALIGNMENT,
+        GROUP_MULTISITE_METADATA,
+        C33_HORIZON_COMPARISON,
+        C33_HORIZON_FINDINGS,
+        C33_HORIZON_DONE,
+        NATIONAL_GRID_COMPARISON,
+        NATIONAL_GRID_COMPARISON_DONE,
+    ]
+    + list(ALL_NATIONAL_OAT_TARGETS)
+))
+
 
 rule single_industry_sensitivity:
     input:
         SINGLE_INDUSTRY_CASE_RESULTS,
         SINGLE_INDUSTRY_FACTOR_RESULTS,
         SINGLE_INDUSTRY_DONE,
+
+
+rule all_results:
+    input:
+        ALL_REQUIRED_RESULT_TARGETS,
 
 
 rule single_industry_grid_hybrid_sensitivity:

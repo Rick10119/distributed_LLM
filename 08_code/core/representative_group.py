@@ -30,7 +30,6 @@ class RepresentativeGroup:
 class ScenarioScale:
     scenario: str
     ai_service_scale_per_host: float
-    base_load_scale_per_host: float
     equivalent_host_multiplier: float
     physical_host_count: int
     group_share: float
@@ -85,9 +84,9 @@ def scenario_scale(
 ) -> ScenarioScale:
     share = group.share(parameter_case)
     factories = group.factories(parameter_case)
-    factory_activity_share = share / factories
+    ai_service_scale_per_factory = share / factories
     if scenario == "IF":
-        ai_scale = factory_activity_share
+        ai_scale = ai_service_scale_per_factory
         multiplier = factories / share
         physical_hosts = factories
     elif scenario in {"IG", "IG_1host"}:
@@ -109,7 +108,6 @@ def scenario_scale(
     scale = ScenarioScale(
         scenario=scenario,
         ai_service_scale_per_host=ai_scale,
-        base_load_scale_per_host=factory_activity_share,
         equivalent_host_multiplier=multiplier,
         physical_host_count=physical_hosts,
         group_share=share,
@@ -118,4 +116,3 @@ def scenario_scale(
     if abs(scale.industry_service_reconstruction - 1.0) > 1e-10:
         raise AssertionError(f"Scenario {scenario} does not reconstruct industry service")
     return scale
-

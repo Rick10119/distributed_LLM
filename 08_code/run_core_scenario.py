@@ -23,6 +23,7 @@ from core.config import deep_merge, load_config, write_resolved_config
 from core.data import load_industry_inputs, read_core_grid_energy_prices, scale_task_workload, scale_workload
 from core.io import read_json, write_csv
 from core.model import optimize_host
+from core.production_load import resolve_site_load_profile
 from core.representative_group import read_representative_groups, scenario_scale
 
 
@@ -67,6 +68,14 @@ def main() -> None:
         industry_host_count=host_count,
     )
     inputs = load_industry_inputs(config, args.industry)
+    site_load, production_load = resolve_site_load_profile(
+        root=ROOT,
+        config=config,
+        industry=args.industry,
+        industry_profile_mw=inputs.base_load_mw,
+        ai_service_group_share=scale.group_share,
+        legacy_load_site_count=scale.group_factory_count,
+    )
     hardware_mode = str(config["compute_hardware"]["mode"])
     rigid_by_task = None
     heterogeneous_hardware = None
@@ -181,7 +190,7 @@ def main() -> None:
         minimum_installed_hardware_groups = {}
     result = optimize_host(
         config,
-        base_load_mw=inputs.base_load_mw * scale.base_load_scale_per_host,
+        base_load_mw=site_load,
         pv_capacity_factor=inputs.pv_capacity_factor,
         roof_area_m2=inputs.roof_area_proxy_m2,
         rigid_service_units=rigid,
@@ -234,7 +243,13 @@ def main() -> None:
         "battery_annualized_cost_rmb_per_mw_year": result.summary["battery_annualized_cost_rmb_per_mw_year"],
         "group_share": scale.group_share,
         "group_factory_count": scale.group_factory_count,
-        "factory_activity_share": scale.base_load_scale_per_host,
+        "ai_service_group_share": scale.group_share,
+        "ai_factory_count": scale.group_factory_count,
+        "production_load_mode": production_load["mode"],
+        "production_load_boundary_id": production_load["boundary_id"],
+        "production_activity_share": production_load["production_activity_share"],
+        "load_site_count": production_load["load_site_count"],
+        "representative_site_mean_load_mw": production_load["representative_site_mean_load_mw"],
         "ai_service_scale_per_host": scale.ai_service_scale_per_host,
         "equivalent_host_multiplier": scale.equivalent_host_multiplier,
         "physical_host_count": scale.physical_host_count,

@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / "08_code"))
 from core.config import load_config
 from core.data import load_industry_inputs, scale_workload
 from core.model import factory_pv_limit_mw, optimize_host
+from core.production_load import resolve_site_load_profile
 from core.representative_group import read_representative_groups, scenario_scale
 
 
@@ -88,7 +89,14 @@ def run_cases(
     scale = scenario_scale(groups[industry], config["industry_parameter_case"], SCENARIO)
     inputs = load_industry_inputs(config, industry)
     rigid, jobs = scale_workload(inputs, scale.ai_service_scale_per_host)
-    base = inputs.base_load_mw * scale.base_load_scale_per_host
+    base, production_load = resolve_site_load_profile(
+        root=ROOT,
+        config=config,
+        industry=industry,
+        industry_profile_mw=inputs.base_load_mw,
+        ai_service_group_share=scale.group_share,
+        legacy_load_site_count=scale.group_factory_count,
+    )
     spot_settings = config["energy"]["spot_representative_week"]
     spot_wholesale = read_spot_week(price_path, spot_settings)
     retail_adder_rmb_per_kwh = spot_retail_adder_rmb_per_kwh(config)
@@ -195,6 +203,7 @@ def run_cases(
         "spot_end": str(spot_settings["end_date"]),
         "group_share": scale.group_share,
         "group_factory_count": scale.group_factory_count,
+        "production_load": production_load,
         "ai_service_scale_per_host": scale.ai_service_scale_per_host,
         "spot_wholesale_mean_rmb_mwh": float(spot_wholesale.mean()),
         "spot_retail_adder_rmb_per_kwh": retail_adder_rmb_per_kwh,

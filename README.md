@@ -127,11 +127,20 @@ make CONFIG=config/runs/single_industry_core.yaml CORES=1
 make extended-analysis
 ```
 
-阶段汇报页面单独生成：
+如需一次生成当前研究所需的全部结果（核心情景、全国云端反事实、Figure 1–5、单行业机制敏感性以及全部已注册的31行业敏感性），运行：
 
 ```bash
-make briefing
+make all-results-dry-run
+make all-results
 ```
+
+对应的原生Snakemake目标为：
+
+```bash
+snakemake all_results --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete
+```
+
+该目标包含全国需求低/高、算力效率、不可调度以及PHY04–PHY11、HW01–HW02扩展屏。它会产生数百次行业求解，耗时明显长于默认核心流程。明确淘汰的旧架构诊断不包含在内。
 
 敏感性分析不是默认`make`的一部分；可先查看对应任务：
 
@@ -174,8 +183,9 @@ snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --rer
 |---|---|
 | `make dry-run` | `snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run` |
 | `make` | `snakemake core --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
+| `make all-results-dry-run` | `snakemake all_results --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run --rerun-incomplete` |
+| `make all-results` | `snakemake all_results --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
 | `make extended-analysis` | `snakemake extended_analysis --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
-| `make briefing` | `snakemake build_bolun_progress_briefing --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |
 | `make sensitivity-smoke-dry-run` | `snakemake single_industry_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run` |
 | `make sensitivity-grid-hybrid-dry-run` | `snakemake single_industry_grid_hybrid_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --dry-run` |
 | `make sensitivity-smoke` | `snakemake single_industry_sensitivity --cores 5 --configfile config/runs/all_industries_core.yaml --rerun-incomplete` |

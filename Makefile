@@ -4,7 +4,7 @@ CONFIG ?= config/runs/all_industries_core.yaml
 TARGET ?= core
 SNAKEMAKE_ARGS ?=
 
-.PHONY: all results dry-run briefing extended-analysis sensitivity-smoke sensitivity-smoke-dry-run sensitivity-grid-hybrid sensitivity-grid-hybrid-dry-run sensitivity-group-multisite sensitivity-group-multisite-dry-run industry-cost-differences national-cloud-center national-grid-comparison national-no-shift-sensitivity national-high-impact-sensitivity national-extended-sensitivity
+.PHONY: all results dry-run all-results all-results-dry-run extended-analysis sensitivity-smoke sensitivity-smoke-dry-run sensitivity-grid-hybrid sensitivity-grid-hybrid-dry-run sensitivity-group-multisite sensitivity-group-multisite-dry-run industry-cost-differences national-cloud-center national-grid-comparison national-no-shift-sensitivity national-high-impact-sensitivity national-extended-sensitivity
 
 all: results
 
@@ -22,13 +22,20 @@ dry-run:
 		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_snakemake_dryrun.XXXXXX)" \
 		--dry-run --rerun-incomplete $(SNAKEMAKE_ARGS)
 
-# Figures and HTML are explicit because the briefing currently reads completed
-# sensitivity outputs as well as the core results.
-briefing:
-	conda run -n $(ENV) snakemake build_bolun_progress_briefing --cores $(CORES) \
+# Complete active research package: core, cloud counterfactual, manuscript
+# figures, single-industry mechanism screens, and every registered
+# 31-industry sensitivity case. Optional retired diagnostics remain excluded.
+all-results:
+	conda run -n $(ENV) snakemake all_results --cores $(CORES) \
 		--configfile $(CONFIG) \
-		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_briefing.XXXXXX)" \
+		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_all_results.XXXXXX)" \
 		--rerun-incomplete $(SNAKEMAKE_ARGS)
+
+all-results-dry-run:
+	conda run -n $(ENV) snakemake all_results --cores $(CORES) \
+		--configfile $(CONFIG) \
+		--runtime-source-cache-path "$$(mktemp -d /private/tmp/dllm_all_results_dryrun.XXXXXX)" \
+		--dry-run --rerun-incomplete $(SNAKEMAKE_ARGS)
 
 # Core post-processing, country comparison, and manuscript figures, excluding
 # optional diagnostics and the sensitivity workflow.

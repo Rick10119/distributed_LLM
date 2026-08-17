@@ -48,6 +48,8 @@ gurobi.log
 00_admin/*
 01_literature/*
 02_data/*
+!02_data/manufacturing_production_load_calibration.csv
+!02_data/c36_integrated_oem_load_calibration.md
 03_models/*
 05_results/*
 06_manuscript/*

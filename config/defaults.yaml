@@ -4,6 +4,7 @@ run_config_path: config/runs/all_industries_core.yaml
 scenario_registry_path: config/scenarios/mainline.yaml
 paths:
   representative_group_report: 02_data/china_manufacturing_representative_group_parameters.md
+  production_load_calibration: 02_data/manufacturing_production_load_calibration.csv
   legacy_hourly_industry_profiles: 05_results/archive/equal_electricity_national/manufacturing_31sector_hourly_peak_profiles.csv
   daily_hourly_industry_profiles: 02_data/processed/core/manufacturing_31sector_base_load_profiles.csv
   hourly_industry_profiles: 02_data/processed/core/manufacturing_31sector_real_weeks.csv
@@ -252,3 +253,8 @@ full_cloud_cost:
   formal_allowed_providers: [Alibaba Cloud, DeepSeek]
   provider_filter_rule: provider_origin_policy_screen_not_technical_availability_claim
   result_status: formal_enterprise_payment_scenario_capacity_proxy
+production_load:
+  registry_path: 02_data/manufacturing_production_load_calibration.csv
+  default_mode: legacy_industry_electricity_share
+  mode_by_industry:
+    C36: calibrated_registry

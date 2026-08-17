@@ -1,6 +1,6 @@
-experiment_id: group_multisite_31industry_core_v1
-solver: gurobi
-industry: null
+experiment_id: c36_integrated_oem_load_boundary_v1
+solver: highs
+industry: C36
 production_load_site_count: registry_or_representative_group_case
 max_modeled_routing_nodes: 5
 ai_deployment_node_rule: same_as_modeled_routing_nodes
@@ -19,8 +19,8 @@ integer_boundary:
   model_state_minimum_groups_enabled: false
 task_boundary:
   same_group_total_service: true
-  task_origin_scope: all_registered_production_load_sites
-  execution_node_scope: modeled_AI_deployment_routing_nodes
+  task_origin_scope: all_nine_production_load_sites
+  execution_node_scope: five_modeled_AI_deployment_routing_nodes
   AI_deployment_points_equal_routing_nodes: true
   all_six_core_tasks_group_routable: true
   flexible_jobs_keep_original_deadlines: true
@@ -32,20 +32,19 @@ energy_boundary:
 load_curve_selection:
   source: EWELD
   source_isic: auto_from_core_lineage
-  rule: distinct_users_first_then_distinct_complete_weeks_until_modeled_routing_node_count
+  rule: distinct_users_first_then_best_complete_week_passing_quality_constraints
   proxy_rule: reuse_the_active_core_profile_source_isic_for_industries_without_direct_EWELD_samples
-  scaling: production_load_registry_with_explicit_legacy_compatibility_for_uncalibrated_industries
-  representative_sampling_rule: weighted_load_curves_reconstruct_all_production_sites_only_for_IF
+  scaling: C36_activity_consistent_integrated_OEM_electricity_boundary
+  representative_sampling_rule: five_weighted_load_curves_reconstruct_nine_sites_only_for_IF
   electrical_boundary: each_AI_node_uses_only_its_host_factory_load_no_cross_meter_aggregation
   ai_deployment_rule: one_AI_deployment_point_per_modeled_routing_node
   simultaneity: align_by_weekday_and_hour_not_same_calendar_week
-  week_quality_by_industry:
-    C36:
-      minimum_monday_to_tuesday_friday_mean_ratio: 0.75
-      maximum_weekday_daily_mean_cv: 0.35
-      maximum_weekly_peak_to_mean_ratio: 3.0
+  week_quality:
+    minimum_monday_to_tuesday_friday_mean_ratio: 0.75
+    maximum_weekday_daily_mean_cv: 0.35
+    maximum_weekly_peak_to_mean_ratio: 3.0
 counterfactual:
   architecture: IG_1host
   definition: zero_original_factory_load_reoptimized_minus_actual_load_reoptimized
   interpretation: value_of_cooptimizing_AI_with_the_fixed_host_factory_load_shape
-interpretation: national_rerun_authorized_with_C36_calibrated_and_other_industries_explicit_legacy_compatibility_boundaries
+interpretation: C36_formal_integrated_OEM_production_load_boundary
