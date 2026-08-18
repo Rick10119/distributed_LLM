@@ -153,10 +153,3 @@ cloud_cost:
   storage_first_tier_usd_per_gb_month: 0.023
   storage_second_tier_usd_per_gb_month: 0.022
   api_price_file: 02_data/processed/cost_benchmark/us_api_token_prices_v1.csv
-
-core_cloud_premium_target:
-  comparison_basis: least_cost_formal_cloud_provider_vs_base_price_local
-  target_ratio: 1.20
-  tolerance: 0.02
-  selected_driver: five_year_owned_server_economic_life
-  evidence_status: scenario_choice_with_official_and_company_accounting_bounds

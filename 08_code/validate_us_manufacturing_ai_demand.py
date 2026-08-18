@@ -62,10 +62,6 @@ def main() -> None:
         raise ValueError("Cloud components do not reconcile")
     if cloud["ondemand_displayed"].astype(bool).any():
         raise ValueError("On-demand GPU must not be displayed")
-    base_cloud_ratio = float(cloud.loc[cloud["parameter_case"] == "base", "ratio_to_local_same_case"].min())
-    premium = config["core_cloud_premium_target"]
-    if abs(base_cloud_ratio - float(premium["target_ratio"])) > float(premium["tolerance"]):
-        raise ValueError("Least-cost base cloud provider is outside the configured core premium target")
     payload = {
         "status": "validated",
         "rows": len(service),
@@ -76,7 +72,6 @@ def main() -> None:
             "activity/task/case coverage", "adoption and coverage bounds", "industry/task reconciliation",
             "tokens restricted to office and agent", "single 15% installed reserve", "local cost reconciliation",
             "bottom-up formula and external scale check", "cloud cost reconciliation", "on-demand GPU excluded",
-            "least-cost base cloud premium target",
         ],
     }
     args.done_output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

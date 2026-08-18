@@ -483,9 +483,8 @@ rule run_single_industry_oat_case:
     input:
         common=SINGLE_INDUSTRY_COMMON_INPUTS,
         case_config=SINGLE_INDUSTRY_OAT_ROOT + "/configs/{case_id}.yaml",
-        script="08_code/run_core_scenario.py",
-    params:
         baseline=MODEL_OUTPUT_ROOT + "/" + SINGLE_INDUSTRY_CODE + "/baseline/summary.json",
+        script="08_code/run_core_scenario.py",
     output:
         summary=SINGLE_INDUSTRY_OAT_ROOT + "/model/{case_id}/" + SINGLE_INDUSTRY_CODE + "/{scenario}/summary.csv",
         hourly=SINGLE_INDUSTRY_OAT_ROOT + "/model/{case_id}/" + SINGLE_INDUSTRY_CODE + "/{scenario}/hourly.csv",
@@ -499,7 +498,7 @@ rule run_single_industry_oat_case:
     shell:
         "python {input.script} --defaults config/defaults.yaml --config {input.case_config} "
         "--industry " + SINGLE_INDUSTRY_CODE + " --scenario {wildcards.scenario} "
-        "--baseline-summary {params.baseline} --summary-output {output.summary} "
+        "--baseline-summary {input.baseline} --summary-output {output.summary} "
         "--hourly-output {output.hourly} --resolved-config-output {output.resolved}"
 
 
@@ -508,9 +507,8 @@ rule validate_single_industry_oat_case:
         config=SINGLE_INDUSTRY_OAT_ROOT + "/configs/{case_id}.yaml",
         summary=SINGLE_INDUSTRY_OAT_ROOT + "/model/{case_id}/" + SINGLE_INDUSTRY_CODE + "/{scenario}/summary.csv",
         hourly=SINGLE_INDUSTRY_OAT_ROOT + "/model/{case_id}/" + SINGLE_INDUSTRY_CODE + "/{scenario}/hourly.csv",
-        script="08_code/validate_core_scenario.py",
-    params:
         baseline=MODEL_OUTPUT_ROOT + "/" + SINGLE_INDUSTRY_CODE + "/baseline/summary.json",
+        script="08_code/validate_core_scenario.py",
     output:
         SINGLE_INDUSTRY_OAT_ROOT + "/result/{case_id}/" + SINGLE_INDUSTRY_CODE + "/{scenario}/validated.done.json",
     wildcard_constraints:
@@ -521,7 +519,7 @@ rule validate_single_industry_oat_case:
     shell:
         "python {input.script} --defaults config/defaults.yaml --config {input.config} "
         "--industry " + SINGLE_INDUSTRY_CODE + " --scenario {wildcards.scenario} "
-        "--summary {input.summary} --hourly {input.hourly} --baseline-summary {params.baseline} --output {output}"
+        "--summary {input.summary} --hourly {input.hourly} --baseline-summary {input.baseline} --output {output}"
 
 
 rule summarize_single_industry_oat:
