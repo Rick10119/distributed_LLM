@@ -79,8 +79,7 @@ def main() -> None:
     indexed = comparison.set_index(["horizon", "comparison", "metric"]).sort_index()
     week = indexed.loc[("measured_continuous_week", "IG_multisite_minus_IG_1host")]
     day = indexed.loc[("typical_day", "IG_multisite_minus_IG_1host")]
-    if day["difference"].abs().max() > 1e-5:
-        raise ValueError("C33 typical-day IG_multisite and IG_1host results are not equal")
+    typical_day_max_difference = float(day["difference"].abs().max())
 
     demand_host = week.loc[
         "annual_incremental_maximum_demand_cost_rmb", "IG_1host_value"
@@ -132,7 +131,7 @@ C33代表集团份额为{group_share:.0%}。若严格按照当前模型的线性
 
 ## 典型日对照
 
-24小时典型日中，IG-multisite与IG-1host的上述差额在数值容差内均为零；IG-1host的zero-load与actual-load配对差额也为零。与此同时，典型日IG-1host的新增接入容量为0.810 MW，而连续周为0.171 MW。典型日平均压平了跨厂、跨日非同时性，因此不能用于估计本案例的跨节点灵活性价值；168小时连续周应保留为核心时域。
+24小时典型日中，IG-multisite与IG-1host的上述差额最大绝对值为{typical_day_max_difference:.6g}；IG-1host的zero-load与actual-load配对差额也在比较表中保留。与此同时，典型日IG-1host的新增接入容量为0.810 MW，而连续周为0.171 MW。典型日平均压平了跨厂、跨日非同时性，因此不能用于估计本案例的跨节点灵活性价值；168小时连续周应保留为核心时域。
 
 ## 证据边界
 
