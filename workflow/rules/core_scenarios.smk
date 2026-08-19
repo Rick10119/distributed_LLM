@@ -1,5 +1,6 @@
 """Reproducible core-scenario workflow."""
 
+import json
 import yaml
 
 INDUSTRIES = config["selected_industries"]
@@ -253,6 +254,23 @@ HETEROGENEOUS_COUNTRY_SUMMARY = HETEROGENEOUS_ROOT + "/country_comparison.csv"
 HETEROGENEOUS_FINDINGS = HETEROGENEOUS_ROOT + "/findings.md"
 HETEROGENEOUS_DONE = HETEROGENEOUS_ROOT + "/validated.done.json"
 US_DEMAND_CONFIG = COUNTRY_CASES["us"]["demand_config"]
+
+
+def ready_us_heterogeneous_figure_inputs(wildcards):
+    """Make completed China-aligned U.S. results dependencies, but allow the fallback."""
+    try:
+        with open(US_HETEROGENEOUS_DONE, encoding="utf-8") as handle:
+            validation = json.load(handle)
+    except (FileNotFoundError, OSError, json.JSONDecodeError):
+        return []
+    if (
+        validation.get("aggregation_boundary")
+        != "industry_sum_china_aligned_continuous_capacity"
+    ):
+        return []
+    return [US_HETEROGENEOUS_NATIONAL, US_HETEROGENEOUS_DONE]
+
+
 US_DEMAND_ROOT = RESULT_OUTPUT_ROOT + "/us_demand"
 US_DEMAND_SERVICE = "02_data/processed/us_demand/us_manufacturing_ai_effective_service_2030.csv"
 US_DEMAND_LINEAGE = "02_data/processed/us_demand/us_manufacturing_ai_demand_lineage.json"
@@ -872,8 +890,7 @@ rule build_figure2_enterprise_cost:
         workload="02_data/raw/curated/china_manufacturing_ai_workload_parameters.csv",
         baseline="02_data/china_manufacturing_sector_baseline.csv",
         api_prices=API_TOKEN_PRICES,
-        us_national=US_HETEROGENEOUS_NATIONAL,
-        us_validation=US_HETEROGENEOUS_DONE,
+        us_ready=ready_us_heterogeneous_figure_inputs,
         us_cost_config=US_HETEROGENEOUS_COST_CONFIG,
         us_parameters=US_COST_PARAMETERS,
         script="08_code/build_figure2_enterprise_cost.py",
@@ -883,6 +900,10 @@ rule build_figure2_enterprise_cost:
         pdf=FIGURE2_PDF,
         svg=FIGURE2_SVG,
         done=FIGURE2_DONE,
+    params:
+        us_national=US_HETEROGENEOUS_NATIONAL,
+        us_validation=US_HETEROGENEOUS_DONE,
+        us_demand_service=US_DEMAND_SERVICE,
     conda:
         "../envs/core_model.yaml"
     shell:
@@ -890,7 +911,9 @@ rule build_figure2_enterprise_cost:
         "--china-low {input.china_low} --china-high {input.china_high} "
         "--defaults {input.defaults} --routing {input.routing} --service {input.service} "
         "--workload {input.workload} --baseline {input.baseline} --api-prices {input.api_prices} "
-        "--us-national {input.us_national} --us-cost-config {input.us_cost_config} "
+        "--us-national {params.us_national} --us-validation {params.us_validation} "
+        "--us-demand-service {params.us_demand_service} "
+        "--us-cost-config {input.us_cost_config} "
         "--us-parameters {input.us_parameters} --model-version {MODEL_VERSION} "
         "--data-output {output.data} --png-output {output.png} "
         "--pdf-output {output.pdf} --svg-output {output.svg} --validation-output {output.done}"
@@ -1204,6 +1227,7 @@ rule analyze_us_industry_heterogeneous_hardware:
         demand=US_DEMAND_SERVICE,
         national_task_summary=US_DEMAND_TASK_SUMMARY,
         demand_done=US_DEMAND_DONE,
+        defaults="config/defaults.yaml",
         demand_config=US_DEMAND_CONFIG,
         routing_config=CPU_GPU_ROUTING_CONFIG,
         us_cost_config=US_HETEROGENEOUS_COST_CONFIG,
@@ -1224,7 +1248,8 @@ rule analyze_us_industry_heterogeneous_hardware:
         "../envs/core_model.yaml"
     shell:
         "python {input.script} --demand {input.demand} --national-task-summary {input.national_task_summary} "
-        "--demand-config {input.demand_config} --routing-config {input.routing_config} --us-cost-config {input.us_cost_config} "
+        "--defaults {input.defaults} --demand-config {input.demand_config} "
+        "--routing-config {input.routing_config} --us-cost-config {input.us_cost_config} "
         "--us-parameters {input.us_parameters} --us-api-prices {input.us_api_prices} "
         "--compute-efficiency {input.compute_efficiency} "
         "--output-dir {params.output_dir} > {log} 2>&1"

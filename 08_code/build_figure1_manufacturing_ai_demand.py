@@ -293,7 +293,7 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
             "axes.unicode_minus": False,
             "svg.fonttype": "none",
             "pdf.fonttype": 42,
-            "font.size": 9,
+            "font.size": 13,
         }
     )
     fig, axes = plt.subplots(2, 2, figsize=(14.5, 11.2))
@@ -347,7 +347,7 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
         ha="right",
         va="top",
         color="#3D5F7D",
-        fontsize=7.5,
+        fontsize=10,
     )
     ax_a.text(
         national_2030 + 0.004,
@@ -356,20 +356,20 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
         ha="left",
         va="top",
         color="#A85B2A",
-        fontsize=7.5,
+        fontsize=10,
     )
     ax_a.set_xlim(0.10, 0.72)
     ax_a.set_ylim(-0.8, len(observed) - 0.1)
     ax_a.set_yticks(
         y,
         [f"{code} {SHORT_INDUSTRY_NAMES[code]}" for code in observed.index],
-        fontsize=5.8,
+        fontsize=9.5,
     )
     ticks = np.arange(0.10, 0.71, 0.10)
     ax_a.set_xticks(ticks, [f"{v:.0%}" for v in ticks])
     ax_a.set_xlabel("报告应用至少一种AI的规上企业比例")
-    ax_a.set_title("a  行业AI采用：2023观测与2030情景", loc="left", fontweight="bold")
-    ax_a.legend(frameon=False, loc="lower right", fontsize=7.5)
+    ax_a.set_title("a  行业AI采用：2023观测与2030情景", loc="left", fontweight="bold", fontsize=15)
+    ax_a.legend(frameon=False, loc="lower right", fontsize=10)
     _style_axis(ax_a)
     ax_a.grid(axis="y", color="#E3E3E3", linewidth=0.35, alpha=0.55)
 
@@ -405,11 +405,11 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
         ax_b.text(x, total + 3.0, f"{total:.1f}", ha="center", fontweight="bold")
     ax_b.set_xticks(np.arange(len(cases)), case_labels)
     ax_b.set_ylabel("有效服务量（百万单位/日）")
-    ax_b.set_title("b  制造业AI需求增长与2030情景", loc="left", fontweight="bold")
+    ax_b.set_title("b  制造业AI需求增长与2030情景", loc="left", fontweight="bold", fontsize=15)
     ax_b.legend(
         frameon=False,
         ncol=3,
-        fontsize=7.5,
+        fontsize=10,
         loc="upper left",
         bbox_to_anchor=(0.0, 0.99),
     )
@@ -434,11 +434,11 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
             color=TASK_COLORS[task],
         )
         early_bottom += early_values
-    early_inset.set_xticks([0, 1], ["2023\n重建", "2025\n路径值"], fontsize=6.2)
+    early_inset.set_xticks([0, 1], ["2023\n重建", "2025\n路径值"], fontsize=8.5)
     early_inset.set_ylim(0, max(early_bottom) * 1.23)
     early_inset.set_yticks([0, 1, 2, 3])
-    early_inset.tick_params(axis="y", labelsize=6.0)
-    early_inset.set_title("早期需求放大（百万单位/日）", fontsize=6.6, pad=2)
+    early_inset.tick_params(axis="y", labelsize=8)
+    early_inset.set_title("早期需求放大（百万单位/日）", fontsize=9, pad=2)
     early_inset.spines["top"].set_visible(False)
     early_inset.spines["right"].set_visible(False)
     early_inset.grid(axis="y", color="#DDDDDD", linewidth=0.4, alpha=0.6)
@@ -482,9 +482,9 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
         )
         ax_c.barh(y, values, left=left, color=TASK_COLORS[task], height=0.72)
         left += values
-    ax_c.set_yticks(y, labels, fontsize=7.6)
+    ax_c.set_yticks(y, labels, fontsize=9.5)
     ax_c.set_xlabel("基准有效服务量（百万单位/日）")
-    ax_c.set_title("c  行业需求规模与任务结构", loc="left", fontweight="bold")
+    ax_c.set_title("c  行业需求规模与任务结构", loc="left", fontweight="bold", fontsize=15)
     top_three_share = float(totals.head(3).sum() / totals.sum())
     ax_c.text(
         0.99,
@@ -501,7 +501,7 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
     # d: same-unit electricity comparison.  The series starts in 2025 so that
     # every national value uses the current "computing center" boundary.
     growth = data[data["panel"].eq("d")]
-    ax_d.set_title("d  全国算力中心与制造业AI用电增长", loc="left", fontweight="bold")
+    ax_d.set_title("d  全国算力中心与制造业AI用电增长", loc="left", fontweight="bold", fontsize=15)
     dc = growth[
         growth["series"].eq("national_computing_center_electricity")
     ].set_index("category")
@@ -602,7 +602,7 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
         xytext=(8, 9),
         textcoords="offset points",
         color="#486F98",
-        fontsize=7.3,
+        fontsize=9.5,
     )
     ax_d.annotate(
         "2030全国 400–800\n中点600",
@@ -611,7 +611,7 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
         textcoords="offset points",
         ha="right",
         color="#486F98",
-        fontsize=7.3,
+        fontsize=9.5,
     )
     ax_d.annotate(
         f"2025制造业≈{manufacturing_base[0]:.1f}\n（{share_current:.0%}分摊）",
@@ -619,7 +619,7 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
         xytext=(8, 9),
         textcoords="offset points",
         color="#B65E29",
-        fontsize=7.3,
+        fontsize=9.5,
     )
     ax_d.annotate(
         f"2030制造业 {manufacturing_low[1]:.0f}–{manufacturing_high[1]:.0f}\n中点情景{manufacturing_base[1]:.0f}（份额{share_2030:.0%}）",
@@ -629,40 +629,17 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
         ha="right",
         va="top",
         color="#B65E29",
-        fontsize=7.3,
+        fontsize=9.5,
     )
     ax_d.legend(
         [dc_line, dc_scenario, manufacturing_line, manufacturing_scenario],
         ["全国算力中心用电", "2030全国范围", "制造业AI对应用电", "2030制造业范围"],
         frameon=False,
-        fontsize=7.0,
+        fontsize=9.5,
         ncol=2,
         loc="upper left",
     )
-    ax_d.text(
-        0.01,
-        0.02,
-        f"制造业用电按全国用电×应用份额分摊；2030份额范围为{share_low:.0%}–{share_high:.0%}。",
-        transform=ax_d.transAxes,
-        fontsize=7.1,
-        color="#666666",
-    )
-
-    fig.suptitle(
-        "制造业AI采用与服务需求",
-        fontsize=15,
-        fontweight="bold",
-        y=0.995,
-    )
-    fig.text(
-        0.5,
-        0.012,
-        "注：a为2023观测与2030扩散情景；b含2023重建、2025路径插值及2030情景；c为2030基准；d采用统一的算力中心口径，并将制造业AI需求换算为对应用电。成本比较留至Figure 2。",
-        ha="center",
-        fontsize=8,
-        color="#555555",
-    )
-    fig.tight_layout(rect=[0.02, 0.045, 0.99, 0.965], h_pad=2.2, w_pad=2.2)
+    fig.tight_layout(rect=[0.02, 0.02, 0.99, 0.965], h_pad=2.2, w_pad=2.2)
 
     for output in outputs:
         output.parent.mkdir(parents=True, exist_ok=True)

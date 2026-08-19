@@ -186,7 +186,7 @@ def plot(data: pd.DataFrame, svg: Path, png: Path) -> None:
             "font.sans-serif": ["Arial Unicode MS", "PingFang SC", "DejaVu Sans"],
             "axes.unicode_minus": False,
             "svg.fonttype": "none",
-            "font.size": 9,
+            "font.size": 11,
         }
     )
     production = _series(
@@ -267,7 +267,7 @@ def plot(data: pd.DataFrame, svg: Path, png: Path) -> None:
         f"a  单节点时间协同（{host_node}）",
         loc="left",
         fontweight="bold",
-        fontsize=11,
+        fontsize=13,
     )
     _style_time_axis(ax_prod, show_labels=False)
 
@@ -304,7 +304,7 @@ def plot(data: pd.DataFrame, svg: Path, png: Path) -> None:
         xy=(peak_hour, ai_actual[peak_hour]),
         xytext=(peak_hour + 9, 5.25),
         arrowprops={"arrowstyle": "-", "color": "#777", "lw": 0.8},
-        fontsize=8,
+        fontsize=10,
         color="#444",
     )
     ax_ai.set_ylim(0, max(ai_actual.max(), ai_zero.max()) * 1.12)
@@ -314,9 +314,9 @@ def plot(data: pd.DataFrame, svg: Path, png: Path) -> None:
         f"c  可平移与不可平移AI负荷（{host_node}）",
         loc="left",
         fontweight="bold",
-        fontsize=11,
+        fontsize=13,
     )
-    ax_ai.legend(loc="upper right", frameon=False, fontsize=7.4, ncol=2)
+    ax_ai.legend(loc="upper right", frameon=False, fontsize=9.2, ncol=2)
     _style_time_axis(ax_ai, show_labels=True)
 
     blue_map = LinearSegmentedColormap.from_list(
@@ -351,7 +351,7 @@ def plot(data: pd.DataFrame, svg: Path, png: Path) -> None:
         ax.set_xlim(-0.5, 167.5)
 
     ax_base_heat.set_xticks(DAY_CENTERS, [])
-    ax_base_heat.set_title("b  多节点空间—时间协同", loc="left", fontweight="bold", fontsize=11)
+    ax_base_heat.set_title("b  多节点空间—时间协同", loc="left", fontweight="bold", fontsize=13)
     ax_base_heat.set_xlabel("生产负荷 / 本节点连续代表周峰值")
     base_cbar = fig.colorbar(
         base_image,
@@ -367,7 +367,7 @@ def plot(data: pd.DataFrame, svg: Path, png: Path) -> None:
     ax_ai_heat.set_xticks(DAY_CENTERS, DAY_LABELS)
     ax_ai_heat.set_xlabel("星期")
     ax_ai_heat.set_title(
-        "d  多节点AI相对负荷", loc="left", fontweight="bold", fontsize=11
+        "d  多节点AI相对负荷", loc="left", fontweight="bold", fontsize=13
     )
     ai_cbar = fig.colorbar(
         ai_image,
@@ -381,30 +381,7 @@ def plot(data: pd.DataFrame, svg: Path, png: Path) -> None:
     ai_cbar.set_ticklabels(["0", "50%", "100%"])
     ai_cbar.set_label("AI设施功率 / 本节点连续代表周最大AI功率")
 
-    fig.suptitle(
-        "生产负荷与AI服务器负荷的时间和空间协同",
-        fontsize=15,
-        fontweight="bold",
-        y=0.985,
-    )
-    zero_note = (
-        f"；{', '.join(zero_ai_nodes)}的AI功率全周为0"
-        if zero_ai_nodes
-        else ""
-    )
-    fig.text(
-        0.5,
-        0.012,
-        f"注：C36汽车制造业代表集团，连续168小时；左侧承载节点为{host_node}。"
-        "多节点中的5个节点分别使用所在代表工厂的未聚合生产负荷，"
-        "不把其他生产基地的电表或最大需量并入承载节点。"
-        "c将配合生产负荷时的AI设施功率拆为服务器基础功率、不可平移任务活动功率和可平移任务活动功率；"
-        f"生产负荷和AI负荷均按各节点自身周峰值分别归一化{zero_note}。",
-        ha="center",
-        fontsize=8,
-        color="#555",
-    )
-    fig.subplots_adjust(top=0.92, bottom=0.10, left=0.07, right=0.98)
+    fig.subplots_adjust(top=0.92, bottom=0.08, left=0.07, right=0.98)
     svg.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(svg, bbox_inches="tight")
     fig.savefig(png, dpi=220, bbox_inches="tight")

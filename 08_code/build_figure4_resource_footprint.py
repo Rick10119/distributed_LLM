@@ -257,7 +257,7 @@ def load_fonts() -> dict[str, ImageFont.FreeTypeFont]:
     if font_path is None:
         raise FileNotFoundError("A standard Arial font is required")
     return {
-        "title": ImageFont.truetype(str(font_path), 42),
+        "title": ImageFont.truetype(str(font_path), 50),
         "panel": ImageFont.truetype(str(font_path), 32),
         "label": ImageFont.truetype(str(font_path), 25),
         "small": ImageFont.truetype(str(font_path), 22),
@@ -314,7 +314,7 @@ def plot(data: pd.DataFrame, svg_path: Path, png_path: Path) -> None:
         else:
             draw_x = x
         draw.text((draw_x, y), text, font=font, fill=fill)
-        size = {"title": 42, "panel": 32, "label": 25, "small": 22, "note": 19}[font_key]
+        size = {"title": 50, "panel": 38, "label": 29, "small": 26, "note": 22}[font_key]
         weight = "600" if font_key in {"title", "panel"} else "400"
         svg.append(
             f'<text x="{x}" y="{y + size}" fill="{fill}" font-family="Arial Unicode MS, sans-serif" '
@@ -409,7 +409,6 @@ def plot(data: pd.DataFrame, svg_path: Path, png_path: Path) -> None:
             "middle",
         )
 
-    add_text(width / 2, 44, "本地部署降低相同制造业AI服务的新增基础设施需求", "title", foreground, "middle")
 
     grid_cloud = float(
         data.loc[data["deployment"].eq("CLOUD_ALL_1HOST"), "grid_capacity_mw"].iloc[0]
@@ -501,14 +500,6 @@ def plot(data: pd.DataFrame, svg_path: Path, png_path: Path) -> None:
             add_text(center, 774, "折算土地占比≈0.06%", "note", "#59616B", "middle")
     add_text(plot_left, 237, "相对绿地大型云需求", "small", "#59616B")
 
-    add_text(
-        width / 2,
-        835,
-        "注：a为相邻情景路径而非单因素贡献分解，首步同时改变汇聚尺度、PUE与规划边界；b仅展示核心情景，楼面参数敏感性分析见附录；按国家级开发区工业容积率0.99折算，本地核心情景约116 ha，占其工业用地约0.06%；*0表示由原有厂区内部消化。",
-        "note",
-        "#59616B",
-        "middle",
-    )
     svg.append("</svg>")
     svg_path.parent.mkdir(parents=True, exist_ok=True)
     svg_path.write_text("\n".join(svg) + "\n", encoding="utf-8")

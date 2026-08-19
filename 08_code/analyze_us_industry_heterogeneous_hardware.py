@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 from pathlib import Path
 import sys
 import pandas as pd
@@ -17,12 +16,51 @@ sys.path.insert(0, str(ROOT / "08_code"))
 from build_us_manufacturing_ai_demand import (  # noqa: E402
     allocate_daily_to_shape, capital_recovery_factor, parameter_value, task_shapes
 )
+from core.capacity import (  # noqa: E402
+    average_required_server_groups,
+    local_installed_capacity_floor,
+)
+
+
+def china_aligned_continuous_capacity(
+    hourly_compute_h: np.ndarray,
+    service_capacity_per_server_group_h_per_h: float,
+    planning_headroom_fraction: float,
+    n_plus_spare_server_groups: int,
+    normal_dispatch_reserve_fraction: float,
+) -> tuple[float, np.ndarray]:
+    """Apply the continuous-capacity constraints used by the China core model."""
+    compute = np.asarray(hourly_compute_h, dtype=float)
+    if compute.ndim != 1 or len(compute) == 0 or not np.isfinite(compute).all():
+        raise ValueError("Hourly compute must be a finite, non-empty one-dimensional array")
+    if (compute < 0.0).any():
+        raise ValueError("Hourly compute must be non-negative")
+    capacity = float(service_capacity_per_server_group_h_per_h)
+    dispatch_reserve = float(normal_dispatch_reserve_fraction)
+    if not np.isfinite(capacity) or capacity <= 0.0:
+        raise ValueError("Server-group service capacity must be positive")
+    if not 0.0 <= dispatch_reserve < 1.0:
+        raise ValueError("Normal dispatch reserve must be in [0, 1)")
+
+    average_required = average_required_server_groups(
+        float(compute.sum()), len(compute), capacity
+    )
+    planning_floor = local_installed_capacity_floor(
+        average_required,
+        planning_headroom_fraction,
+        n_plus_spare_server_groups,
+    )
+    peak_dispatch_floor = float(compute.max()) * (1.0 + dispatch_reserve) / capacity
+    installed = max(planning_floor, peak_dispatch_floor)
+    online = compute / capacity
+    return installed, online
 
 
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--demand", type=Path, required=True)
     p.add_argument("--national-task-summary", type=Path, required=True)
+    p.add_argument("--defaults", type=Path, required=True)
     p.add_argument("--demand-config", type=Path, required=True)
     p.add_argument("--routing-config", type=Path, required=True)
     p.add_argument("--us-cost-config", type=Path, required=True)
@@ -33,6 +71,7 @@ def main() -> None:
     args = p.parse_args()
     demand = pd.read_csv(args.demand, encoding="utf-8-sig")
     national_tokens = pd.read_csv(args.national_task_summary, encoding="utf-8-sig")
+    defaults = yaml.safe_load(args.defaults.read_text(encoding="utf-8"))
     cfg = yaml.safe_load(args.demand_config.read_text(encoding="utf-8"))
     route_cfg = yaml.safe_load(args.routing_config.read_text(encoding="utf-8"))
     params = pd.read_csv(args.us_parameters, encoding="utf-8-sig")
@@ -48,16 +87,28 @@ def main() -> None:
     shapes = task_shapes(ROOT / cfg["task_shapes"]["profile_file"], cfg["task_shapes"])
     routing = route_cfg["routing_cases"][route_cfg["active_core_routing_case"]]
     multipliers = route_cfg["core_cpu_server_hour_per_reference_l20_accelerator_hour"]
-    compute = cfg["compute"]
     selected_efficiency = efficiency[
         efficiency.efficiency_case == cfg["compute"]["efficiency_case"]
     ]
     if len(selected_efficiency) != 1:
         raise ValueError("Configured U.S. compute-efficiency case is missing or duplicated")
     accel_per_service = float(selected_efficiency.iloc[0].accelerator_h_per_service_unit)
-    reserve = float(compute["installed_reserve_fraction"])
-    utilization = float(compute["installed_utilization"])
-    pue = float(compute["marginal_facility_multiplier"])
+    gpu_cfg = defaults["server"]
+    cpu_cfg = route_cfg["cpu_server"]
+    default_n_plus_spare = int(gpu_cfg.get("n_plus_spare_server_groups", 0))
+    default_dispatch_reserve = float(gpu_cfg.get("normal_dispatch_reserve_fraction", 0.0))
+    for server in (gpu_cfg, cpu_cfg):
+        server.setdefault(
+            "installed_reserve_fraction",
+            float(gpu_cfg["installed_reserve_fraction"]),
+        )
+        server.setdefault("n_plus_spare_server_groups", default_n_plus_spare)
+        server.setdefault("normal_dispatch_reserve_fraction", default_dispatch_reserve)
+    gpu_capacity = float(gpu_cfg["accelerators_per_server"])
+    cpu_capacity = float(cpu_cfg["service_capacity_cpu_server_h_per_h"])
+    cloud_gpu_capacity = float(defaults["hybrid_cloud"]["gpu_capacity_accelerator_h_per_h"])
+    if not np.isclose(cloud_gpu_capacity, gpu_capacity):
+        raise ValueError("U.S. and China GPU cloud capacity units must match")
     annual_days = float(cfg["annualization_days"])
     gpu_purchase = parameter_value(params, us["local_gpu_server_parameter_id"], "base")
     cpu_prices = {case: parameter_value(params, us["local_cpu_server_parameter_id"], case) for case in ("low","base","high")}
@@ -77,15 +128,25 @@ def main() -> None:
             share=float(routing.get(r.task_id,0.0))
             gpu += profile*(1-share)*accel_per_service
             cpu += profile*share*float(multipliers.get(r.task_id,1.0))*accel_per_service
-        gpu_installed=float(gpu.max())/(2*utilization)*(1+reserve)
-        cpu_installed=float(cpu.max())/utilization*(1+reserve)
-        gpu_online=gpu/(2*utilization); cpu_online=cpu/utilization
-        gpu_kw=pue*(gpu_installed*.02+gpu_online*(.36-.02)+gpu/2*(1.50-.36))
-        cpu_cfg=route_cfg["cpu_server"]
-        cpu_kw=pue*(cpu_installed*float(cpu_cfg["cold_spare_standby_power_kw"])+cpu_online*(float(cpu_cfg["online_idle_wall_power_kw"])-float(cpu_cfg["cold_spare_standby_power_kw"]))+cpu*(float(cpu_cfg["maximum_wall_power_kw"])-float(cpu_cfg["online_idle_wall_power_kw"])))
+        gpu_installed, gpu_online = china_aligned_continuous_capacity(
+            gpu,
+            gpu_capacity,
+            float(gpu_cfg["installed_reserve_fraction"]),
+            int(gpu_cfg["n_plus_spare_server_groups"]),
+            float(gpu_cfg["normal_dispatch_reserve_fraction"]),
+        )
+        cpu_installed, cpu_online = china_aligned_continuous_capacity(
+            cpu,
+            cpu_capacity,
+            float(cpu_cfg["installed_reserve_fraction"]),
+            int(cpu_cfg["n_plus_spare_server_groups"]),
+            float(cpu_cfg["normal_dispatch_reserve_fraction"]),
+        )
+        gpu_kw=float(gpu_cfg["marginal_facility_multiplier"])*(gpu_installed*float(gpu_cfg["cold_spare_standby_power_kw"])+gpu_online*(float(gpu_cfg["online_idle_wall_power_kw"])-float(gpu_cfg["cold_spare_standby_power_kw"]))+gpu/gpu_capacity*(float(gpu_cfg["maximum_wall_power_kw"])-float(gpu_cfg["online_idle_wall_power_kw"])))
+        cpu_kw=float(cpu_cfg["marginal_facility_multiplier"])*(cpu_installed*float(cpu_cfg["cold_spare_standby_power_kw"])+cpu_online*(float(cpu_cfg["online_idle_wall_power_kw"])-float(cpu_cfg["cold_spare_standby_power_kw"]))+cpu/cpu_capacity*(float(cpu_cfg["maximum_wall_power_kw"])-float(cpu_cfg["online_idle_wall_power_kw"])))
         energy=(gpu_kw.sum()+cpu_kw.sum())*annual_days
-        cloud_gpu=math.ceil(float(gpu.max())/(2*utilization))
-        cloud_cpu=math.ceil(float(cpu.max())/(utilization*cloud_cpu_capacity))
+        cloud_gpu=float(gpu.max())/cloud_gpu_capacity
+        cloud_cpu=float(cpu.max())/(cpu_capacity*cloud_cpu_capacity)
         token_rows=national_tokens[national_tokens.parameter_case==case].set_index("task_id")
         annual_in=annual_out=0.0
         for task in ("office","agent"):
@@ -106,15 +167,15 @@ def main() -> None:
     detail.to_csv(args.output_dir/"us_naics3_comparison.csv",index=False,encoding="utf-8-sig")
     numeric=["local_gpu_servers","local_cpu_servers","annual_facility_energy_twh","local_total_annual_cost_usd","cloud_gpu_reserved_instances","cloud_cpu_reserved_instances","cloud_token_api_cost_usd","cloud_gpu_reserved_cost_usd","cloud_cpu_reserved_cost_usd","cloud_total_annual_cost_usd"]
     national=detail.groupby(["parameter_case","cpu_server_price_case","provider"],as_index=False)[numeric].sum()
-    national["aggregation_boundary"]="sum_of_21_NAICS3_industries_separately_sized"
+    national["aggregation_boundary"]="sum_of_21_NAICS3_industries_separately_sized_with_china_aligned_continuous_capacity"
     national["cloud_cpu_service_capacity_relative_to_local_server"]=cloud_cpu_capacity
     national["cloud_to_local_cost_ratio"]=national.cloud_total_annual_cost_usd/national.local_total_annual_cost_usd
     national["local_savings_vs_cloud_fraction"]=1-national.local_total_annual_cost_usd/national.cloud_total_annual_cost_usd
     national.to_csv(args.output_dir/"us_national_comparison.csv",index=False,encoding="utf-8-sig")
     base=national.query("parameter_case=='base' and cpu_server_price_case=='base'").sort_values("cloud_total_annual_cost_usd")
     lines="\n".join(f"| {r.provider} | {r.local_total_annual_cost_usd/1e9:.3f} | {r.cloud_total_annual_cost_usd/1e9:.3f} | {r.cloud_to_local_cost_ratio:.3f} | {r.local_savings_vs_cloud_fraction:.1%} |" for r in base.itertuples(index=False))
-    (args.output_dir/"findings.md").write_text("# 美国21个NAICS制造行业异构硬件成本\n\n主口径为21个行业按美国本土base需求分别定容后加总。\n\n| API厂商 | 本地 十亿美元/年 | 完整云 十亿美元/年 | 云/本地 | 本地节省 |\n|---|---:|---:|---:|---:|\n"+lines+"\n",encoding="utf-8")
-    done={"status":"complete_validated_us_21_naics_heterogeneous_cost","industries":21,"demand_cases":sorted(detail.parameter_case.unique()),"cpu_price_cases":sorted(detail.cpu_server_price_case.unique()),"providers":sorted(detail.provider.unique()),"aggregation_boundary":"industry_sum","accelerator_h_per_service_unit":accel_per_service,"compute_efficiency_case":cfg["compute"]["efficiency_case"]}
+    (args.output_dir/"findings.md").write_text("# 美国21个NAICS制造行业异构硬件成本\n\n主口径为21个行业按美国本土base需求分别定容后加总；本地GPU/CPU装机采用与中国核心模型一致的连续容量约束：日均容量下限叠加规划裕量与N+k备用，并满足逐小时运行容量。\n\n| API厂商 | 本地 十亿美元/年 | 完整云 十亿美元/年 | 云/本地 | 本地节省 |\n|---|---:|---:|---:|---:|\n"+lines+"\n",encoding="utf-8")
+    done={"status":"complete_validated_us_21_naics_heterogeneous_cost","industries":21,"demand_cases":sorted(detail.parameter_case.unique()),"cpu_price_cases":sorted(detail.cpu_server_price_case.unique()),"providers":sorted(detail.provider.unique()),"aggregation_boundary":"industry_sum_china_aligned_continuous_capacity","installed_capacity_rule":gpu_cfg["installed_capacity_rule"],"planning_reserve_fraction":float(gpu_cfg["installed_reserve_fraction"]),"n_plus_spare_server_groups":int(gpu_cfg["n_plus_spare_server_groups"]),"normal_dispatch_reserve_fraction":float(gpu_cfg["normal_dispatch_reserve_fraction"]),"accelerator_h_per_service_unit":accel_per_service,"compute_efficiency_case":cfg["compute"]["efficiency_case"]}
     (args.output_dir/"validated.done.json").write_text(json.dumps(done,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
 
 if __name__=="__main__": main()

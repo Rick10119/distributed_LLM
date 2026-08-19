@@ -43,6 +43,7 @@ CHINA_COST_COLUMNS = [
     "industry_equivalent_annual_ai_energy_cost_rmb",
     "industry_equivalent_annual_incremental_maximum_demand_cost_rmb",
     "industry_equivalent_annual_incremental_total_cost_rmb",
+    "industry_equivalent_annual_ai_facility_energy_twh",
 ]
 US_PROVIDERS = ["OpenAI", "Anthropic", "Google"]
 US_COST_COLUMNS = [
@@ -117,28 +118,107 @@ def _read_csv_or_empty(path: Path) -> pd.DataFrame:
     return pd.read_csv(path, encoding="utf-8-sig")
 
 
-def _prepare_china_case(
-    frame: pd.DataFrame, demand_case: str, industries: list[str],
-) -> tuple[pd.DataFrame, bool]:
+def _national_demand_ratios(service: pd.DataFrame) -> dict[str, float]:
+    totals = service.groupby("parameter_case")["effective_service_units_day"].sum()
+    base = float(totals.get("base", 0.0))
+    if base <= 0:
+        raise ValueError("Base effective-service demand must be positive")
+    return {case: float(totals.get(case, base)) / base for case in DEMAND_CASES}
+
+
+def _national_demand_totals(service: pd.DataFrame) -> dict[str, float]:
+    totals = service.groupby("parameter_case")["effective_service_units_day"].sum()
+    missing = [case for case in DEMAND_CASES if float(totals.get(case, 0.0)) <= 0.0]
+    if missing:
+        raise ValueError(f"Positive national effective-service demand is required for {missing}")
+    return {case: float(totals[case]) for case in DEMAND_CASES}
+
+
+def _us_results_ready(national_path: Path, validation_path: Path) -> bool:
+    """Return true only for a complete U.S. run using the China-aligned sizing rule."""
+    if (
+        not national_path.exists()
+        or national_path.stat().st_size == 0
+        or not validation_path.exists()
+        or validation_path.stat().st_size == 0
+    ):
+        return False
+    try:
+        validation = json.loads(validation_path.read_text(encoding="utf-8"))
+        frame = pd.read_csv(national_path, encoding="utf-8-sig")
+    except (json.JSONDecodeError, OSError, pd.errors.ParserError):
+        return False
+    if validation.get("aggregation_boundary") != "industry_sum_china_aligned_continuous_capacity":
+        return False
+    if validation.get("installed_capacity_rule") != "daily_average_plus_planning_headroom_and_n_plus_spare":
+        return False
+    required = {"parameter_case", "provider", *US_COST_COLUMNS}
+    if not required.issubset(frame.columns):
+        return False
+    selected = frame[
+        frame.get("cpu_server_price_case", pd.Series("base", index=frame.index)).eq("base")
+    ]
+    expected = {(case, provider) for case in DEMAND_CASES for provider in US_PROVIDERS}
+    observed = set(zip(selected["parameter_case"], selected["provider"]))
+    return expected.issubset(observed) and not selected[list(US_COST_COLUMNS)].isna().any().any()
+
+
+def _industry_demand_ratios(service: pd.DataFrame, industries: list[str]) -> pd.DataFrame:
+    grouped = service.groupby(["industry_code", "parameter_case"])["effective_service_units_day"].sum()
+    pivot = grouped.unstack("parameter_case")
+    pivot.index = pivot.index.astype(str)
+    global_ratios = _national_demand_ratios(service)
+    ratios = pd.DataFrame(index=industries, columns=DEMAND_CASES, dtype=float)
+    for case in DEMAND_CASES:
+        if case in pivot and "base" in pivot:
+            case_ratio = pivot[case] / pivot["base"].replace(0.0, np.nan)
+            ratios[case] = case_ratio.reindex(industries).fillna(global_ratios[case])
+        else:
+            ratios[case] = global_ratios[case]
+    ratios["base"] = 1.0
+    return ratios
+
+
+def _extract_china_case(frame: pd.DataFrame, industries: list[str]) -> pd.DataFrame:
     if {"architecture", "industry"}.issubset(frame.columns):
         selected = frame[frame["architecture"].eq("IG_1host")].copy()
         selected["industry"] = selected["industry"].astype(str)
         selected = selected.drop_duplicates("industry", keep="last").set_index("industry")
     else:
         selected = pd.DataFrame(index=pd.Index([], name="industry"))
-    missing_industries = set(industries) - set(selected.index)
-    missing_columns = set(CHINA_COST_COLUMNS) - set(selected.columns)
     selected = selected.reindex(industries)
     for column in CHINA_COST_COLUMNS:
         if column not in selected:
-            selected[column] = 0.0
-        selected[column] = pd.to_numeric(selected[column], errors="coerce").fillna(0.0)
+            selected[column] = np.nan
+        selected[column] = pd.to_numeric(selected[column], errors="coerce")
     selected["architecture"] = "IG_1host"
-    selected["demand_case"] = demand_case
-    return selected.reset_index(), bool(missing_industries or missing_columns)
+    return selected
 
 
-def _prepare_us_cases(frame: pd.DataFrame) -> tuple[pd.DataFrame, bool]:
+def _prepare_china_cases(
+    frames: dict[str, pd.DataFrame], industries: list[str], demand_ratios: pd.DataFrame,
+) -> tuple[dict[str, pd.DataFrame], set[str]]:
+    extracted = {case: _extract_china_case(frame, industries) for case, frame in frames.items()}
+    base = extracted["base"].copy()
+    base[CHINA_COST_COLUMNS] = base[CHINA_COST_COLUMNS].fillna(0.0)
+    prepared: dict[str, pd.DataFrame] = {}
+    imputed_cases: set[str] = set()
+    for case in DEMAND_CASES:
+        selected = extracted[case].copy()
+        missing = selected[CHINA_COST_COLUMNS].isna()
+        if bool(missing.to_numpy().any()):
+            imputed_cases.add(case)
+        for column in CHINA_COST_COLUMNS:
+            scaled_base = base[column] * demand_ratios.loc[industries, case]
+            selected[column] = selected[column].fillna(scaled_base).fillna(0.0)
+        selected["demand_case"] = case
+        prepared[case] = selected.reset_index()
+    return prepared, imputed_cases
+
+
+def _prepare_us_cases(
+    frame: pd.DataFrame, demand_ratios: dict[str, float],
+) -> tuple[pd.DataFrame, set[str]]:
     if "cpu_server_price_case" in frame:
         frame = frame[frame["cpu_server_price_case"].eq("base")].copy()
     required_keys = {"parameter_case", "provider"}
@@ -150,15 +230,24 @@ def _prepare_us_cases(frame: pd.DataFrame) -> tuple[pd.DataFrame, bool]:
     expected = pd.MultiIndex.from_product(
         [DEMAND_CASES, US_PROVIDERS], names=["parameter_case", "provider"]
     )
-    missing_cases = set(expected) - set(frame.index)
-    missing_columns = set(US_COST_COLUMNS) - set(frame.columns)
     frame = frame.reindex(expected)
     for column in US_COST_COLUMNS:
         if column not in frame:
-            frame[column] = 0.0
-        frame[column] = pd.to_numeric(frame[column], errors="coerce").fillna(0.0)
+            frame[column] = np.nan
+        frame[column] = pd.to_numeric(frame[column], errors="coerce").astype(float)
+    base = frame.xs("base", level="parameter_case")[US_COST_COLUMNS].fillna(0.0)
+    imputed_cases: set[str] = set()
+    for case in DEMAND_CASES:
+        missing = frame.loc[pd.IndexSlice[case, :], US_COST_COLUMNS].isna()
+        if bool(missing.to_numpy().any()):
+            imputed_cases.add(case)
+        for provider in US_PROVIDERS:
+            for column in US_COST_COLUMNS:
+                key = (case, provider)
+                if pd.isna(frame.loc[key, column]):
+                    frame.loc[key, column] = float(base.loc[provider, column]) * demand_ratios[case]
     frame["cpu_server_price_case"] = "base"
-    return frame.reset_index(), bool(missing_cases or missing_columns)
+    return frame.reset_index(), imputed_cases
 
 
 def prepare(
@@ -172,23 +261,25 @@ def prepare(
     baseline_path: Path,
     api_price_path: Path,
     us_national_path: Path,
+    us_validation_path: Path,
+    us_demand_service_path: Path,
     us_cost_config_path: Path,
     us_parameters_path: Path,
     model_version: str,
 ) -> pd.DataFrame:
     baseline = pd.read_csv(baseline_path, encoding="utf-8-sig")
     industries = baseline["industry_code"].astype(str).tolist()
+    service = pd.read_csv(service_path, encoding="utf-8-sig")
+    china_national_demand_ratios = _national_demand_ratios(service)
+    china_demand_ratios = _industry_demand_ratios(service, industries)
     china_frames = {
         "low": _read_csv_or_empty(china_low_path),
         "base": _read_csv_or_empty(core_path),
         "high": _read_csv_or_empty(china_high_path),
     }
-    china_prepared = {
-        case: _prepare_china_case(frame, case, industries)
-        for case, frame in china_frames.items()
-    }
-    china_ig = {case: prepared[0] for case, prepared in china_prepared.items()}
-    china_zero_filled = {case: prepared[1] for case, prepared in china_prepared.items()}
+    china_ig, china_imputed_cases = _prepare_china_cases(
+        china_frames, industries, china_demand_ratios
+    )
 
     defaults = yaml.safe_load(defaults_path.read_text(encoding="utf-8"))
     routing_doc = yaml.safe_load(routing_path.read_text(encoding="utf-8"))
@@ -196,7 +287,6 @@ def prepare(
     discount = float(defaults["model"]["discount_rate"])
     gpu_annual = _annual_server_cost(defaults["server"], discount)
     cpu_annual = _annual_server_cost(routing_doc["cpu_server"], discount)
-    service = pd.read_csv(service_path, encoding="utf-8-sig")
     workload = pd.read_csv(workload_path, encoding="utf-8-sig")
     prices = pd.read_csv(api_price_path, encoding="utf-8-sig")
     prices = prices[
@@ -227,7 +317,7 @@ def prepare(
             "option": "cn_local", "label": "本地自建", "component": "总成本",
             "value": float(ig["industry_equivalent_annual_incremental_total_cost_rmb"].sum()),
             "unit": "RMB/year",
-            "evidence_status": "zero_filled_missing_values" if china_zero_filled[demand_case] else "available_IG_1host",
+            "evidence_status": "baseline_scaled_by_demand_ratio" if demand_case in china_imputed_cases else "available_IG_1host",
         })
         provider_values = {
             provider: {"GPU容量付款": 0.0, "CPU容量付款": 0.0, "Token API": 0.0}
@@ -281,7 +371,8 @@ def prepare(
                 "panel": "a", "country": "China", "demand_case": demand_case,
                 "option": option, "label": "DeepSeek*" if provider == "DeepSeek" else "阿里云*",
                 "component": "总成本", "value": sum(provider_values[provider].values()),
-                "unit": "RMB/year", "evidence_status": "provisional_china_cloud_price_proxy",
+                "unit": "RMB/year",
+                "evidence_status": "partly_baseline_scaled_by_demand_ratio" if demand_case in china_imputed_cases else "provisional_china_cloud_price_proxy",
             })
 
     base_ig = china_ig["base"]
@@ -296,7 +387,7 @@ def prepare(
             "panel": "c", "country": "China", "demand_case": "base",
             "option": "cn_local", "label": "本地自建", "component": component,
             "value": value, "unit": "RMB/year",
-            "evidence_status": "zero_filled_missing_values" if china_zero_filled["base"] else "available_IG_1host",
+            "evidence_status": "baseline_scaled_by_demand_ratio" if "base" in china_imputed_cases else "available_IG_1host",
         })
     for provider in CHINA_PROVIDERS:
         option = "cn_cloud_deepseek" if provider == "DeepSeek" else "cn_cloud_alibaba"
@@ -308,7 +399,89 @@ def prepare(
                 "evidence_status": "provisional_china_cloud_price_proxy",
             })
 
-    us_national, us_zero_filled = _prepare_us_cases(_read_csv_or_empty(us_national_path))
+    us_demand_service = pd.read_csv(us_demand_service_path, encoding="utf-8-sig")
+    us_demand_ratios = _national_demand_ratios(us_demand_service)
+    china_demand_totals = _national_demand_totals(service)
+    us_demand_totals = _national_demand_totals(us_demand_service)
+    us_results_ready = _us_results_ready(us_national_path, us_validation_path)
+    us_national, us_imputed_cases = _prepare_us_cases(
+        _read_csv_or_empty(us_national_path), us_demand_ratios
+    )
+
+    us_config = yaml.safe_load(us_cost_config_path.read_text(encoding="utf-8"))["us_cost_environment"]
+    us_parameters = pd.read_csv(us_parameters_path, encoding="utf-8-sig").set_index("parameter_id")
+
+    def us_parameter(parameter_id: str) -> float:
+        return float(us_parameters.loc[parameter_id, "base_value"])
+
+    us_coeff = (
+        (1.0 + float(us_config["shared_facility_capex_fraction"]))
+        * _crf(float(us_config["shared_discount_rate"]), float(us_config["shared_economic_life_years"]))
+        + float(us_config["shared_annual_maintenance_fraction"])
+    )
+    inferred_us_local_components: dict[str, dict[str, float]] = {}
+    inferred_us_cloud_components: dict[str, dict[str, dict[str, float]]] = {}
+    if not us_results_ready:
+        us_gpu_annual = us_parameter(str(us_config["local_gpu_server_parameter_id"])) * us_coeff
+        us_cpu_annual = us_parameter(str(us_config["local_cpu_server_parameter_id"])) * us_coeff
+        us_electricity = us_parameter(str(us_config["industrial_electricity_parameter_id"]))
+        us_cloud_gpu_annual = us_parameter(str(us_config["cloud_gpu_reserved_parameter_id"]))
+        us_cloud_cpu_annual = us_parameter(str(us_config["cloud_cpu_reserved_parameter_id"]))
+        for demand_case in DEMAND_CASES:
+            demand_scale = us_demand_totals[demand_case] / china_demand_totals[demand_case]
+            ig = china_ig[demand_case]
+            components = {
+                "GPU服务器及设施": float(ig["industry_equivalent_installed_gpu_server_groups"].sum())
+                * demand_scale * us_gpu_annual,
+                "CPU服务器及设施": float(ig["industry_equivalent_installed_cpu_server_groups"].sum())
+                * demand_scale * us_cpu_annual,
+                "电量": float(ig["industry_equivalent_annual_ai_facility_energy_twh"].sum())
+                * demand_scale * 1e9 * us_electricity,
+            }
+            inferred_us_local_components[demand_case] = components
+            mask = us_national["parameter_case"].eq(demand_case)
+            us_national.loc[mask, "local_total_annual_cost_usd"] = sum(components.values())
+            china_cloud_reference = china_cloud_components[demand_case][CHINA_PROVIDERS[0]]
+            gpu_reserved = (
+                float(china_cloud_reference["GPU容量付款"])
+                / gpu_subscription * demand_scale
+            )
+            cpu_reserved = (
+                float(china_cloud_reference["CPU容量付款"])
+                / cpu_subscription * demand_scale
+            )
+            inferred_us_cloud_components[demand_case] = {}
+            for provider in US_PROVIDERS:
+                provider_mask = mask & us_national["provider"].eq(provider)
+                token_cost = float(
+                    us_national.loc[provider_mask, "cloud_token_api_cost_usd"].iloc[0]
+                )
+                if not np.isfinite(token_cost) or token_cost < 0.0:
+                    raise ValueError(
+                        f"A valid existing U.S. Token API cost is required for {provider}/{demand_case}"
+                    )
+                cloud_components = {
+                    "GPU容量付款": gpu_reserved * us_cloud_gpu_annual,
+                    "CPU容量付款": cpu_reserved * us_cloud_cpu_annual,
+                    "Token API": token_cost,
+                }
+                inferred_us_cloud_components[demand_case][provider] = cloud_components
+                us_national.loc[provider_mask, "cloud_gpu_reserved_instances"] = gpu_reserved
+                us_national.loc[provider_mask, "cloud_cpu_reserved_instances"] = cpu_reserved
+                us_national.loc[provider_mask, "cloud_gpu_reserved_cost_usd"] = cloud_components["GPU容量付款"]
+                us_national.loc[provider_mask, "cloud_cpu_reserved_cost_usd"] = cloud_components["CPU容量付款"]
+                us_national.loc[provider_mask, "cloud_total_annual_cost_usd"] = sum(cloud_components.values())
+
+    us_local_status = (
+        "available_us_native_demand_heterogeneous_hardware"
+        if us_results_ready
+        else "china_capacity_scaled_by_us_to_china_effective_service_ratio_and_repriced_with_us_local_inputs"
+    )
+    us_cloud_status = (
+        "available_us_native_demand_cloud_payment_proxy"
+        if us_results_ready
+        else "china_cloud_capacity_scaled_by_us_to_china_effective_service_ratio_and_repriced_with_us_cloud_inputs"
+    )
     for demand_case in DEMAND_CASES:
         selected = us_national[us_national["parameter_case"].eq(demand_case)]
         if selected["local_total_annual_cost_usd"].round(2).nunique() != 1:
@@ -318,7 +491,7 @@ def prepare(
             "option": "us_local", "label": "本地自建", "component": "总成本",
             "value": float(selected.iloc[0]["local_total_annual_cost_usd"]),
             "unit": "USD/year",
-            "evidence_status": "zero_filled_missing_values" if us_zero_filled else "available_us_native_demand_heterogeneous_hardware",
+            "evidence_status": us_local_status,
         })
         for item in selected.itertuples(index=False):
             rows.append({
@@ -326,30 +499,23 @@ def prepare(
                 "option": f"us_cloud_{str(item.provider).lower()}", "label": item.provider,
                 "component": "总成本", "value": float(item.cloud_total_annual_cost_usd),
                 "unit": "USD/year",
-                "evidence_status": "zero_filled_missing_values" if us_zero_filled else "available_us_native_demand_cloud_payment_proxy",
+                "evidence_status": us_cloud_status,
             })
-
-    us_config = yaml.safe_load(us_cost_config_path.read_text(encoding="utf-8"))["us_cost_environment"]
-    us_parameters = pd.read_csv(us_parameters_path, encoding="utf-8-sig").set_index("parameter_id")
-
-    def us_parameter(parameter_id: str) -> float:
-        return float(us_parameters.loc[parameter_id, "base_value"])
 
     us_base = us_national[us_national["parameter_case"].eq("base")]
     us_reference = us_base.iloc[0]
-    us_coeff = (
-        (1.0 + float(us_config["shared_facility_capex_fraction"]))
-        * _crf(float(us_config["shared_discount_rate"]), float(us_config["shared_economic_life_years"]))
-        + float(us_config["shared_annual_maintenance_fraction"])
+    us_local_components = (
+        inferred_us_local_components["base"]
+        if not us_results_ready
+        else {
+            "GPU服务器及设施": float(us_reference["local_gpu_servers"])
+            * us_parameter(str(us_config["local_gpu_server_parameter_id"])) * us_coeff,
+            "CPU服务器及设施": float(us_reference["local_cpu_servers"])
+            * us_parameter(str(us_config["local_cpu_server_parameter_id"])) * us_coeff,
+            "电量": float(us_reference["annual_facility_energy_twh"]) * 1e9
+            * us_parameter(str(us_config["industrial_electricity_parameter_id"])),
+        }
     )
-    us_local_components = {
-        "GPU服务器及设施": float(us_reference["local_gpu_servers"])
-        * us_parameter(str(us_config["local_gpu_server_parameter_id"])) * us_coeff,
-        "CPU服务器及设施": float(us_reference["local_cpu_servers"])
-        * us_parameter(str(us_config["local_cpu_server_parameter_id"])) * us_coeff,
-        "电量": float(us_reference["annual_facility_energy_twh"]) * 1e9
-        * us_parameter(str(us_config["industrial_electricity_parameter_id"])),
-    }
     if abs(sum(us_local_components.values()) - float(us_reference["local_total_annual_cost_usd"])) > 1.0:
         raise ValueError("U.S. local components do not reconcile")
     for component, value in us_local_components.items():
@@ -357,7 +523,7 @@ def prepare(
             "panel": "d", "country": "US", "demand_case": "base",
             "option": "us_local", "label": "本地自建", "component": component,
             "value": value, "unit": "USD/year",
-            "evidence_status": "zero_filled_missing_values" if us_zero_filled else "available_us_native_demand_heterogeneous_hardware",
+            "evidence_status": us_local_status,
         })
     for item in us_base.itertuples(index=False):
         for component, value in (
@@ -369,7 +535,7 @@ def prepare(
                 "panel": "d", "country": "US", "demand_case": "base",
                 "option": f"us_cloud_{str(item.provider).lower()}", "label": item.provider,
                 "component": component, "value": value, "unit": "USD/year",
-                "evidence_status": "zero_filled_missing_values" if us_zero_filled else "available_us_native_demand_cloud_payment_proxy",
+                "evidence_status": us_cloud_status,
             })
 
     output = pd.DataFrame(rows)
@@ -378,6 +544,28 @@ def prepare(
     output["local_currency_unit"] = output["unit"]
     output["local_currency_per_usd"] = np.where(output["country"].eq("China"), cny_per_usd, 1.0)
     output["value_usd"] = output["value_local_currency"] / output["local_currency_per_usd"]
+    output["national_demand_ratio_to_base"] = output.apply(
+        lambda row: china_national_demand_ratios[row["demand_case"]]
+        if row["country"] == "China"
+        else us_demand_ratios[row["demand_case"]],
+        axis=1,
+    )
+    local_fallback = output["evidence_status"].eq(
+        "china_capacity_scaled_by_us_to_china_effective_service_ratio_and_repriced_with_us_local_inputs"
+    )
+    cloud_fallback = output["evidence_status"].eq(
+        "china_cloud_capacity_scaled_by_us_to_china_effective_service_ratio_and_repriced_with_us_cloud_inputs"
+    )
+    output["source_note"] = ""
+    output.loc[local_fallback, "source_note"] = (
+        "U.S. local fallback: China same-demand installed capacity and energy, scaled by the "
+        "U.S./China effective-service demand ratio and repriced with U.S. GPU, CPU, and electricity inputs"
+    )
+    output.loc[cloud_fallback, "source_note"] = (
+        "U.S. cloud fallback: China same-demand GPU/CPU cloud capacity, scaled by the U.S./China "
+        "effective-service demand ratio and repriced with U.S. cloud inputs; Token API retains the "
+        "available U.S. provider estimate"
+    )
     return output
 
 
@@ -427,13 +615,13 @@ def _plot_cost_by_demand(
         )
     label_offset = max(float(local_max.max()), float(cloud_max.max())) * 0.025
     for xx, low, high in zip(local_x, local_min, local_max):
-        ax.text(xx, high + label_offset, f"{low:.1f}–{high:.1f}", ha="right", va="bottom", fontsize=8)
+        ax.text(xx, high + label_offset, f"{low:.1f}–{high:.1f}", ha="right", va="bottom", fontsize=10)
     for xx, low, high in zip(cloud_x, cloud_min, cloud_max):
-        ax.text(xx, high + label_offset, f"{low:.1f}–{high:.1f}", ha="left", va="bottom", fontsize=8)
+        ax.text(xx, high + label_offset, f"{low:.1f}–{high:.1f}", ha="left", va="bottom", fontsize=10)
     ax.set_xticks(x, ["低需求", "中需求", "高需求"])
     ax.set_xlabel("AI服务需求水平")
     ax.set_ylabel(ylabel)
-    ax.set_title(title, loc="left", fontweight="bold")
+    ax.set_title(title, loc="left", fontweight="bold", fontsize=13)
     ax.set_ylim(0, max(float(local_max.max()), float(cloud_max.max())) * 1.18)
     ax.legend(
         handles=[
@@ -441,7 +629,7 @@ def _plot_cost_by_demand(
                    color=COLORS["base"], label="本地自建范围", markersize=5),
             Line2D([0], [0], marker="o", linestyle="-", linewidth=2.0,
                    color=COLORS["high"], label="云端采购范围", markersize=5),
-        ], frameon=False, ncol=2, fontsize=8, loc="upper left",
+        ], frameon=False, ncol=2, fontsize=10, loc="upper left",
     )
     _style(ax, "y")
 
@@ -471,10 +659,10 @@ def _plot_composition(
                 bar.set_linewidth(0.5)
         bottom += values
     for xx, total in zip(x, bottom):
-        ax.text(xx, total + max(bottom) * 0.025, f"{total:.1f}", ha="center", va="bottom", fontsize=8, fontweight="bold")
+        ax.text(xx, total + max(bottom) * 0.025, f"{total:.1f}", ha="center", va="bottom", fontsize=10, fontweight="bold")
     ax.set_xticks(x, labels)
     ax.set_ylabel(ylabel)
-    ax.set_title(title, loc="left", fontweight="bold")
+    ax.set_title(title, loc="left", fontweight="bold", fontsize=13)
     ax.set_ylim(0, max(bottom) * 1.19)
     _style(ax, "y")
 
@@ -482,12 +670,12 @@ def _plot_composition(
 def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
     plt.rcParams.update({
         "font.sans-serif": ["Arial Unicode MS", "PingFang SC", "Noto Sans CJK SC", "DejaVu Sans"],
-        "axes.unicode_minus": False, "svg.fonttype": "none", "pdf.fonttype": 42, "font.size": 9,
+        "axes.unicode_minus": False, "svg.fonttype": "none", "pdf.fonttype": 42, "font.size": 12,
     })
     plot_data = data.copy()
     plot_data["value"] = plot_data["value_usd"]
     fig, axes = plt.subplots(2, 2, figsize=(14.8, 9.2))
-    fig.subplots_adjust(left=0.075, right=0.985, top=0.91, bottom=0.11, wspace=0.25, hspace=0.38)
+    fig.subplots_adjust(left=0.075, right=0.985, top=0.91, bottom=0.13, wspace=0.25, hspace=0.38)
     cn_options = ["cn_local", "cn_cloud_deepseek", "cn_cloud_alibaba"]
     cn_labels = ["本地自建\n集团单节点", "DeepSeek*", "阿里云*"]
     us_options = ["us_local", "us_cloud_google", "us_cloud_openai", "us_cloud_anthropic"]
@@ -512,7 +700,13 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
         axes[1, 1], plot_data[plot_data["panel"].eq("d")], us_options, us_labels, 1e9,
         "企业年成本/付款（十亿美元/年）", "d  美国：基准需求下的成本构成", 1,
     )
-    bottom_max = plot_data[plot_data["panel"].isin(["c", "d"])]["value"].max() / 1e9
+    bottom_max = (
+        plot_data[plot_data["panel"].isin(["c", "d"])]
+        .groupby(["panel", "option"])["value"]
+        .sum()
+        .max()
+        / 1e9
+    )
     for ax in axes[1]:
         ax.set_ylim(0, bottom_max * 1.19)
     fig.legend(
@@ -522,14 +716,14 @@ def plot(data: pd.DataFrame, outputs: list[Path]) -> None:
             Patch(facecolor=COLORS["energy"], label="电量"),
             Patch(facecolor=COLORS["demand"], label="最大需量"),
             Patch(facecolor=COLORS["token"], hatch="///", edgecolor="white", label="Token API"),
-        ], frameon=False, ncol=5, loc="lower center", bbox_to_anchor=(0.5, 0.047), fontsize=8.3,
+        ], frameon=False, ncol=5, loc="lower center", bbox_to_anchor=(0.5, 0.057), fontsize=10,
     )
-    fig.suptitle("不同AI需求水平下中国与美国制造业的本地自建与云端采购成本", fontsize=15, fontweight="bold", y=0.965)
-    fig.text(
-        0.5, 0.015,
-        "* 中国为31个制造业大类，云端付款沿用当前公开价格试算；美国为21个NAICS制造行业及美国本土需求。中国成本按输入价格表中的人民币兑美元汇率换算。",
-        ha="center", fontsize=7.8, color="#5B5B5B",
-    )
+    if data["evidence_status"].str.contains("china_.*capacity_scaled_by_us_to_china", regex=True).any():
+        fig.text(
+            0.5, 0.018,
+            "注：美国本地及云容量成本为后备推算值——按中美有效服务需求比缩放中国同需求情景的装机、能耗和云容量，并采用美国价格重新计价；Token API沿用美国厂商估计，正式结果完成后自动替换。",
+            ha="center", va="bottom", fontsize=8.8, color="#555555",
+        )
     for output in outputs:
         output.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(output, dpi=300, bbox_inches="tight")
@@ -548,6 +742,8 @@ def main() -> None:
     parser.add_argument("--baseline", type=Path, default=ROOT / "02_data/china_manufacturing_sector_baseline.csv")
     parser.add_argument("--api-prices", type=Path, default=ROOT / "02_data/processed/api_token_cost/api_token_prices_v1_1.csv")
     parser.add_argument("--us-national", type=Path, default=VERSION_RESULT_ROOT / "cost_benchmark/heterogeneous_hardware_v1/us_naics3/us_national_comparison.csv")
+    parser.add_argument("--us-validation", type=Path, default=VERSION_RESULT_ROOT / "cost_benchmark/heterogeneous_hardware_v1/us_naics3/validated.done.json")
+    parser.add_argument("--us-demand-service", type=Path, default=ROOT / "02_data/processed/us_demand/us_manufacturing_ai_effective_service_2030.csv")
     parser.add_argument("--us-cost-config", type=Path, default=ROOT / "config/cost_cases/us_heterogeneous_cpu_v1.yaml")
     parser.add_argument("--us-parameters", type=Path, default=ROOT / "02_data/processed/cost_benchmark/us_core_cost_parameters_v1.csv")
     parser.add_argument("--model-version", default=DEFAULT_MODEL_VERSION)
@@ -560,7 +756,8 @@ def main() -> None:
     data = prepare(
         args.core, args.china_low, args.china_high, args.defaults, args.routing,
         args.service, args.workload, args.baseline, args.api_prices,
-        args.us_national, args.us_cost_config, args.us_parameters, args.model_version,
+        args.us_national, args.us_validation, args.us_demand_service, args.us_cost_config,
+        args.us_parameters, args.model_version,
     )
     args.data_output.parent.mkdir(parents=True, exist_ok=True)
     data.to_csv(args.data_output, index=False, encoding="utf-8-sig")
@@ -569,10 +766,25 @@ def main() -> None:
         "status": "iterative_draft_not_release_ready",
         "model_version": args.model_version,
         "panels": ["china_demand_range", "us_demand_range", "china_base_cost_composition", "us_base_cost_composition"],
-        "china_local_evidence": "available_31_industry_IG_1host_low_base_high_with_zero_fill_fallback",
+        "china_local_evidence": "available_31_industry_IG_1host_with_baseline_demand_scaling_fallback",
         "china_cloud_evidence": "provisional_current_price_proxy",
-        "us_evidence": "available_21_naics_native_demand_heterogeneous_hardware_with_zero_fill_fallback",
-        "zero_filled_output_rows": int(data["evidence_status"].eq("zero_filled_missing_values").sum()),
+        "us_evidence": (
+            "available_21_naics_native_demand_results"
+            if not data["evidence_status"].str.contains("china_capacity_scaled", na=False).any()
+            else "us_local_and_cloud_capacity_fallback_from_china_scaled_by_demand_and_repriced_with_us_inputs"
+        ),
+        "baseline_scaled_output_rows": int(data["evidence_status"].str.contains("baseline_scaled", na=False).sum()),
+        "missing_value_fallback": "base_case_value_times_same_country_effective_service_ratio;_unfinished_us_local_and_cloud_capacity_use_china_capacity_times_cross_country_demand_ratio_and_us_prices;_us_token_api_retains_available_provider_estimate",
+        "china_scaling_level": "industry_specific_effective_service_ratio",
+        "us_scaling_level": "national_effective_service_ratio",
+        "china_national_demand_ratios": {
+            case: float(data.loc[(data["country"].eq("China")) & (data["demand_case"].eq(case)), "national_demand_ratio_to_base"].iloc[0])
+            for case in DEMAND_CASES
+        },
+        "us_national_demand_ratios": {
+            case: float(data.loc[(data["country"].eq("US")) & (data["demand_case"].eq(case)), "national_demand_ratio_to_base"].iloc[0])
+            for case in DEMAND_CASES
+        },
         "currency": "USD/year",
         "china_cny_per_usd": float(data.loc[data["country"].eq("China"), "local_currency_per_usd"].iloc[0]),
         "exchange_rate_source": "active USD-denominated row in api_token_prices input",

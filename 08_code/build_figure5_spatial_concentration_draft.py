@@ -73,8 +73,8 @@ def configure() -> None:
 
 
 def panel(ax, letter: str, title: str) -> None:
-    ax.text(-.08, 1.05, letter, transform=ax.transAxes, fontsize=14, fontweight="bold")
-    ax.text(0, 1.05, title, transform=ax.transAxes, fontsize=11.5, fontweight="bold")
+    ax.text(-.08, 1.05, letter, transform=ax.transAxes, fontsize=16, fontweight="bold")
+    ax.text(0, 1.05, title, transform=ax.transAxes, fontsize=14, fontweight="bold")
 
 
 def prepare(
@@ -163,14 +163,14 @@ def draw_province_map(
         if row.province in top_names:
             offset = LABEL_OFFSETS.get(row.province, (4, 5))
             ax.annotate(f"{LABELS[row.province]} {water_m3/1e3:.0f}", (x, y), xytext=offset,
-                        textcoords="offset points", fontsize=7.1, color="#222", zorder=4)
+                        textcoords="offset points", fontsize=9, color="#222", zorder=4)
     x0, x1, y0, y1 = projected_extent(china, 72.5, 16.5, 136.0, 54.5)
     ax.set_xlim(x0, x1); ax.set_ylim(y0, y1)
     taiwan = china.loc[china.adcode.eq(710000), "geometry"]
     if not taiwan.empty:
         point = taiwan.iloc[0].representative_point()
         ax.annotate("台湾\n未纳入31省样本", (point.x, point.y), xytext=(7, 0),
-                    textcoords="offset points", fontsize=6.6, color="#666", va="center")
+                        textcoords="offset points", fontsize=8.5, color="#666", va="center")
     # Preserve the South China Sea boundary element in a compact inset rather
     # than shrinking the mainland/Taiwan analytical map.
     inset = ax.inset_axes([.02, .08, .14, .24])
@@ -202,8 +202,8 @@ def plot(province: pd.DataFrame, cloud: pd.DataFrame, map_path: Path, svg: Path,
     cb=fig.colorbar(scarcity_sm, ax=ax, fraction=.035, pad=.01)
     cb.set_ticks([.5, 2, 4, 7.5, 15, 50])
     cb.set_ticklabels(["<1", "1–3", "3–5", "5–10", "10–20", "≥20"])
-    cb.set_label("AWARE2.0水稀缺CF（分级色标）", fontsize=8)
-    ax.text(.02,.02,"气泡面积＝省级估算取水量（与c同尺度）；数字为前7省千m³/年",transform=ax.transAxes,fontsize=7.3,color="#555")
+    cb.set_label("AWARE2.0水稀缺CF（分级色标）", fontsize=10)
+    ax.text(.02,.02,"气泡面积＝省级估算取水量（与c同尺度）；数字为前7省千m³/年",transform=ax.transAxes,fontsize=9,color="#555")
 
     ax = axes[0, 1]; panel(ax, "b", "本地部署：前7省份的估算取水量与水稀缺度")
     top = province.nlargest(7,"site_water_m3_small_local").sort_values("site_water_m3_small_local")
@@ -213,15 +213,15 @@ def plot(province: pd.DataFrame, cloud: pd.DataFrame, map_path: Path, svg: Path,
     ax.set_xlabel("估算取水量（千m³/年）；越红表示越缺水"); ax.grid(axis="x", alpha=.25)
     ax.set_xlim(0, 800)
     for i,(v,cf,weighted) in enumerate(zip(vals,top.aware20_nonagri_annual_m3_world_eq_per_m3,top.scarcity_weighted_water_m3_world_eq/1e6)):
-        ax.text(790,i,f"CF={cf:.1f}｜加权={weighted:.2f}百万m³-we",ha="right",va="center",fontsize=7.1)
+        ax.text(790,i,f"CF={cf:.1f}｜加权={weighted:.2f}百万m³-we",ha="right",va="center",fontsize=9)
 
     ax = axes[1, 0]; panel(ax, "c", "云服务部署：全国智算容量代理下的取水量与水稀缺度")
     draw_province_map(ax, china, cloud, "site_water_m3_large_cloud", shared_max_water_m3, scarcity_cmap, scarcity_norm)
-    ax.text(.02,.02,"气泡面积＝省级估算取水量（与a同尺度）；数字为前7省千m³/年",transform=ax.transAxes,fontsize=7.3,color="#555")
+    ax.text(.02,.02,"气泡面积＝省级估算取水量（与a同尺度）；数字为前7省千m³/年",transform=ax.transAxes,fontsize=9,color="#555")
     scarcity_cb = fig.colorbar(scarcity_sm, ax=ax, fraction=.035, pad=.01)
     scarcity_cb.set_ticks([.5, 2, 4, 7.5, 15, 50])
     scarcity_cb.set_ticklabels(["<1", "1–3", "3–5", "5–10", "10–20", "≥20"])
-    scarcity_cb.set_label("AWARE2.0水稀缺CF（分级色标）", fontsize=8)
+    scarcity_cb.set_label("AWARE2.0水稀缺CF（分级色标）", fontsize=10)
 
     ax = axes[1, 1]; panel(ax, "d", "云服务部署：前7省份的估算取水量与水稀缺度")
     top=cloud.nlargest(7,"site_water_m3_large_cloud").sort_values("site_water_m3_large_cloud"); vals=top.site_water_m3_large_cloud/1e3
@@ -230,15 +230,9 @@ def plot(province: pd.DataFrame, cloud: pd.DataFrame, map_path: Path, svg: Path,
     ax.set_xlabel("估算取水量（千m³/年）；越红表示越缺水");ax.grid(axis="x",alpha=.25)
     ax.set_xlim(0, 800)
     for i,(v,share,cf,weighted) in enumerate(zip(vals,top.cloud_load_share,top.aware20_nonagri_annual_m3_world_eq_per_m3,top.scarcity_weighted_water_m3_world_eq/1e6)):
-        ax.text(790,i,f"{share:.0%}｜CF={cf:.1f}｜加权={weighted:.1f}百万m³-we",ha="right",va="center",fontsize=7.1)
+        ax.text(790,i,f"{share:.0%}｜CF={cf:.1f}｜加权={weighted:.1f}百万m³-we",ha="right",va="center",fontsize=9)
 
-    fig.suptitle("Figure 5草图｜空间分布、地方影响与集中风险", fontsize=15, fontweight="bold", y=.985)
-    note=(
-        "注：a、c覆盖大陆31省；台湾、港澳及南海界线仅作为完整底图展示，不补造研究数据。气泡面积采用相同绝对取水量比例尺；b、d显示各自前7省并采用相同横轴。\n"
-        "颜色为AWARE2.0年度非农业CF。底图使用项目内 province_shapes/CHN_full_adm，正式发表前仍需核验来源和审图号。云端份额采用中国信通院《综合算力指数蓝皮书（2025年）》图7数字化结果，并以河北14.8%校准。"
-    )
-    fig.text(.5,.014,note,ha="center",va="bottom",fontsize=7.4,color="#555",linespacing=1.25)
-    fig.subplots_adjust(left=.045,right=.985,top=.93,bottom=.085)
+    fig.subplots_adjust(left=.045,right=.985,top=.93,bottom=.055)
     svg.parent.mkdir(parents=True,exist_ok=True); fig.savefig(svg,bbox_inches="tight",pad_inches=.025); fig.savefig(png,bbox_inches="tight",pad_inches=.025,dpi=170); plt.close(fig)
 
 
