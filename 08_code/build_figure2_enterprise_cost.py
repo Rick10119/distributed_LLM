@@ -52,6 +52,8 @@ US_COST_COLUMNS = [
     "local_gpu_servers",
     "local_cpu_servers",
     "annual_facility_energy_twh",
+    "cloud_gpu_reserved_instances",
+    "cloud_cpu_reserved_instances",
     "cloud_gpu_reserved_cost_usd",
     "cloud_cpu_reserved_cost_usd",
     "cloud_token_api_cost_usd",
@@ -246,6 +248,7 @@ def _prepare_us_cases(
                 key = (case, provider)
                 if pd.isna(frame.loc[key, column]):
                     frame.loc[key, column] = float(base.loc[provider, column]) * demand_ratios[case]
+    frame[list(US_COST_COLUMNS)] = frame[list(US_COST_COLUMNS)].astype(float)
     frame["cpu_server_price_case"] = "base"
     return frame.reset_index(), imputed_cases
 
