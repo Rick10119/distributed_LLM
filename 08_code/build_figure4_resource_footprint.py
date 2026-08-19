@@ -241,13 +241,21 @@ def prepare(
 
 
 def load_fonts() -> dict[str, ImageFont.FreeTypeFont]:
+    # Arial is available on standard macOS and Windows installations.  Keep
+    # the Unicode variant first when it is installed so Chinese labels render
+    # correctly, while the regular Arial fallback keeps figure generation
+    # portable on machines without the optional CJK font package.
     candidates = [
+        Path("C:/Windows/Fonts/ARIALUNI.TTF"),
+        Path("/Library/Fonts/Arial Unicode.ttf"),
         Path("/System/Library/Fonts/Supplemental/Arial Unicode.ttf"),
-        Path("/System/Library/Fonts/PingFang.ttc"),
+        Path("C:/Windows/Fonts/arial.ttf"),
+        Path("/Library/Fonts/Arial.ttf"),
+        Path("/System/Library/Fonts/Supplemental/Arial.ttf"),
     ]
     font_path = next((path for path in candidates if path.exists()), None)
     if font_path is None:
-        raise FileNotFoundError("A Chinese-capable system font is required")
+        raise FileNotFoundError("A standard Arial font is required")
     return {
         "title": ImageFont.truetype(str(font_path), 42),
         "panel": ImageFont.truetype(str(font_path), 32),
